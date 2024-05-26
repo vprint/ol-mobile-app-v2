@@ -4,14 +4,18 @@ import Map from 'ol/Map';
 // Vue/Quasar imports
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
+import Layer from 'ol/layer/Layer';
 
 // Store imports
 
 // Others imports
 
+/**
+ * Store map and provide related functionnalities
+ */
 export const useMapStore = defineStore('map', () => {
   const map = ref(new Map());
-  const isInitialized = ref(false);
+  const isMapInitialized = ref(false);
 
   /**
    * Set the store map
@@ -19,8 +23,16 @@ export const useMapStore = defineStore('map', () => {
    */
   function setMap(newMap: Map): void {
     map.value = newMap;
-    isInitialized.value = true;
+    isMapInitialized.value = true;
   }
 
-  return { map, isInitialized, setMap };
+  /**
+   * get layer by it's name
+   * @param name : layer name
+   */
+  function getLayerByName(name: string): Layer | undefined {
+    return map.value.getAllLayers().find((layer) => layer.get('name') === name);
+  }
+
+  return { map, isMapInitialized, setMap, getLayerByName };
 });

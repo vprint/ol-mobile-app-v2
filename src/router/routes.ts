@@ -1,15 +1,15 @@
-import DescPanel from 'src/components/MapComponent/DescPanel.vue';
+import SiteComponent from '../components/SiteComponent/SiteComponent.vue';
 import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('components/MapComponent/MapComponent.vue'),
+    component: () => import('layouts/MainLayout.vue'),
     children: [
       {
-        path: 'site/:siteId',
+        path: 'site=:siteId',
         name: 'site',
-        component: DescPanel,
+        component: SiteComponent,
       },
     ],
   },
@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('components/MapComponent/MapComponent.vue'),
   },
 ];
 

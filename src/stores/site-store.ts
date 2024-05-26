@@ -13,6 +13,9 @@ import { APP_PARAMS } from 'src/utils/params/appParams';
 import { Site } from 'src/model/site';
 import { ISite } from 'src/interface/ISite';
 
+/**
+ * Store sites and and related functionnalities
+ */
 export const useSiteStore = defineStore('site', () => {
   const router = useRouter();
   const route = useRoute();
@@ -20,12 +23,26 @@ export const useSiteStore = defineStore('site', () => {
   const site: Ref<Site | undefined> = ref();
 
   /**
-   * set site value
+   * Main site-store function that allow to set the working site by it's id.
    * @param newSiteId
    */
   async function setSite(newSiteId: number): Promise<void> {
     site.value = await getSiteById(newSiteId);
-    router.push({ name: 'site', params: { siteId: site.value?.siteId } });
+  }
+
+  /**
+   * Clear site in store and close widget
+   */
+  function clearSite(): void {
+    site.value = undefined;
+  }
+
+  /**
+   * Update site values. NewSite can be for exemple a modified clone of the original site.
+   * @param site New site
+   */
+  function updateSite(newSite: Site): void {
+    site.value = newSite;
   }
 
   /**
@@ -36,16 +53,13 @@ export const useSiteStore = defineStore('site', () => {
   async function getSiteById(siteId: number): Promise<Site | undefined> {
     let site: Site | undefined = undefined;
 
-    try {
-      const result = await ApiRequestor.getJSON<ISite[]>(
-        `${APP_PARAMS.featureServer}/functions/public.get_site_by_id/items.json?id=${siteId}`
-      );
+    const result = await ApiRequestor.getJSON<ISite[]>(
+      `${APP_PARAMS.featureServer}/functions/public.get_site_by_id/items.json?id=${siteId}`
+    );
 
-      if (result) {
-        site = new Site(result[0]);
-      }
-    } catch (error) {
-      console.error(`Error in getSiteById function : ${error}`);
+    if (result?.[0]) {
+      site = new Site(result[0]);
+      router.push({ name: 'site', params: { siteId: site.siteId } });
     }
 
     return site;
@@ -59,7 +73,7 @@ export const useSiteStore = defineStore('site', () => {
     (newSiteId) => {
       if (newSiteId && parseInt(newSiteId as string) !== site.value?.siteId) {
         setSite(parseInt(newSiteId as string));
-      } else {
+      } else if (!newSiteId) {
         site.value = undefined;
       }
     }
@@ -72,5 +86,5 @@ export const useSiteStore = defineStore('site', () => {
     setSite(parseInt(route.params.siteId as string));
   });
 
-  return { site };
+  return { site, setSite, updateSite, clearSite };
 });

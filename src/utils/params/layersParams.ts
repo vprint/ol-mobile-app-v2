@@ -2,7 +2,7 @@ import { TOKEN } from './tokenParams';
 
 export interface ILayer {
   name: string;
-  id: string;
+  layerId: string;
   attribution: string[];
   zIndex: number;
   visible: boolean;
@@ -20,13 +20,17 @@ export interface IRasterLayer extends ILayer {
   dynamic: boolean;
 }
 
+export interface IVectorTileLayer extends ILayer {
+  featureId: string;
+}
+
 /**
  * List of application background layers
  */
 export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
   {
     name: 'Basic',
-    id: 'jawg-streets',
+    layerId: 'jawg-streets',
     url: 'https://tile.jawg.io/jawg-streets/{z}/{x}/{y}@2x.png?',
     img: 'https://tile.jawg.io/jawg-streets/13/6459/3787@2x.png?',
     attribution: [
@@ -38,7 +42,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
   },
   {
     name: 'Light',
-    id: 'jawg-light',
+    layerId: 'jawg-light',
     url: 'https://tile.jawg.io/jawg-light/{z}/{x}/{y}@2x.png?',
     img: 'https://tile.jawg.io/jawg-light/13/6459/3787@2x.png?',
     attribution: [
@@ -50,7 +54,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
   },
   {
     name: 'Dark',
-    id: 'jawg-dark',
+    layerId: 'jawg-dark',
     url: 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}@2x.png?',
     img: 'https://tile.jawg.io/jawg-dark/13/6459/3787@2x.png?',
     attribution: [
@@ -62,7 +66,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
   },
   {
     name: 'OSM',
-    id: 'osm',
+    layerId: 'osm',
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png?',
     img: 'https://tile.openstreetmap.org/13/6459/3787.png?',
     attribution: [
@@ -73,13 +77,27 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
   },
   {
     name: 'Esri World Imagery',
-    id: 'esri_world_Imagery',
+    layerId: 'esri_world_Imagery',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     img: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/6459/3787',
     attribution: [
       'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer">ArcGIS</a>',
     ],
     zIndex: 1,
+    visible: true,
+  },
+];
+
+/**
+ * List of application vector tiles layers
+ */
+export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
+  {
+    name: 'sites',
+    layerId: 'sites',
+    featureId: 'site_id',
+    attribution: ['Données cartographiques | <b>EFEO</b>'],
+    zIndex: 5,
     visible: true,
   },
 ];

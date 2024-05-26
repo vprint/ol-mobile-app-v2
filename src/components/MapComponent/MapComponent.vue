@@ -1,25 +1,27 @@
 <script setup lang="ts">
-// Map imports
-import Map from 'ol/Map';
-import { MAPSETTINGS } from '../../utils/params/mapParams';
-import { View } from 'ol';
-import { fromLonLat } from 'ol/proj';
-import { LayerImporter } from '../../utils/LayerImporter';
-import { BACKGROUND_LAYERS_SETTINGS } from '../../utils/params/layersParams';
-
 // Vue/Quasar imports
 import { onMounted } from 'vue';
 
 // Store imports
 import { useMapStore } from '../../stores/map-store';
 
-// Components
+// Map imports
+import Map from 'ol/Map';
+import { MAPSETTINGS } from '../../utils/params/mapParams';
+import { View } from 'ol';
+import { fromLonLat } from 'ol/proj';
+import { LayerImporter } from '../../utils/LayerImporter';
+import {
+  BACKGROUND_LAYERS_SETTINGS,
+  VECTOR_TILE_LAYERS_SETTINGS,
+} from '../../utils/params/layersParams';
+import { useMapInteractionStore } from 'src/stores/map-interaction-store';
 
 // Others imports
 
 // Script
-
 const { setMap } = useMapStore();
+const { enableClickSelector } = useMapInteractionStore();
 
 onMounted(() => {
   const map = new Map({
@@ -36,24 +38,26 @@ onMounted(() => {
   LayerImporter({
     map: map,
     backgroundLayers: BACKGROUND_LAYERS_SETTINGS,
+    vectorTileLayers: VECTOR_TILE_LAYERS_SETTINGS,
   });
 
   setMap(map);
+  enableClickSelector(true);
 });
 </script>
 
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page>
-        <div id="map" class="map"></div>
-        <router-view />
-      </q-page>
-    </q-page-container>
-  </q-layout>
+  <div id="map" class="map"></div>
+  <transition
+    appear
+    enter-active-class="animated fadeInRightBig"
+    leave-active-class="animated fadeOutRightBig"
+  >
+    <router-view />
+  </transition>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 @import 'ol/ol.css';
 
 #map {
