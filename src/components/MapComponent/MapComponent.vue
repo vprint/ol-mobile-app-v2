@@ -4,6 +4,7 @@ import { onMounted } from 'vue';
 
 // Store imports
 import { useMapStore } from '../../stores/map-store';
+import { useMapInteractionStore } from 'src/stores/map-interaction-store';
 
 // Map imports
 import Map from 'ol/Map';
@@ -15,7 +16,6 @@ import {
   BACKGROUND_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
-import { useMapInteractionStore } from 'src/stores/map-interaction-store';
 
 // Others imports
 
@@ -42,7 +42,10 @@ onMounted(() => {
   });
 
   setMap(map);
-  enableClickSelector(true);
+
+  setTimeout(() => {
+    enableClickSelector(true, 'sites');
+  }, 3000);
 });
 </script>
 

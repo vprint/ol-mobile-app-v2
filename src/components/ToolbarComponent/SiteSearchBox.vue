@@ -2,7 +2,7 @@
 // Map imports
 
 // Vue/Quasar imports
-import { computed, nextTick, onMounted, Ref, ref } from 'vue';
+import { nextTick, onMounted, Ref, ref, watch } from 'vue';
 
 // Store imports
 import { storeToRefs } from 'pinia';
@@ -27,9 +27,7 @@ const { siteList } = storeToRefs(useReferencesStore());
 let searchList: ISearchItems[] = [];
 const options: Ref<ISearchItems[]> = ref([]);
 const searchbox: Ref<QSelect | null> = ref(null);
-const model: Ref<string | null> = computed(() =>
-  site.value ? site.value.englishName : null
-);
+const model: Ref<string> = ref(site.value ? site.value.englishName : '');
 
 /**
  * Filters entries according to the text entered by the user
@@ -61,6 +59,9 @@ function selectSite(site: ISearchItems | undefined): void {
   }
 }
 
+/**
+ * Initialize values
+ */
 onMounted(() => {
   const mappedResult = siteList.value.map((site) => ({
     label: site.site_name,
@@ -70,6 +71,16 @@ onMounted(() => {
   options.value = [...mappedResult];
   searchList = mappedResult;
 });
+
+/**
+ * Watch for site change and update the text displayed in the searchbox
+ */
+watch(
+  () => site.value,
+  (newSite) => {
+    model.value = newSite ? newSite.englishName : '';
+  }
+);
 </script>
 
 <template>

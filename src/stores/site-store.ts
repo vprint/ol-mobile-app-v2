@@ -35,6 +35,7 @@ export const useSiteStore = defineStore('site', () => {
    */
   function clearSite(): void {
     site.value = undefined;
+    router.push({ name: 'home' });
   }
 
   /**

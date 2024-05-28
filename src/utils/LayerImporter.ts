@@ -71,7 +71,6 @@ function addVectorTileLayers(map: Map, layerList: IVectorTileLayer[]): void {
           featureId: layer.featureId,
         },
         preload: Infinity,
-        renderMode: 'hybrid',
         visible: layer.visible,
       });
     }

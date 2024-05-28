@@ -71,7 +71,9 @@ watch(
 
 <template>
   <PanelComponent v-if="site">
-    <template #title> Site </template>
+    <template #title>
+      {{ `${site?.englishName} - (${site?.khmerName})` }}
+    </template>
 
     <template #component>
       <q-form @submit="openDialog" @reset="cancel">
