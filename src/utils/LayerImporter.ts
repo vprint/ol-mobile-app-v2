@@ -92,5 +92,5 @@ export function LayerImporter({
   vectorTileLayers,
 }: ILayerImporter): void {
   addBackgroundLayers(map, backgroundLayers);
-  addVectorTileLayers(map, vectorTileLayers);
+  //addVectorTileLayers(map, vectorTileLayers);
 }

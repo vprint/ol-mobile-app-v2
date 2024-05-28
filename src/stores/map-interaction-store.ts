@@ -12,7 +12,6 @@ import { useSiteStore } from './site-store';
 // Others imports
 import MeasurePlugin from 'src/utils/MeasurePlugin';
 import SelectorPlugin from 'src/utils/SelectorPlugin';
-import { on } from 'events';
 
 // Interface imports
 
@@ -22,10 +21,10 @@ import { on } from 'events';
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const { map, isMapInitialized } = storeToRefs(useMapStore());
   const { setSite } = useSiteStore();
-  const isSelectorActive = ref(true);
-  const isMeasureActive = ref(false);
-  let measure: MeasurePlugin | undefined = undefined;
+  const measure: Ref<MeasurePlugin | undefined> = ref(undefined);
   const selectorPlugin: Ref<SelectorPlugin | undefined> = ref(undefined);
+  const isSelectorActive = ref(true);
+  const isMeasureActive = ref(measure.value?.isActive);
 
   /**
    * Enable or disable click event
@@ -36,9 +35,6 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     isSelectorActive.value = active;
     selectorPlugin.value?.setSelectionLayer(layerName ?? undefined);
     selectorPlugin.value?.setActive(active);
-    if (active) {
-      enableMeasure(false);
-    }
   }
 
   /**
@@ -47,19 +43,17 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    */
   function enableMeasure(active: boolean): void {
     isMeasureActive.value = active;
-    active ? measure?.addMeasure() : measure?.removeMeasure();
-    if (active) {
-      enableClickSelector(false);
-      console.log(selectorPlugin.value?.isActive);
-      console.log(map.value.getListeners('on'));
-    }
+    active ? measure.value?.addMeasure() : measure.value?.removeMeasure();
+    enableClickSelector(false);
   }
 
   watch(
     () => isMapInitialized.value,
     () => {
-      measure = new MeasurePlugin(map.value as Map);
-      selectorPlugin.value = new SelectorPlugin(map.value as Map, '');
+      if (isMapInitialized.value) {
+        measure.value = new MeasurePlugin(map.value as Map);
+        selectorPlugin.value = new SelectorPlugin(map.value as Map, '');
+      }
     }
   );
 
@@ -77,6 +71,8 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   return {
     map,
+    measure,
+    selectorPlugin,
     isSelectorActive,
     isMeasureActive,
     enableClickSelector,

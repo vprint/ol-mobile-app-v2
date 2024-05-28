@@ -14,14 +14,16 @@ import VectorSource from 'ol/source/Vector';
  */
 export default class MeasurePlugin {
   public map: Map;
-  public isActive = false;
   public drawInteraction: Draw;
+  public isActive: boolean;
   public measureAsString = '';
   public sketch?: Feature;
 
   constructor(map: Map) {
     this.map = map;
+    this.isActive = false;
     this.drawInteraction = this.createDraw();
+    this.map.addInteraction(this.drawInteraction);
     this.initializeEventHandlers();
   }
 
@@ -29,10 +31,8 @@ export default class MeasurePlugin {
    * Initialize draw event handler
    */
   private initializeEventHandlers(): void {
-    this.map.addInteraction(this.drawInteraction);
     this.drawInteraction.on('drawstart', (evt) => {
       this.sketch = evt.feature;
-
       this.sketch.getGeometry()?.on('change', (evt) => {
         const geom = evt.target;
         if (geom instanceof Polygon) {
@@ -42,13 +42,17 @@ export default class MeasurePlugin {
         }
       });
     });
+
     this.drawInteraction.on(['drawend', 'drawabort'], () => {
-      this.drawInteraction.setActive(false);
+      // As the user double-click to end draw, this can lead to an unvolutary zoom. This timeout prevent this behaviour.
+      setTimeout(() => {
+        this.removeMeasure();
+      }, 50);
     });
   }
 
   /**
-   * Create a ready to use draw interaction
+   * Create a draw interaction
    * @returns Draw interaction
    */
   private createDraw(): Draw {
@@ -64,7 +68,7 @@ export default class MeasurePlugin {
    * Activate measure tool
    */
   public addMeasure(): void {
-    if (!this.isActive) {
+    if (!this.drawInteraction.getActive()) {
       this.drawInteraction.setActive(true);
       this.isActive = true;
     }
@@ -74,9 +78,10 @@ export default class MeasurePlugin {
    * Deactivate measure tool
    */
   public removeMeasure(): void {
-    if (this.isActive) {
+    if (this.drawInteraction.getActive()) {
       this.drawInteraction.setActive(false);
       this.isActive = false;
+      console.log(this.isActive);
     }
   }
 

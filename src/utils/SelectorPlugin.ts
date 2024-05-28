@@ -68,8 +68,8 @@ export default class SelectorPlugin {
   public setActive(active: boolean): void {
     this.isActive = active;
     active
-      ? this.map.on('click', (e) => this.selectFeatureAtLayer(e))
-      : this.map.un('click', (e) => this.selectFeatureAtLayer(e));
+      ? this.map.on('click', this.selectFeatureAtLayer)
+      : this.map.un('click', this.selectFeatureAtLayer);
   }
 
   /**
