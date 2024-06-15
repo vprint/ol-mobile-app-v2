@@ -24,13 +24,14 @@ export default class MeasurePlugin {
     this.isActive = false;
     this.drawInteraction = this.createDraw();
     this.map.addInteraction(this.drawInteraction);
-    this.initializeEventHandlers();
+    this.calculateMeasure();
+    this.endDrawListener();
   }
 
   /**
-   * Initialize draw event handler
+   * Calculate measure for every draw move
    */
-  private initializeEventHandlers(): void {
+  private calculateMeasure(): void {
     this.drawInteraction.on('drawstart', (evt) => {
       this.sketch = evt.feature;
       this.sketch.getGeometry()?.on('change', (evt) => {
@@ -42,7 +43,12 @@ export default class MeasurePlugin {
         }
       });
     });
+  }
 
+  /**
+   * This function listen drawend and drawabort event
+   */
+  private endDrawListener(): void {
     this.drawInteraction.on(['drawend', 'drawabort'], () => {
       // As the user double-click to end draw, this can lead to an unvolutary zoom. This timeout prevent this behaviour.
       setTimeout(() => {
@@ -81,7 +87,6 @@ export default class MeasurePlugin {
     if (this.drawInteraction.getActive()) {
       this.drawInteraction.setActive(false);
       this.isActive = false;
-      console.log(this.isActive);
     }
   }
 

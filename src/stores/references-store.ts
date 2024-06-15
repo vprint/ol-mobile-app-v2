@@ -20,6 +20,8 @@ import { Artefact } from 'src/model/artefact';
 import { BuildMaterial } from 'src/model/buildMaterial';
 import { Researcher } from 'src/model/researcher';
 import { ISiteList } from 'src/interface/ISite';
+import { AssociatedDocument } from 'src/model/associatedDocument';
+import { IDocument } from 'src/interface/IDocument';
 
 /**
  * Store application type references
@@ -31,6 +33,7 @@ export const useReferencesStore = defineStore('references', () => {
   const featureTypeList: Ref<string[]> = ref([]);
   const studyArea: Ref<string[]> = ref([]);
   const siteList: Ref<ISiteList[]> = ref([]);
+  const documentList: Ref<IDocument[]> = ref([]);
 
   const isReferencesInitialized = ref(false);
 
@@ -66,20 +69,20 @@ export const useReferencesStore = defineStore('references', () => {
     return [];
   }
 
-  // /**
-  //  * Get document list
-  //  */
-  // async function getDocumentList(): Promise<AssociatedDocument[]> {
-  //   const result = await ApiRequestor.getJSON<IDocument[]>(
-  //     `${APP_PARAMS.featureServer}/functions/public.get_document_list/items.json`
-  //   );
+  /**
+   * Get document list
+   */
+  async function getDocumentList(): Promise<AssociatedDocument[]> {
+    const result = await ApiRequestor.getJSON<IDocument[]>(
+      `${APP_PARAMS.featureServer}/functions/public.get_document_list/items.json`
+    );
 
-  //   if (result) {
-  //     return result.map((document) => new AssociatedDocument(document));
-  //   }
+    if (result) {
+      return result.map((document) => new AssociatedDocument(document));
+    }
 
-  //   return [];
-  // }
+    return [];
+  }
 
   /**
    * Get artefact list
@@ -152,6 +155,7 @@ export const useReferencesStore = defineStore('references', () => {
     featureTypeList.value = await getFeatureTypeList();
     studyArea.value = await getStudyAreaList();
     siteList.value = await getSiteList();
+    documentList.value = await getDocumentList();
 
     isReferencesInitialized.value = true;
   });
@@ -163,6 +167,7 @@ export const useReferencesStore = defineStore('references', () => {
     featureTypeList,
     studyArea,
     siteList,
+    documentList,
     isReferencesInitialized,
   };
 });

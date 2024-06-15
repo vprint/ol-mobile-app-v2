@@ -4,7 +4,6 @@ import { onMounted } from 'vue';
 
 // Store imports
 import { useMapStore } from '../../stores/map-store';
-import { useMapInteractionStore } from 'src/stores/map-interaction-store';
 
 // Map imports
 import Map from 'ol/Map';
@@ -16,12 +15,14 @@ import {
   BACKGROUND_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
+import MeasurePlugin from 'src/utils/MeasurePlugin';
+import { useMapInteractionStore } from 'src/stores/map-interaction-store';
 
 // Others imports
 
 // Script
 const { setMap } = useMapStore();
-const { enableClickSelector } = useMapInteractionStore();
+const { setMeasurePlugin, initSelectorPlugin } = useMapInteractionStore();
 
 onMounted(() => {
   const map = new Map({
@@ -43,9 +44,12 @@ onMounted(() => {
 
   setMap(map);
 
-  setTimeout(() => {
-    enableClickSelector(true, 'sites');
-  }, 3000);
+  // Measure plugin
+  const measurePlugin = new MeasurePlugin(map);
+  setMeasurePlugin(measurePlugin);
+
+  // Selector plugin
+  initSelectorPlugin(map, 'sites');
 });
 </script>
 

@@ -10,17 +10,18 @@ import { useMapStore } from 'src/stores/map-store';
 // Other import
 
 /**
- * This plugins allow to create a measure interaction
+ * This plugins allows to select feature
  */
 export default class SelectorPlugin {
   private map: Map;
-  private layerName = '';
+  private layerName = 'sites';
   public isActive = true;
   public selectedFeature: FeatureLike | undefined;
 
   constructor(map: Map, layerName: string) {
     this.map = map;
     this.layerName = layerName;
+    this.setActive(true);
   }
 
   /**
@@ -45,7 +46,6 @@ export default class SelectorPlugin {
   /**
    * Select feature at a given pixel for a give layer
    * @param e UI Event (exemple: click)
-   * @param layerName Layer name
    */
   private async selectFeatureAtLayer(
     e: MapBrowserEvent<UIEvent>
@@ -59,6 +59,7 @@ export default class SelectorPlugin {
     );
 
     this.selectedFeature = feature;
+    console.log(feature);
   }
 
   /**
@@ -67,9 +68,13 @@ export default class SelectorPlugin {
    */
   public setActive(active: boolean): void {
     this.isActive = active;
-    active
-      ? this.map.on('click', this.selectFeatureAtLayer)
-      : this.map.un('click', this.selectFeatureAtLayer);
+    if (active) {
+      this.map.on('click', (e) => {
+        this.selectFeatureAtLayer(e);
+      });
+    } else {
+      this.map.un('click', this.selectFeatureAtLayer);
+    }
   }
 
   /**

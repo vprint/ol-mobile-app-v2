@@ -12,15 +12,15 @@ import { storeToRefs } from 'pinia';
 // Script
 const { isMeasureActive } = storeToRefs(useMapInteractionStore());
 const { enableMeasure } = useMapInteractionStore();
-
-function test(yolo: boolean): void {
-  console.log(isMeasureActive.value);
-  enableMeasure(yolo);
-}
 </script>
 
 <template>
-  <q-btn flat fab icon="sym_s_straighten" @click="test(!isMeasureActive)">
+  <q-btn
+    flat
+    fab
+    icon="sym_s_straighten"
+    @click="enableMeasure(isMeasureActive ?? true)"
+  >
     <q-tooltip
       anchor="bottom middle"
       self="bottom middle"

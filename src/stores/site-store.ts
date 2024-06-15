@@ -5,7 +5,8 @@ import { onMounted, Ref, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 // Store imports
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
+import { useMapInteractionStore } from './map-interaction-store';
 
 // Others imports
 import ApiRequestor from 'src/services/ApiRequestor';
@@ -21,6 +22,7 @@ export const useSiteStore = defineStore('site', () => {
   const route = useRoute();
 
   const site: Ref<Site | undefined> = ref();
+  const { selectorPlugin } = storeToRefs(useMapInteractionStore());
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -80,6 +82,19 @@ export const useSiteStore = defineStore('site', () => {
     }
   );
 
+  // Watch for site selection
+  watch(
+    () => selectorPlugin.value?.selectedFeature,
+    (feature) => {
+      if (feature) {
+        setSite(feature.getId() as number);
+      }
+    },
+    {
+      deep: true,
+    }
+  );
+
   /**
    * Initialize site
    */
@@ -87,5 +102,5 @@ export const useSiteStore = defineStore('site', () => {
     setSite(parseInt(route.params.siteId as string));
   });
 
-  return { site, setSite, updateSite, clearSite };
+  return { site, setSite, updateSite, clearSite, selectorPlugin };
 });
