@@ -13,7 +13,10 @@ import { APP_PARAMS } from 'src/utils/params/appParams';
 import { Site } from 'src/model/site';
 import { ISite } from 'src/interface/ISite';
 import { useMapInteractionStore } from './map-interaction-store';
-import { FeatureLike } from 'ol/Feature';
+import {
+  VectorTileSelectEvent,
+  VectorTileSelectEventType,
+} from 'src/utils/VectorTileSelect';
 /**
  * Store sites and and related functionnalities
  */
@@ -74,20 +77,23 @@ export const useSiteStore = defineStore('site', () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    //@ts-expect-error - Erreur de typage. Ticket ouvert : https://stackoverflow.com/questions/78657272/custom-event-listener-in-openlayers
-    selector.value.on('select:vectortile', (e: unknown) => {
-      const features = e.selected as FeatureLike[] | undefined;
+    selector.value.on(
+      //@ts-expect-error - Erreur de typage. Ticket ouvert : https://stackoverflow.com/questions/78657272/custom-event-listener-in-openlayers
+      VectorTileSelectEventType.VECTORTILESELECT,
+      (e: VectorTileSelectEvent) => {
+        const features = e.selected;
 
-      if (features) {
-        const sitesFeatures = features.filter(
-          (feature) => feature.get('layer') === 'sites'
-        );
+        if (features) {
+          const sitesFeatures = features.filter(
+            (feature) => feature.get('layer') === 'sites'
+          );
 
-        if (sitesFeatures[0]) {
-          setSite(sitesFeatures[0].getId() as number);
+          if (sitesFeatures[0]) {
+            setSite(sitesFeatures[0].getId() as number);
+          }
         }
       }
-    });
+    );
   }
 
   /**
