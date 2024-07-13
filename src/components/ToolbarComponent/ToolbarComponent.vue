@@ -6,6 +6,7 @@ import { useReferencesStore } from 'src/stores/references-store';
 
 // Component import
 import SiteSearchBox from './SiteSearchBox.vue';
+import MeasureComponent from '../MeasureComponent/MeasureComponent.vue';
 
 // Others
 import { APP_PARAMS } from '../../utils/params/appParams';
@@ -28,6 +29,9 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 
     <!-- Space -->
     <q-space></q-space>
+
+    <!-- Measure button -->
+    <MeasureComponent v-if="$q.platform.is.desktop"></MeasureComponent>
 
     <SiteSearchBox v-if="isReferencesInitialized"></SiteSearchBox>
   </q-toolbar>

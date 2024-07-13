@@ -1,17 +1,32 @@
 import { Map } from 'ol';
-import { IBackgroundLayer, IVectorTileLayer } from './params/layersParams';
+import {
+  IBackgroundLayer,
+  IVectorTileLayer,
+} from '../utils/params/layersParams';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
 import LayerGroup from 'ol/layer/Group';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
-import { APP_PARAMS } from './params/appParams';
+import { APP_PARAMS } from '../utils/params/appParams';
 import { FeatureLike } from 'ol/Feature';
 
-interface ILayerImporter {
+/**
+ * interface for importLayer() function
+ */
+interface IImportLayer {
+  /**
+   * Target map where the layers shoud be imported
+   */
   map: Map;
+  /**
+   * Array of background layers to import
+   */
   backgroundLayers: IBackgroundLayer[];
+  /**
+   * Array of vector tile layers to import
+   */
   vectorTileLayers: IVectorTileLayer[];
 }
 
@@ -86,11 +101,15 @@ function addVectorTileLayers(map: Map, layerList: IVectorTileLayer[]): void {
   );
 }
 
-export function LayerImporter({
+/**
+ * This function add a list of layer to the map.
+ * @param parameters importing parameters.
+ */
+export function importLayer({
   map,
   backgroundLayers,
   vectorTileLayers,
-}: ILayerImporter): void {
+}: IImportLayer): void {
   addBackgroundLayers(map, backgroundLayers);
   addVectorTileLayers(map, vectorTileLayers);
 }

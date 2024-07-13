@@ -16,7 +16,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 import {
   VectorTileSelectEvent,
   VectorTileSelectEventType,
-} from 'src/utils/VectorTileSelect';
+} from 'src/plugins/VectorTileSelect';
 /**
  * Store sites and and related functionnalities
  */
@@ -78,8 +78,8 @@ export const useSiteStore = defineStore('site', () => {
    */
   function siteSelectionListener(): void {
     selector.value.on(
-      //@ts-expect-error - Erreur de typage. Ticket ouvert : https://stackoverflow.com/questions/78657272/custom-event-listener-in-openlayers
-      VectorTileSelectEventType.VECTORTILESELECT,
+      // @ts-expect-error - Type problems due to typescript / ol
+      VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
         const features = e.selected;
 
@@ -101,10 +101,14 @@ export const useSiteStore = defineStore('site', () => {
    */
   watch(
     () => route.params.siteId,
-    (newSiteId) => {
-      if (newSiteId && parseInt(newSiteId as string) !== site.value?.siteId) {
-        setSite(parseInt(newSiteId as string));
-      } else if (!newSiteId) {
+    (newSiteIdString) => {
+      const newSiteId = parseInt(newSiteIdString as string, 10);
+
+      if (newSiteId) {
+        if (newSiteId !== site.value?.siteId) {
+          setSite(newSiteId);
+        }
+      } else {
         site.value = undefined;
       }
     }

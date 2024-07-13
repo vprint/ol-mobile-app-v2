@@ -8,7 +8,7 @@ import Event from 'ol/events/Event.js';
  * Vector tile select event type definition
  */
 export enum VectorTileSelectEventType {
-  VECTORTILESELECT = 'select:vectortile',
+  VECTOR_TILE_SELECT = 'select:vectortile',
 }
 
 /**
@@ -31,20 +31,21 @@ export class VectorTileSelectEvent extends Event {
 
 /**
  * Vector Tile selector class.
- * The class select features for every visible vector tile layer on the map
+ * The class selects features for every visible vector tile layer on the map.
  */
-export class VectorTileSelect extends Interaction {
-  constructor() {
+class VectorTileSelect extends Interaction {
+  constructor(name: string) {
     super({
       handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean => {
         return this.selectFeaturesAtPixel(evt);
       },
     });
+    this.set('name', name);
   }
 
   /**
    * Select vector features at a given pixel and fires
-   * a vector tile select event on selection (select:vectortile)
+   * a vector tile select event on selection (select:vectortile).
    * @param e - Map browser event
    * @returns true when the selection is made
    */
@@ -57,7 +58,7 @@ export class VectorTileSelect extends Interaction {
 
       this.dispatchEvent(
         new VectorTileSelectEvent(
-          VectorTileSelectEventType.VECTORTILESELECT,
+          VectorTileSelectEventType.VECTOR_TILE_SELECT,
           features,
           e
         )
@@ -66,3 +67,5 @@ export class VectorTileSelect extends Interaction {
     return true;
   }
 }
+
+export default VectorTileSelect;
