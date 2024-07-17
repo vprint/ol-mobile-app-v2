@@ -20,6 +20,7 @@ import {
 
 // Enum imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
+import { useMapOverlayStore } from './map-overlay-store';
 
 //script
 
@@ -29,18 +30,20 @@ import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
 export const useMeasureStore = defineStore('measureStore', () => {
   const { enableInteraction } = useMapInteractionStore();
   const { measurePlugin } = storeToRefs(useMapInteractionStore());
+  const { setOverlayVisibility } = useMapOverlayStore();
   const measure: Ref<number> = ref(0);
   const formatedMeasure: Ref<string> = ref('');
   const measureMenu = ref(false);
 
   /**
-   * Manaage measure activation / deactivation
+   * Activate measure
    * @param mode Measure mode - can be either Polygon or LineString
    */
   function addMeasure(mode: IMeasureType): void {
     measurePlugin.value.setActive(true);
     measurePlugin.value.addMeasure(mode);
     enableInteraction(INTERACTIONS_PARAMS.selector, false);
+    setOverlayVisibility(true);
   }
 
   /**
@@ -49,6 +52,7 @@ export const useMeasureStore = defineStore('measureStore', () => {
   function removeMeasure(): void {
     measurePlugin.value.removeMeasure();
     enableInteraction(INTERACTIONS_PARAMS.selector, true);
+    setOverlayVisibility(false);
   }
 
   /**
@@ -123,10 +127,7 @@ export const useMeasureStore = defineStore('measureStore', () => {
     // @ts-expect-error - Type problems due to typescript / ol
     MeasureEventType.MEASURE_END,
     () => {
-      measurePlugin.value.removeMeasure();
-      formatedMeasure.value = '0';
-      enableInteraction(INTERACTIONS_PARAMS.selector, true);
-
+      removeMeasure();
       unByKey(onMeasureStart);
     }
   );

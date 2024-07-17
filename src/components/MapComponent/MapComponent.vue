@@ -1,9 +1,11 @@
 <script setup lang="ts">
 // Vue/Quasar imports
-import { onMounted } from 'vue';
+import { onMounted, ref, Ref } from 'vue';
+import { storeToRefs } from 'pinia';
 
 // Component imports
 import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.vue';
+import OverlayComponent from '../OverlayComponent/OverlayComponent.vue';
 
 // Store imports
 import { useMapStore } from '../../stores/map-store';
@@ -25,9 +27,10 @@ import {
 // Script
 const { setMap } = useMapStore();
 const { initializeInteractions } = useMapInteractionStore();
+const map: Ref<Map | undefined> = ref(undefined);
 
 onMounted(() => {
-  const map = new Map({
+  map.value = new Map({
     controls: [],
     target: 'map',
     view: new View({
@@ -39,18 +42,20 @@ onMounted(() => {
   });
 
   importLayer({
-    map: map,
+    map: map.value,
     backgroundLayers: BACKGROUND_LAYERS_SETTINGS,
     vectorTileLayers: VECTOR_TILE_LAYERS_SETTINGS,
   });
 
-  setMap(map);
+  setMap(map.value);
 
   initializeInteractions();
 });
 </script>
 
 <template>
+  <OverlayComponent v-if="map"></OverlayComponent>
+
   <div id="map" class="map">
     <ContextMenuComponent></ContextMenuComponent>
   </div>

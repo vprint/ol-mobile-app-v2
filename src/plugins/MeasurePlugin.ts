@@ -85,10 +85,10 @@ class MeasurePlugin extends Interaction {
     this.drawEndEvent = this.drawInteraction.on(
       ['drawend', 'drawabort'],
       () => {
-        // As the user double-click to end draw, this can lead to an unvolutary zoom. This timeout prevent this behaviour.
+        // As the user double-click to end draw, this can lead to an unvolutary zoom. This ugly timeout prevent this behaviour.
         setTimeout(() => {
           this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
-        }, 50);
+        }, 1);
 
         this.formatedMeasure = '';
         this.measure = 0;
