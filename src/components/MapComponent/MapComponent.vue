@@ -2,16 +2,19 @@
 // Vue/Quasar imports
 import { onMounted } from 'vue';
 
+// Component imports
+import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.vue';
+
 // Store imports
 import { useMapStore } from '../../stores/map-store';
-import { useMapInteractionStore } from 'src/stores/map-interaction-store';
+import { useMapInteractionStore } from '../../stores/map-interaction-store';
 
 // Map imports
 import Map from 'ol/Map';
 import { MAPSETTINGS } from '../../utils/params/mapParams';
 import { View } from 'ol';
 import { fromLonLat } from 'ol/proj';
-import { LayerImporter } from '../../utils/LayerImporter';
+import { importLayer } from '../../plugins/LayerImporter';
 import {
   BACKGROUND_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
@@ -21,7 +24,7 @@ import {
 
 // Script
 const { setMap } = useMapStore();
-const { enableClickSelector } = useMapInteractionStore();
+const { initializeInteractions } = useMapInteractionStore();
 
 onMounted(() => {
   const map = new Map({
@@ -35,7 +38,7 @@ onMounted(() => {
     }),
   });
 
-  LayerImporter({
+  importLayer({
     map: map,
     backgroundLayers: BACKGROUND_LAYERS_SETTINGS,
     vectorTileLayers: VECTOR_TILE_LAYERS_SETTINGS,
@@ -43,14 +46,14 @@ onMounted(() => {
 
   setMap(map);
 
-  setTimeout(() => {
-    enableClickSelector(true, 'sites');
-  }, 3000);
+  initializeInteractions();
 });
 </script>
 
 <template>
-  <div id="map" class="map"></div>
+  <div id="map" class="map">
+    <ContextMenuComponent></ContextMenuComponent>
+  </div>
   <transition
     appear
     enter-active-class="animated fadeInRightBig"
@@ -69,3 +72,4 @@ onMounted(() => {
   width: 100%;
 }
 </style>
+src/utils/VectorTileSelector ../../plugins/LayerImporter

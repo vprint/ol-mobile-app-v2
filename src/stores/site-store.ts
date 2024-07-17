@@ -5,14 +5,18 @@ import { onMounted, Ref, ref, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 
 // Store imports
-import { defineStore } from 'pinia';
+import { defineStore, storeToRefs } from 'pinia';
 
 // Others imports
 import ApiRequestor from 'src/services/ApiRequestor';
 import { APP_PARAMS } from 'src/utils/params/appParams';
 import { Site } from 'src/model/site';
 import { ISite } from 'src/interface/ISite';
-
+import { useMapInteractionStore } from './map-interaction-store';
+import {
+  VectorTileSelectEvent,
+  VectorTileSelectEventType,
+} from 'src/plugins/VectorTileSelect';
 /**
  * Store sites and and related functionnalities
  */
@@ -21,6 +25,9 @@ export const useSiteStore = defineStore('site', () => {
   const route = useRoute();
 
   const site: Ref<Site | undefined> = ref();
+  const { selector, isMapInteractionsInitialized } = storeToRefs(
+    useMapInteractionStore()
+  );
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -67,17 +74,55 @@ export const useSiteStore = defineStore('site', () => {
   }
 
   /**
+   * This function listen to site selection and set the site.
+   */
+  function siteSelectionListener(): void {
+    selector.value.on(
+      // @ts-expect-error - Type problems due to typescript / ol
+      VectorTileSelectEventType.VECTOR_TILE_SELECT,
+      (e: VectorTileSelectEvent) => {
+        const features = e.selected;
+
+        if (features) {
+          const sitesFeatures = features.filter(
+            (feature) => feature.get('layer') === 'sites'
+          );
+
+          if (sitesFeatures[0]) {
+            setSite(sitesFeatures[0].getId() as number);
+          }
+        }
+      }
+    );
+  }
+
+  /**
    * watch for site change in URL
    */
   watch(
     () => route.params.siteId,
-    (newSiteId) => {
-      if (newSiteId && parseInt(newSiteId as string) !== site.value?.siteId) {
-        setSite(parseInt(newSiteId as string));
-      } else if (!newSiteId) {
+    (newSiteIdString) => {
+      const newSiteId = parseInt(newSiteIdString as string, 10);
+
+      if (newSiteId) {
+        if (newSiteId !== site.value?.siteId) {
+          setSite(newSiteId);
+        }
+      } else {
         site.value = undefined;
       }
     }
+  );
+
+  /**
+   * Watch for interaction initialization
+   */
+  watch(
+    () => isMapInteractionsInitialized.value,
+    () => {
+      siteSelectionListener();
+    },
+    { immediate: true }
   );
 
   /**
