@@ -1,6 +1,6 @@
 // Map import
 import { Geometry, LineString, Polygon } from 'ol/geom';
-import { unByKey } from 'ol/Observable';
+import { getArea, getLength } from 'ol/sphere';
 
 // Vue/Quasar imports
 import { defineStore, storeToRefs } from 'pinia';
@@ -8,6 +8,8 @@ import { ref, Ref } from 'vue';
 
 // Store imports
 import { useMapInteractionStore } from './map-interaction-store';
+import { useMapOverlayStore } from './map-overlay-store';
+import { useMapStore } from './map-store';
 
 // Others imports
 
@@ -20,7 +22,6 @@ import {
 
 // Enum imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
-import { useMapOverlayStore } from './map-overlay-store';
 
 //script
 
@@ -28,9 +29,16 @@ import { useMapOverlayStore } from './map-overlay-store';
  * Measure store manager
  */
 export const useMeasureStore = defineStore('measureStore', () => {
+  const { map } = useMapStore();
   const { enableInteraction } = useMapInteractionStore();
   const { measurePlugin } = storeToRefs(useMapInteractionStore());
-  const { setOverlayVisibility } = useMapOverlayStore();
+  const {
+    setOverlayVisibility,
+    setTitle,
+    setContent,
+    reinitializeOverlay,
+    createOverlay,
+  } = useMapOverlayStore();
   const measure: Ref<number> = ref(0);
   const formatedMeasure: Ref<string> = ref('');
   const measureMenu = ref(false);
@@ -63,12 +71,16 @@ export const useMeasureStore = defineStore('measureStore', () => {
     // Calculate area if geometry is a polygon
     if (geom instanceof Polygon) {
       formatedMeasure.value = formatArea(geom);
-      measure.value = geom.getArea();
+      measure.value = getArea(geom);
+      setTitle('Measure');
+      setContent(formatedMeasure.value);
     }
     // Calculate length if geometry is a line
     else if (geom instanceof LineString) {
       formatedMeasure.value = formatLength(geom);
-      measure.value = geom.getLength();
+      measure.value = getLength(geom);
+      setTitle('Measure');
+      setContent(formatedMeasure.value);
     }
   }
 
@@ -78,7 +90,7 @@ export const useMeasureStore = defineStore('measureStore', () => {
    * @returns The formatted length.
    */
   function formatLength(line: LineString): string {
-    const length = line.getLength();
+    const length = getLength(line);
     let output: string;
 
     if (length > 100) {
@@ -95,7 +107,7 @@ export const useMeasureStore = defineStore('measureStore', () => {
    * @returns Formatted area
    */
   function formatArea(polygon: Polygon): string {
-    const area = polygon.getArea();
+    const area = getArea(polygon);
     let output: string;
 
     if (area > 10000) {
@@ -109,7 +121,7 @@ export const useMeasureStore = defineStore('measureStore', () => {
   /**
    * Manage measure start event
    */
-  const onMeasureStart = measurePlugin.value.on(
+  measurePlugin.value.on(
     // @ts-expect-error - Type problems due to typescript / ol
     MeasureEventType.MEASURE_START,
     (e: MeasureStartEvent) => {
@@ -128,7 +140,15 @@ export const useMeasureStore = defineStore('measureStore', () => {
     MeasureEventType.MEASURE_END,
     () => {
       removeMeasure();
-      unByKey(onMeasureStart);
+      reinitializeOverlay();
+      const measureOverlay = createOverlay();
+
+      const overlayHtmlElement = measureOverlay.getElement();
+      if (overlayHtmlElement) {
+        overlayHtmlElement.style.display = 'block';
+      }
+
+      map.addOverlay(measureOverlay);
     }
   );
 
