@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // Vue/Quasar imports
 import { onMounted, ref, Ref } from 'vue';
-import { storeToRefs } from 'pinia';
 
 // Component imports
 import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.vue';

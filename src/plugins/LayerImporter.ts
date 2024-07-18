@@ -2,6 +2,7 @@ import { Map } from 'ol';
 import {
   IBackgroundLayer,
   IVectorTileLayer,
+  MEASURE_LAYER,
 } from '../utils/params/layersParams';
 import TileLayer from 'ol/layer/Tile';
 import XYZ from 'ol/source/XYZ';
@@ -11,6 +12,8 @@ import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import { APP_PARAMS } from '../utils/params/appParams';
 import { FeatureLike } from 'ol/Feature';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * interface for importLayer() function
@@ -102,6 +105,24 @@ function addVectorTileLayers(map: Map, layerList: IVectorTileLayer[]): void {
 }
 
 /**
+ * Add the measure layer to the map
+ * @param map Openlayers map
+ */
+function addMeasureLayer(map: Map): void {
+  const measureLayer = new VectorLayer({
+    source: new VectorSource(),
+    properties: {
+      name: MEASURE_LAYER.name,
+      id: MEASURE_LAYER.layerId,
+    },
+    visible: MEASURE_LAYER.visible,
+    zIndex: MEASURE_LAYER.zIndex,
+  });
+
+  map.addLayer(measureLayer);
+}
+
+/**
  * This function add a list of layer to the map.
  * @param parameters importing parameters.
  */
@@ -112,4 +133,5 @@ export function importLayer({
 }: IImportLayer): void {
   addBackgroundLayers(map, backgroundLayers);
   addVectorTileLayers(map, vectorTileLayers);
+  addMeasureLayer(map);
 }
