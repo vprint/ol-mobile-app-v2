@@ -1,5 +1,5 @@
 // Map import
-import { Geometry, LineString, Polygon } from 'ol/geom';
+import { Geometry, LineString, Point, Polygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
 
 // Vue/Quasar imports
@@ -22,6 +22,11 @@ import {
 
 // Enum imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
+import { MEASURE_LAYER } from 'src/utils/params/layersParams';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import Feature from 'ol/Feature';
+import { getCenter } from 'ol/extent';
 
 //script
 
@@ -29,19 +34,17 @@ import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
  * Measure store manager
  */
 export const useMeasureStore = defineStore('measureStore', () => {
-  const { map } = useMapStore();
   const { enableInteraction } = useMapInteractionStore();
   const { measurePlugin } = storeToRefs(useMapInteractionStore());
-  const {
-    setOverlayVisibility,
-    setTitle,
-    setContent,
-    reinitializeOverlay,
-    createOverlay,
-  } = useMapOverlayStore();
+  const { setOverlayVisibility, setTitle, setContent, reinitializeOverlay } =
+    useMapOverlayStore();
+  const { getLayerByName } = useMapStore();
+
   const measure: Ref<number> = ref(0);
   const formatedMeasure: Ref<string> = ref('');
   const measureMenu = ref(false);
+
+  let feature: Feature;
 
   /**
    * Activate measure
@@ -125,6 +128,7 @@ export const useMeasureStore = defineStore('measureStore', () => {
     // @ts-expect-error - Type problems due to typescript / ol
     MeasureEventType.MEASURE_START,
     (e: MeasureStartEvent) => {
+      feature = e.feature;
       e.feature.getGeometry()?.on('change', (evt) => {
         const geom = evt.target as Geometry;
         calculateMeasure(geom);
@@ -141,14 +145,23 @@ export const useMeasureStore = defineStore('measureStore', () => {
     () => {
       removeMeasure();
       reinitializeOverlay();
-      const measureOverlay = createOverlay();
 
-      const overlayHtmlElement = measureOverlay.getElement();
-      if (overlayHtmlElement) {
-        overlayHtmlElement.style.display = 'block';
-      }
+      /**
+       * Code à revoir pour afficher les étiquettes.
+       */
+      const measureLayer = getLayerByName(MEASURE_LAYER.name);
 
-      map.addOverlay(measureOverlay);
+      const measureSource = measureLayer
+        ? (measureLayer.getSource() as VectorSource | undefined)
+        : undefined;
+
+      measureSource ? measureSource.addFeature(feature) : null;
+
+      const center = getCenter(feature.getGeometry()?.getExtent()!);
+
+      const centerPoint = new Point(center);
+      const centerFeature = new Feature(centerPoint);
+      measureSource ? measureSource.addFeature(centerFeature) : null;
     }
   );
 

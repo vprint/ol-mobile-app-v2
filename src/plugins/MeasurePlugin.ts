@@ -9,11 +9,9 @@ import { Feature } from 'ol';
 // Vue/Quasar imports
 
 // Store imports
-import { useMapOverlayStore } from 'src/stores/map-overlay-store';
 
 // Interface imports
-import { MEASURE_LAYER } from 'src/utils/params/layersParams';
-import { getCenter } from 'ol/extent';
+
 // Others imports
 
 /**
@@ -89,30 +87,13 @@ class MeasurePlugin extends Interaction {
     this.drawEndEvent = this.drawInteraction.on(
       ['drawend', 'drawabort'],
       () => {
-        const temp = this.getMap()
-          ?.getAllLayers()
-          .find((layer) => layer.get('name') === MEASURE_LAYER.name);
-
         // As the user double-click to end draw, this can lead to an unvolutary zoom. This ugly timeout prevent this behaviour.
         setTimeout(() => {
           this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
-          // @ts-expect-error Problème récurrent de typage openlayer...
-          temp.getSource()?.addFeature(this.layerSource.getFeatures()[0]);
         }, 1);
 
         this.formatedMeasure = '';
         this.measure = 0;
-
-        const ov = useMapOverlayStore().createOverlay();
-
-        const extent = this.layerSource
-          .getFeatures()[0]
-          .getGeometry()
-          ?.getExtent();
-
-        if (extent) {
-          ov.setPosition(getCenter(extent));
-        }
       }
     );
   }

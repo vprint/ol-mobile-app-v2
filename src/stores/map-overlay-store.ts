@@ -82,7 +82,7 @@ export const useMapOverlayStore = defineStore('mapOverlay', () => {
    */
   function createOverlay(htmlElement?: HTMLElement): Overlay {
     const overlay = new Overlay({
-      element: htmlElement ? htmlElement : defaultOverlay.value!,
+      element: htmlElement,
       offset: [15, 15],
     });
 
