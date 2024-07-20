@@ -107,6 +107,6 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
 export const MEASURE_LAYER: IBaseLayer = {
   name: 'MEASURE_LAYER',
   layerId: 'layer:measure',
-  zIndex: 999,
+  zIndex: 100,
   visible: true,
 };

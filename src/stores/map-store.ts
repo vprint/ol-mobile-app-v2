@@ -34,5 +34,27 @@ export const useMapStore = defineStore('map', () => {
     return map.value.getAllLayers().find((layer) => layer.get('name') === name);
   }
 
-  return { map, isMapInitialized, setMap, getLayerByName };
+  /**
+   * Remove overlay of a given type
+   * @param type overlay type
+   */
+  function removeOverlaysByType(type: string): void {
+    const overlays = map.value.getOverlays().getArray();
+
+    const measureOverlays = overlays.filter(
+      (overlay) => overlay.get('type') === type
+    );
+
+    measureOverlays.forEach((overlay) => {
+      map.value.removeOverlay(overlay);
+    });
+  }
+
+  return {
+    map,
+    isMapInitialized,
+    setMap,
+    getLayerByName,
+    removeOverlaysByType,
+  };
 });
