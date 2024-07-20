@@ -67,28 +67,6 @@ export const useMapOverlayStore = defineStore('mapOverlay', () => {
     content.value = _content;
   }
 
-  /**
-   * Reinitialize overlay values.
-   */
-  function reinitializeOverlay(): void {
-    title.value = 'Measure';
-    content.value = 'Click to start drawing';
-  }
-
-  /**
-   * This function create an overlay for a given html template
-   * @param htmlElement Overlay template
-   * @returns Overlay
-   */
-  function createOverlay(htmlElement?: HTMLElement): Overlay {
-    const overlay = new Overlay({
-      element: htmlElement ? htmlElement : defaultOverlay.value!,
-      offset: [15, 15],
-    });
-
-    return overlay;
-  }
-
   return {
     isVisible,
     overlay,
@@ -98,7 +76,5 @@ export const useMapOverlayStore = defineStore('mapOverlay', () => {
     setOverlay,
     setTitle,
     setContent,
-    reinitializeOverlay,
-    createOverlay,
   };
 });
