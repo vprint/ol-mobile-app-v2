@@ -11,13 +11,12 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Interface imports
 
 // Script
-const { addMeasure, removeMeasure } = useMeasureStore();
+const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
 </script>
 
 <template>
   <q-menu square touch-position context-menu class="bg-secondary">
     <q-list dense style="min-width: 100px">
-
       <!-- Measure section -->
       <q-item clickable @click="removeMeasure">
         <q-item-section>Measure</q-item-section>
@@ -35,6 +34,7 @@ const { addMeasure, removeMeasure } = useMeasureStore();
               @click="addMeasure('LineString')"
               ><q-item-section>Distance</q-item-section>
             </q-item>
+
             <!-- Polygon measure-->
             <q-item
               v-close-popup
@@ -43,6 +43,11 @@ const { addMeasure, removeMeasure } = useMeasureStore();
               @click="addMeasure('Polygon')"
             >
               <q-item-section>Area</q-item-section>
+            </q-item>
+
+            <!-- Remove measure-->
+            <q-item v-close-popup dense clickable @click="removeAllMeasure()">
+              <q-item-section>Remove measure</q-item-section>
             </q-item>
           </q-list>
         </q-menu>

@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <q-card class="application-card">
+  <q-card class="application-card" square>
     <q-bar class="bg-accent text-white row items-center no-wrap header-bar">
       <slot name="title"></slot>
     </q-bar>
@@ -35,10 +35,11 @@
 
 .scroll-section {
   height: calc(100% - 60px);
-  padding: 0;
+  padding: 0px;
+  margin: 0px;
 }
 
 .content-section {
-  padding: 16px;
+  padding: 0px 16px 0px 16px;
 }
 </style>

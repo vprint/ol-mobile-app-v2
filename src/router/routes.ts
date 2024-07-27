@@ -1,3 +1,4 @@
+import LayerTree from 'src/components/LayerTreeComponent/LayerTree.vue';
 import SiteComponent from '../components/SiteComponent/SiteComponent.vue';
 import { RouteRecordRaw } from 'vue-router';
 
@@ -11,6 +12,11 @@ const routes: RouteRecordRaw[] = [
         path: 'site=:siteId',
         name: 'site',
         component: SiteComponent,
+      },
+      {
+        path: 'layertree',
+        name: 'layertree',
+        component: LayerTree,
       },
     ],
   },
