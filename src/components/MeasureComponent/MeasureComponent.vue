@@ -19,6 +19,7 @@ const { measureMenu } = storeToRefs(useMeasureStore());
     :flat="$q.platform.is.desktop"
     :fab="$q.platform.is.desktop"
     :round="$q.platform.is.mobile"
+    :square="$q.platform.is.desktop"
     :color="$q.platform.is.mobile ? 'secondary' : undefined"
     icon="sym_s_straighten"
     class="icon-weight-thin"
@@ -27,6 +28,7 @@ const { measureMenu } = storeToRefs(useMeasureStore());
   >
     <q-menu
       v-model="measureMenu"
+      square
       :offset="[-5, 10]"
       class="bg-secondary text-primary"
     >

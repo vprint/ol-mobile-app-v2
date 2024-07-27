@@ -10,7 +10,7 @@ import { useMapStore } from './map-store';
 
 // Others imports
 import VectorTileSelect from 'src/plugins/VectorTileSelect';
-import MeasurePlugin from 'src/plugins/MeasurePlugin';
+import Measure from 'src/plugins/measure/Measure';
 
 // Interface imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
@@ -24,7 +24,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const { map } = storeToRefs(useMapStore());
   const selector = ref(new VectorTileSelect(INTERACTIONS_PARAMS.selector));
   const measurePlugin = ref(
-    new MeasurePlugin(INTERACTIONS_PARAMS.measure, MEASURE_LAYER.name)
+    new Measure(INTERACTIONS_PARAMS.measure, MEASURE_LAYER.name)
   );
 
   /**
@@ -34,7 +34,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     map.value.addInteraction(selector.value as VectorTileSelect);
 
     measurePlugin.value.setActive(false);
-    map.value.addInteraction(measurePlugin.value as MeasurePlugin);
+    map.value.addInteraction(measurePlugin.value as Measure);
 
     isMapInteractionsInitialized.value = true;
   }

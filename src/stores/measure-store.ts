@@ -11,7 +11,7 @@ import { useMapStore } from './map-store';
 // Others imports
 
 // Interface imports
-import { IMeasureType, MeasureEventType } from 'src/plugins/MeasurePlugin';
+import { IMeasureType, MeasureEventType } from 'src/plugins/measure/Measure';
 
 // Enum imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
@@ -65,13 +65,10 @@ export const useMeasureStore = defineStore('measureStore', () => {
   /**
    * Manage measure end event and remove listeners
    */
-  measurePlugin.value.on(
-    // @ts-expect-error - Type problems due to typescript / ol
-    MeasureEventType.MEASURE_END,
-    () => {
-      enableInteraction(INTERACTIONS_PARAMS.selector, true);
-    }
-  );
+  // @ts-expect-error - Type problems due to typescript / ol
+  measurePlugin.value.on(MeasureEventType.MEASURE_END, () => {
+    enableInteraction(INTERACTIONS_PARAMS.selector, true);
+  });
 
   return {
     addMeasure,

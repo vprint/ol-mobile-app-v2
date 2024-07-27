@@ -2,13 +2,14 @@
 import { EventsKey } from 'ol/events';
 import { Draw, Interaction } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import VectorSource from 'ol/source/Vector';
-import Event from 'ol/events/Event.js';
 import { Feature, Overlay } from 'ol';
 import { getArea, getLength } from 'ol/sphere';
 import { Geometry, LineString, Polygon } from 'ol/geom';
 import { Style, Fill, Stroke, Circle } from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
+import BaseLayer from 'ol/layer/Base';
+import VectorSource from 'ol/source/Vector';
+import Event from 'ol/events/Event.js';
 
 // Vue/Quasar imports
 
@@ -17,6 +18,7 @@ import VectorLayer from 'ol/layer/Vector';
 // Interface imports
 
 // Others imports
+import './Measure.css';
 
 /**
  * Measure end event definition
@@ -50,11 +52,10 @@ export class MeasureEndEvent extends Event {}
 /**
  * A measure interaction that return a string formated measure (formatedMeasure) and a raw measure.
  */
-class MeasurePlugin extends Interaction {
+class Measure extends Interaction {
   public formatedMeasure = '';
   public measure = 0;
   private drawInteraction: Draw | undefined;
-  private layerSource = new VectorSource();
   private measureLayerName = '';
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
@@ -71,9 +72,12 @@ class MeasurePlugin extends Interaction {
    * @param type Measure type
    */
   public addMeasure(type: IMeasureType): void {
+    const drawLayer = this.getDrawLayer(this.measureLayerName) as VectorLayer;
+    const drawSource = drawLayer.getSource();
+
     // Create draw interaction.
     this.drawInteraction = new Draw({
-      source: this.layerSource,
+      source: drawSource ? drawSource : new VectorSource(),
       style: this.getStyle(),
       type: type,
     });
@@ -132,7 +136,7 @@ class MeasurePlugin extends Interaction {
    * @param drawInteraction Draw plugin
    */
   private manageDrawEnd(drawInteraction: Draw): void {
-    this.drawEndEvent = drawInteraction.on('drawend', (evt) => {
+    this.drawEndEvent = drawInteraction.on('drawend', () => {
       // As the user double-click to end draw, this can lead to an unvolutary zoom. This ugly timeout prevent this behaviour.
       setTimeout(() => {
         this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
@@ -141,17 +145,10 @@ class MeasurePlugin extends Interaction {
 
       this.formatedMeasure = '';
       this.measure = 0;
-      const measureLayer = this.getMap()
-        ?.getAllLayers()
-        .find(
-          (layer) => layer.get('name') === this.measureLayerName
-        ) as VectorLayer;
 
-      const measureLayerSource = measureLayer.getSource();
-
-      if (measureLayerSource) {
-        measureLayerSource.addFeature(evt.feature);
-      }
+      const measureLayer = this.getDrawLayer(
+        this.measureLayerName
+      ) as VectorLayer;
 
       measureLayer.setStyle(this.getStyle());
     });
@@ -244,25 +241,13 @@ class MeasurePlugin extends Interaction {
    */
   private createTooltip(): Overlay {
     const measureTooltipElement = document.createElement('div');
-    const tooltipStyle = measureTooltipElement.style;
-
-    tooltipStyle.position = 'relative';
-    tooltipStyle.background = 'rgba(0, 0, 0, 0.5)';
-    tooltipStyle.borderRadius = '4px';
-    tooltipStyle.padding = '4px 8px';
-    tooltipStyle.whiteSpace = 'nowrap';
-    tooltipStyle.fontSize = '12px';
-    tooltipStyle.cursor = 'default';
-    tooltipStyle.userSelect = 'none';
-    tooltipStyle.backgroundColor = '#ffcc33';
-    tooltipStyle.color = 'black';
-    tooltipStyle.border = '1px solid white';
-    tooltipStyle.minWidth = '100px';
-    tooltipStyle.minHeight = '25px';
 
     const measureTooltip = new Overlay({
       element: measureTooltipElement,
+      className: 'measure-tooltip merriweather',
+      stopEvent: false,
     });
+
     measureTooltip.set('type', 'measure');
 
     this.getMap()?.addOverlay(measureTooltip);
@@ -299,6 +284,17 @@ class MeasurePlugin extends Interaction {
 
     return style;
   }
+
+  /**
+   * Get the draw layer
+   * @param layername draw layer name
+   * @returns
+   */
+  private getDrawLayer(layerName: string): BaseLayer | undefined {
+    return this.getMap()
+      ?.getAllLayers()
+      .find((layer) => layer.get('name') === layerName);
+  }
 }
 
-export default MeasurePlugin;
+export default Measure;
