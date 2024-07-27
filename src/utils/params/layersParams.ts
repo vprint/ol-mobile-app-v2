@@ -1,27 +1,29 @@
 import { TOKEN } from './tokenParams';
 
-export interface ILayer {
+export interface IBaseLayer {
   name: string;
   layerId: string;
-  attribution: string[];
   zIndex: number;
   visible: boolean;
 }
 
-export interface IBackgroundLayer extends ILayer {
+export interface IBackgroundLayer extends IBaseLayer {
   url: string;
   img: string;
   token?: string;
+  attribution: string[];
 }
 
-export interface IRasterLayer extends ILayer {
+export interface IRasterLayer extends IBaseLayer {
   description: string;
   editable: boolean;
   dynamic: boolean;
+  attribution: string[];
 }
 
-export interface IVectorTileLayer extends ILayer {
+export interface IVectorTileLayer extends IBaseLayer {
   featureId: string;
+  attribution: string[];
 }
 
 /**
@@ -101,3 +103,10 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
     visible: true,
   },
 ];
+
+export const MEASURE_LAYER: IBaseLayer = {
+  name: 'MEASURE_LAYER',
+  layerId: 'layer:measure',
+  zIndex: 100,
+  visible: true,
+};
