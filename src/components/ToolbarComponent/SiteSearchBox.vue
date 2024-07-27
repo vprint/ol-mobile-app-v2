@@ -97,6 +97,7 @@ watch(
     class="searchbox-select"
     input-debounce="0"
     outlined
+    square
     hide-dropdown-icon
     :options="options"
     clearable

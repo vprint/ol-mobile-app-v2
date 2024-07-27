@@ -19,7 +19,7 @@ const { setOverlay } = useMapOverlayStore();
 let divOverlay: HTMLElement | null;
 
 onMounted(() => {
-  divOverlay = document.querySelector('#popup');
+  divOverlay = document.querySelector('#overlay');
   if (divOverlay) {
     setOverlay(divOverlay);
   }
@@ -43,7 +43,7 @@ watch(
 
 <template>
   <!-- Overlay -->
-  <q-card id="popup" class="overlay-box">
+  <q-card id="overlay" class="overlay-box">
     <q-card-section class="bg-accent text-white">
       {{ title }}
     </q-card-section>

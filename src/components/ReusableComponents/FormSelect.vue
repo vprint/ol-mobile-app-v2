@@ -28,7 +28,7 @@ const model = defineModel<any>();
  */
 const computedModel = computed({
   get: () => {
-    // sub-object case (such as locatedBy)
+    // sub-object case (such as locatedBy in SiteComponent)
     if (props.optionLabel && !props.multiple) {
       return model.value[props.optionLabel];
     }
