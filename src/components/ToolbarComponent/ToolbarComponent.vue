@@ -1,6 +1,9 @@
 <script setup lang="ts">
-// Store import
+// vue/pinia import
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+
+// Store import
 import { useMapStore } from 'src/stores/map-store';
 import { useReferencesStore } from 'src/stores/references-store';
 
@@ -10,9 +13,18 @@ import MeasureComponent from '../MeasureComponent/MeasureComponent.vue';
 
 // Others
 import { APP_PARAMS } from '../../utils/params/appParams';
+import { useRouter } from 'vue-router';
 
+// Script
 const { isMapInitialized } = storeToRefs(useMapStore());
 const { isReferencesInitialized } = storeToRefs(useReferencesStore());
+const router = useRouter();
+const layerTreeVisibility = ref(false);
+
+function setLayerTree(mode: boolean): void {
+  layerTreeVisibility.value = !layerTreeVisibility.value;
+  mode ? router.push({ name: 'layertree' }) : router.push({ name: 'home' });
+}
 </script>
 
 <template>
@@ -30,6 +42,17 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
     <!-- Space -->
     <q-space></q-space>
 
+    <q-btn
+      :flat="$q.platform.is.desktop"
+      :fab="$q.platform.is.desktop"
+      :round="$q.platform.is.mobile"
+      :square="$q.platform.is.desktop"
+      :color="$q.platform.is.mobile ? 'secondary' : undefined"
+      icon="sym_s_stacks"
+      class="icon-weight-thin"
+      :text-color="$q.platform.is.mobile ? 'primary' : undefined"
+      @click="setLayerTree(!layerTreeVisibility)"
+    />
     <!-- Measure button -->
     <MeasureComponent v-if="$q.platform.is.desktop"></MeasureComponent>
 

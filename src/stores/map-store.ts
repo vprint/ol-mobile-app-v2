@@ -1,14 +1,16 @@
 // Map imports
 import Map from 'ol/Map';
+import Layer from 'ol/layer/Layer';
 
 // Vue/Quasar imports
 import { ref } from 'vue';
 import { defineStore } from 'pinia';
-import Layer from 'ol/layer/Layer';
 
 // Store imports
 
 // Others imports
+import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
+import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 /**
  * Store map and provide related functionnalities
@@ -27,11 +29,14 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * get layer by it's name
-   * @param name : layer name
+   * Get a layer by it's id
+   * @param id : layer id
    */
-  function getLayerByName(name: string): Layer | undefined {
-    return map.value.getAllLayers().find((layer) => layer.get('name') === name);
+  function getLayerById(id: string): Layer | undefined {
+    return map.value.getAllLayers().find((layer) => {
+      const layerProperties = layer.get(LAYER_PROPERTIES) as ILayerProperties;
+      return layerProperties.id === id;
+    });
   }
 
   /**
@@ -54,7 +59,7 @@ export const useMapStore = defineStore('map', () => {
     map,
     isMapInitialized,
     setMap,
-    getLayerByName,
+    getLayerById,
     removeOverlaysByType,
   };
 });
