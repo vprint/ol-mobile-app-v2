@@ -9,7 +9,7 @@ import { storeToRefs } from 'pinia';
 import { useMapStore } from 'src/stores/map-store';
 
 // Component import
-import PanelComponent from '../ReusableComponents/PanelComponent.vue';
+import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 import LayerControler from './LayerControler.vue';
 
 // Others imports
@@ -26,6 +26,7 @@ interface ILayerIndex {
 }
 
 const { map, isMapInitialized } = storeToRefs(useMapStore());
+
 const { getLayerById } = useMapStore();
 const layers: Ref<ILayerIndex[]> = ref([]);
 
@@ -92,7 +93,7 @@ watch(
 </script>
 
 <template>
-  <PanelComponent>
+  <SidePanelComponent>
     <template #title> Layer Manager </template>
     <template #component>
       <VueDraggable
@@ -107,7 +108,7 @@ watch(
         </div>
       </VueDraggable>
     </template>
-  </PanelComponent>
+  </SidePanelComponent>
 </template>
 
 <style lang="scss"></style>

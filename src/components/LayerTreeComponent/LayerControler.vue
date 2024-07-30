@@ -108,7 +108,10 @@ function updateVisibility(newVisibility: boolean): void {
     </div>
 
     <!-- Layer information expansion panel-->
-    <q-expansion-item caption="Information and legend" class="merriweather">
+    <q-expansion-item
+      caption="Information and legend"
+      class="expansion-panel merriweather"
+    >
       <q-expansion-item
         expand-separator
         switch-toggle-side
@@ -133,7 +136,7 @@ function updateVisibility(newVisibility: boolean): void {
   position: relative;
   align-items: center;
   left: -15px;
-  padding: 10px 0px 10px 10px;
+  padding: 10px 0px 0px 10px;
 }
 
 .layer-control {
@@ -149,6 +152,12 @@ function updateVisibility(newVisibility: boolean): void {
 
 .layer-title {
   font-size: medium;
+  margin: 0px;
+}
+
+.expansion-panel {
+  position: relative;
+  top: -10px;
 }
 
 .description-card {
