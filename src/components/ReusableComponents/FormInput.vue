@@ -37,7 +37,7 @@ const model = defineModel<string | number>();
     <template #append>
       <q-icon v-if="editionMode && date" name="event" class="cursor-pointer">
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-date v-model="model">
+          <q-date v-model="model" class="merriweather">
             <div class="row items-center justify-end">
               <q-btn v-close-popup label="Close" color="primary" flat />
             </div>

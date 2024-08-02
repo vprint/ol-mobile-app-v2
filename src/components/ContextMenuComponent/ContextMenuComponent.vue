@@ -15,7 +15,7 @@ const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
 </script>
 
 <template>
-  <q-menu square touch-position context-menu class="bg-secondary">
+  <q-menu square touch-position context-menu class="bg-secondary merriweather">
     <q-list dense style="min-width: 100px">
       <!-- Measure section -->
       <q-item clickable @click="removeMeasure">
@@ -24,7 +24,12 @@ const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
           <q-icon name="keyboard_arrow_right" />
         </q-item-section>
 
-        <q-menu square anchor="top end" self="top start" class="bg-secondary">
+        <q-menu
+          square
+          anchor="top end"
+          self="top start"
+          class="bg-secondary merriweather"
+        >
           <q-list>
             <!-- Line measure-->
             <q-item
