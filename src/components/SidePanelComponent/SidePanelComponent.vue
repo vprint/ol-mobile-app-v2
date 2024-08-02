@@ -1,13 +1,15 @@
 <script setup lang="ts"></script>
 
 <template>
-  <q-card class="application-card">
-    <q-bar class="bg-accent text-white row items-center no-wrap header-bar">
+  <q-card class="application-card" square>
+    <q-bar
+      class="bg-accent text-white row items-center no-wrap header-bar merriweather"
+    >
       <slot name="title"></slot>
     </q-bar>
     <q-card-section class="scroll-section">
       <q-scroll-area class="fit">
-        <div class="content-section">
+        <div>
           <slot name="component"></slot>
         </div>
       </q-scroll-area>
@@ -35,10 +37,7 @@
 
 .scroll-section {
   height: calc(100% - 60px);
-  padding: 0;
-}
-
-.content-section {
-  padding: 16px;
+  padding: 0px;
+  margin: 0px;
 }
 </style>

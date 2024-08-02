@@ -11,6 +11,8 @@ import { useReferencesStore } from '../../stores/references-store';
 
 // Component imports
 import { QSelect } from 'quasar';
+import { useSidePanelStore } from 'src/stores/side-panel-store';
+import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 
 // Others imports
 
@@ -21,7 +23,7 @@ interface ISearchItems {
 }
 
 const { site } = storeToRefs(useSiteStore());
-const { setSite, clearSite } = useSiteStore();
+const { setActive } = useSidePanelStore();
 const { siteList } = storeToRefs(useReferencesStore());
 
 let searchList: ISearchItems[] = [];
@@ -55,8 +57,19 @@ function selectSite(site: ISearchItems | undefined): void {
       }
     });
 
-    setSite(site.value);
+    setActive(true, {
+      location: SIDE_PANEL_PARAM.SITE,
+      parameterName: 'siteId',
+      parameterValue: site.value.toString(),
+    });
   }
+}
+
+/**
+ * Close the panel and the opened site
+ */
+function clearSite(): void {
+  setActive(false);
 }
 
 /**
@@ -93,10 +106,11 @@ watch(
     label-color="grey-8"
     color="primary"
     bg-color="white"
-    popup-content-class="text-grey-8"
-    class="searchbox-select"
+    popup-content-class="text-grey-8 merriweather"
+    class="searchbox-select merriweather"
     input-debounce="0"
     outlined
+    square
     hide-dropdown-icon
     :options="options"
     clearable

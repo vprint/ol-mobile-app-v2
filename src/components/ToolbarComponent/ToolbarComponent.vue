@@ -1,16 +1,20 @@
 <script setup lang="ts">
-// Store import
+// vue/pinia import
 import { storeToRefs } from 'pinia';
+
+// Store import
 import { useMapStore } from 'src/stores/map-store';
 import { useReferencesStore } from 'src/stores/references-store';
 
 // Component import
 import SiteSearchBox from './SiteSearchBox.vue';
 import MeasureComponent from '../MeasureComponent/MeasureComponent.vue';
+import LayerListButton from '../LayerListComponent/LayerListButton.vue';
 
 // Others
 import { APP_PARAMS } from '../../utils/params/appParams';
 
+// Script
 const { isMapInitialized } = storeToRefs(useMapStore());
 const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 </script>
@@ -29,6 +33,9 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 
     <!-- Space -->
     <q-space></q-space>
+
+    <!-- Layer list button -->
+    <LayerListButton></LayerListButton>
 
     <!-- Measure button -->
     <MeasureComponent v-if="$q.platform.is.desktop"></MeasureComponent>

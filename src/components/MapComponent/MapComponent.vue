@@ -19,6 +19,7 @@ import { importLayer } from '../../plugins/LayerImporter';
 import {
   BACKGROUND_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
+  RASTER_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
 
 // Others imports
@@ -44,10 +45,10 @@ onMounted(() => {
     map: map.value,
     backgroundLayers: BACKGROUND_LAYERS_SETTINGS,
     vectorTileLayers: VECTOR_TILE_LAYERS_SETTINGS,
+    rasterLayers: RASTER_LAYERS_SETTINGS,
   });
 
   setMap(map.value);
-
   initializeInteractions();
 });
 </script>

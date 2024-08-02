@@ -77,7 +77,7 @@ watch(
 
     <template #component>
       <q-form @submit="openDialog" @reset="cancel">
-        <fieldset style="margin-top: 0px">
+        <fieldset>
           <legend>Names</legend>
 
           <!-- Alternative name -->
