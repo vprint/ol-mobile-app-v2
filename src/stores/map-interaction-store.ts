@@ -3,7 +3,7 @@ import { Interaction } from 'ol/interaction';
 
 // Vue/Quasar imports
 import { defineStore, storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { Ref, ref } from 'vue';
 
 // Store imports
 import { useMapStore } from './map-store';
@@ -15,17 +15,19 @@ import Measure from 'src/plugins/measure/Measure';
 // Interface imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
 import { MEASURE_LAYER } from 'src/utils/params/layersParams';
+import VectorLayer from 'ol/layer/Vector';
 
 /**
- * Store and manage mapInteraction. Exemple : enable or disable the click interaction that allow to select site
+ * Store and manage mapInteraction.
+ * Exemple : enable or disable the click interaction that allow to select site.
  */
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const isMapInteractionsInitialized = ref(false);
+  const { getLayerById } = useMapStore();
   const { map } = storeToRefs(useMapStore());
+
   const selector = ref(new VectorTileSelect(INTERACTIONS_PARAMS.selector));
-  const measurePlugin = ref(
-    new Measure(INTERACTIONS_PARAMS.measure, MEASURE_LAYER.name)
-  );
+  const measurePlugin: Ref<null | Measure> = ref(null);
 
   /**
    * Initialize all interactions
@@ -33,6 +35,10 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   function initializeInteractions(): void {
     map.value.addInteraction(selector.value as VectorTileSelect);
 
+    measurePlugin.value = new Measure(
+      INTERACTIONS_PARAMS.measure,
+      getLayerById(MEASURE_LAYER.layerId) as VectorLayer
+    );
     measurePlugin.value.setActive(false);
     map.value.addInteraction(measurePlugin.value as Measure);
 
