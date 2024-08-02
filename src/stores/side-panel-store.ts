@@ -1,7 +1,7 @@
 // Map imports
 
 // Vue/Quasar imports
-import { onMounted, Ref, ref } from 'vue';
+import { onMounted, Ref, ref, watch } from 'vue';
 import { defineStore } from 'pinia';
 import { RouteRecordName, useRoute, useRouter } from 'vue-router';
 
@@ -12,7 +12,7 @@ import { RouteRecordName, useRoute, useRouter } from 'vue-router';
 // Others imports
 
 export interface ISidePanelParameters {
-  location: RouteRecordName;
+  location: RouteRecordName | undefined;
   parameterName?: string;
   parameterValue?: string | string[];
 }
@@ -30,13 +30,42 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   });
 
   /**
+   * Read panel parameters from the url at startup
+   */
+  onMounted(() => {
+    panelParameters.value = getSidePanelParametersFromRoute();
+  });
+
+  /**
+   * This function analyze the route settings to set the panelParameters.
+   */
+  function getSidePanelParametersFromRoute(): ISidePanelParameters {
+    const key = Object.keys(route.params)[0] as string | undefined;
+
+    return {
+      location: route.name ?? 'home',
+      parameterName: key ?? undefined,
+      parameterValue: key ? route.params[key] : undefined,
+    };
+  }
+
+  /**
+   * Set new side panel panel parameters
+   * @param newPanelParameters Side panel parameters to set
+   */
+  function setSidePanelParameters(
+    newPanelParameters: ISidePanelParameters
+  ): void {
+    panelParameters.value = newPanelParameters;
+  }
+
+  /**
    * Open or close the side panel
    * @param active Should the side panel be opened or closed ?
    */
   function setActive(active: boolean, parameters?: ISidePanelParameters): void {
     isActive.value = active;
 
-    // close the side panel
     if (!active) {
       router.push({ name: 'home' });
 
@@ -60,25 +89,20 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
     }
   }
 
-  onMounted(() => {
-    const key = Object.keys(route.params)[0] as string | undefined;
-
-    panelParameters.value = {
-      location: route.name ?? 'home',
-      parameterName: key ?? undefined,
-      parameterValue: key ? route.params[key] : undefined,
-    };
-  });
+  /**
+   * Watch for route change
+   */
+  watch(
+    () => route.path,
+    () => {
+      getSidePanelParametersFromRoute();
+    }
+  );
 
   return {
     isActive,
     panelParameters,
     setActive,
+    setSidePanelParameters,
   };
 });
-
-/*
-1) fonction pour ouvrir le panel
-2) fonction de lecture de l'url (pour savoir si le panel doit être ouvert ou non au démarrage)
-3) Fonction de gestion des données dans l'url (je pense qu'il s'agirat simplement de la string à recevoir)
-*/

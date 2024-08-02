@@ -1,6 +1,7 @@
-import LayerTree from 'src/components/LayerTreeComponent/LayerTree.vue';
+import LayerList from 'src/components/LayerListComponent/LayerList.vue';
 import SiteComponent from '../components/SiteComponent/SiteComponent.vue';
 import { RouteRecordRaw } from 'vue-router';
+import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -10,13 +11,13 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'site=:siteId',
-        name: 'site',
+        name: SIDE_PANEL_PARAM.SITE,
         component: SiteComponent,
       },
       {
-        path: 'layertree',
-        name: 'layertree',
-        component: LayerTree,
+        path: SIDE_PANEL_PARAM.LAYER_LIST,
+        name: SIDE_PANEL_PARAM.LAYER_LIST,
+        component: LayerList,
       },
     ],
   },
