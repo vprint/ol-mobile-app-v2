@@ -7,7 +7,6 @@ import { getArea, getLength } from 'ol/sphere';
 import { Geometry, LineString, Polygon } from 'ol/geom';
 import { Style, Fill, Stroke, Circle } from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
-import BaseLayer from 'ol/layer/Base';
 import VectorSource from 'ol/source/Vector';
 import Event from 'ol/events/Event.js';
 
@@ -56,15 +55,15 @@ class Measure extends Interaction {
   public formatedMeasure = '';
   public measure = 0;
   private drawInteraction: Draw | undefined;
-  private measureLayerName = '';
+  private measureLayer: VectorLayer;
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
   private drawStartEvent!: EventsKey;
 
-  constructor(name: string, measureLayerName: string) {
+  constructor(name: string, measureLayer: VectorLayer) {
     super();
     this.set('name', name);
-    this.measureLayerName = measureLayerName;
+    this.measureLayer = measureLayer;
   }
 
   /**
@@ -72,8 +71,7 @@ class Measure extends Interaction {
    * @param type Measure type
    */
   public addMeasure(type: IMeasureType): void {
-    const drawLayer = this.getDrawLayer(this.measureLayerName) as VectorLayer;
-    const drawSource = drawLayer.getSource();
+    const drawSource = this.measureLayer.getSource();
 
     // Create draw interaction.
     this.drawInteraction = new Draw({
@@ -107,7 +105,7 @@ class Measure extends Interaction {
 
       if (geom instanceof Polygon) {
         tooltip.setPosition(geom.getInteriorPoint().getCoordinates());
-        tooltip.setOffset([-15, -15]);
+        tooltip.setPositioning('center-center');
         this.setTooltipText(tooltip.getElement(), geom);
       } else if (geom instanceof LineString) {
         tooltip.setPosition(geom.getLastCoordinate());
@@ -146,9 +144,7 @@ class Measure extends Interaction {
       this.formatedMeasure = '';
       this.measure = 0;
 
-      const measureLayer = this.getDrawLayer(
-        this.measureLayerName
-      ) as VectorLayer;
+      const measureLayer = this.measureLayer;
 
       measureLayer.setStyle(this.getStyle());
     });
@@ -283,17 +279,6 @@ class Measure extends Interaction {
     });
 
     return style;
-  }
-
-  /**
-   * Get the draw layer
-   * @param layername draw layer name
-   * @returns
-   */
-  private getDrawLayer(layerName: string): BaseLayer | undefined {
-    return this.getMap()
-      ?.getAllLayers()
-      .find((layer) => layer.get('name') === layerName);
   }
 }
 

@@ -13,7 +13,7 @@ import { useMapStore } from './map-store';
 // Interface imports
 
 /**
- * Manage map overlay
+ * This store manage map overlay (e.g set the overlay visible, set the overlay title).
  */
 export const useMapOverlayStore = defineStore('mapOverlay', () => {
   const defaultOverlay: Ref<HTMLElement | null> = ref(null);
