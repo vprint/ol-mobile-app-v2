@@ -56,6 +56,7 @@ const computedModel = computed({
     :multiple="multiple"
     :use-chips="multiple"
     :class="noPadding ? undefined : 'form-select-element'"
+    popup-content-class="merriweather"
     outlined
     square
     dense

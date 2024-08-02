@@ -12,7 +12,7 @@ import { useReferencesStore } from 'src/stores/references-store';
 // Component import
 import FormInput from '../ReusableComponents/FormInput.vue';
 import FormSelect from '../ReusableComponents/FormSelect.vue';
-import PanelComponent from '../ReusableComponents/PanelComponent.vue';
+import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 
 // Others imports
 import { SITE_TYPE_REFS_PARAMS } from '../../utils/params/siteTypeRefsParams';
@@ -70,13 +70,17 @@ watch(
 </script>
 
 <template>
-  <PanelComponent v-if="site">
+  <SidePanelComponent v-if="site">
     <template #title>
       {{ `${site?.englishName} - (${site?.khmerName})` }}
     </template>
 
     <template #component>
-      <q-form @submit="openDialog" @reset="cancel">
+      <q-form
+        class="site-form merriweather"
+        @submit="openDialog"
+        @reset="cancel"
+      >
         <fieldset>
           <legend>Names</legend>
 
@@ -377,7 +381,7 @@ watch(
         </div>
       </q-form>
     </template>
-  </PanelComponent>
+  </SidePanelComponent>
 </template>
 
 <style lang="scss">
@@ -391,5 +395,9 @@ legend {
   font-size: 15px;
   padding: 0 10px;
   color: $primary;
+}
+
+.site-form {
+  padding: 0px 16px 0px 16px;
 }
 </style>

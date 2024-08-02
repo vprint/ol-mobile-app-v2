@@ -27,7 +27,7 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
     </q-avatar>
 
     <!-- Title (desktop display only) -->
-    <q-toolbar-title v-if="$q.platform.is.desktop">
+    <q-toolbar-title v-if="$q.platform.is.desktop" class="merriweather">
       {{ APP_PARAMS.applicationName }}
     </q-toolbar-title>
 
