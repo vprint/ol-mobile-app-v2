@@ -2,10 +2,10 @@
 import { EventsKey } from 'ol/events';
 import { Draw, Interaction } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import { Feature, Overlay } from 'ol';
+import { Feature } from 'ol';
 import { getArea, getLength } from 'ol/sphere';
-import { Geometry, LineString, Polygon } from 'ol/geom';
-import { Style, Fill, Stroke, Circle } from 'ol/style';
+import { LineString, Polygon } from 'ol/geom';
+import { Style, Fill, Stroke, Circle, Text } from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Event from 'ol/events/Event.js';
@@ -18,6 +18,8 @@ import Event from 'ol/events/Event.js';
 
 // Others imports
 import './Measure.css';
+import { StyleLike } from 'ol/style/Style';
+import { FeatureLike } from 'ol/Feature';
 
 /**
  * Measure end event definition
@@ -52,10 +54,43 @@ export class MeasureEndEvent extends Event {}
  * A measure interaction that return a string formated measure (formatedMeasure) and a raw measure.
  */
 class Measure extends Interaction {
-  public formatedMeasure = '';
-  public measure = 0;
   private drawInteraction: Draw | undefined;
   private measureLayer: VectorLayer;
+
+  private style = new Style({
+    fill: new Fill({
+      color: 'rgba(255, 200, 50, 0.2)',
+    }),
+    stroke: new Stroke({
+      color: 'rgba(255, 200, 50, 1)',
+      lineCap: 'round',
+      lineDash: [2, 6],
+      width: 2,
+    }),
+    image: new Circle({
+      radius: 5,
+      stroke: new Stroke({
+        color: 'rgba(255, 255, 255, 1)',
+        width: 2,
+      }),
+      fill: new Fill({
+        color: 'rgba(255, 200, 50, 1)',
+      }),
+    }),
+    text: new Text({
+      font: '12px merriweather sans-serif',
+      textBaseline: 'middle',
+      fill: new Fill({
+        color: 'black',
+      }),
+      backgroundFill: new Fill({
+        color: 'rgba(255, 204, 51, 1)',
+      }),
+      textAlign: 'center',
+      placement: 'point',
+    }),
+  });
+
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
   private drawStartEvent!: EventsKey;
@@ -76,14 +111,16 @@ class Measure extends Interaction {
     // Create draw interaction.
     this.drawInteraction = new Draw({
       source: drawSource ? drawSource : new VectorSource(),
-      style: this.getStyle(),
+      style: this.styleFunction,
       type: type,
     });
     this.getMap()?.addInteraction(this.drawInteraction);
 
     this.drawStartEvent = this.drawInteraction.on('drawstart', (evt) => {
-      const measureTooltip = this.createTooltip();
-      this.updateTooltip(evt.feature, measureTooltip);
+      evt.feature.set('formatedMeasure', '');
+      evt.feature.set('measure', '');
+
+      this.calculateMeasure(evt.feature);
 
       this.dispatchEvent(
         new MeasureStartEvent(MeasureEventType.MEASURE_START, evt.feature)
@@ -92,41 +129,6 @@ class Measure extends Interaction {
 
     // Manage draw end and abort.
     this.manageDrawEnd(this.drawInteraction);
-  }
-
-  /**
-   * Update the tooltip position and values according to the draw.
-   * @param sketch Draw geometry
-   * @param tooltip Overlay
-   */
-  private updateTooltip(sketch: Feature, tooltip: Overlay): void {
-    sketch.on('change', () => {
-      const geom = sketch.getGeometry();
-
-      if (geom instanceof Polygon) {
-        tooltip.setPosition(geom.getInteriorPoint().getCoordinates());
-        tooltip.setPositioning('center-center');
-        this.setTooltipText(tooltip.getElement(), geom);
-      } else if (geom instanceof LineString) {
-        tooltip.setPosition(geom.getLastCoordinate());
-        tooltip.setOffset([15, 15]);
-        this.setTooltipText(tooltip.getElement(), geom);
-      }
-    });
-  }
-
-  /**
-   * This function set the measure text to the overlay.
-   * @param htmlElement Overlay html element
-   * @param geom Draw geometry
-   */
-  private setTooltipText(
-    htmlElement: HTMLElement | undefined,
-    geom: Geometry
-  ): void {
-    if (htmlElement) {
-      htmlElement.innerHTML = this.calculateMeasure(geom);
-    }
   }
 
   /**
@@ -141,12 +143,9 @@ class Measure extends Interaction {
         this.removeMeasure();
       }, 10);
 
-      this.formatedMeasure = '';
-      this.measure = 0;
-
       const measureLayer = this.measureLayer;
 
-      measureLayer.setStyle(this.getStyle());
+      measureLayer.setStyle(this.styleFunction);
     });
 
     this.drawAbortEvent = drawInteraction.on('drawabort', () => {
@@ -154,9 +153,6 @@ class Measure extends Interaction {
         this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
         this.removeMeasure();
       }, 10);
-
-      this.formatedMeasure = '';
-      this.measure = 0;
 
       this.getMap()?.getOverlays().pop();
     });
@@ -179,22 +175,22 @@ class Measure extends Interaction {
 
   /**
    * Calculate measure for a given polygon.
-   * @param geom Input geometry
+   * @param Feature Input feature
    */
-  private calculateMeasure(geom: Geometry): string {
-    // Calculate area if geometry is a polygon
-    if (geom instanceof Polygon) {
-      this.formatedMeasure = this.formatArea(geom);
-      this.measure = getArea(geom);
-      return this.formatedMeasure;
-    }
-    // Calculate length if geometry is a line
-    else if (geom instanceof LineString) {
-      this.formatedMeasure = this.formatLength(geom);
-      this.measure = getLength(geom);
-      return this.formatedMeasure;
-    }
-    return '';
+  private calculateMeasure(feature: Feature): void {
+    const geom = feature.getGeometry();
+    geom?.on('change', () => {
+      // Calculate area if geometry is a polygon
+      if (geom instanceof Polygon) {
+        feature.set('formatedMeasure', this.formatArea(geom));
+        feature.set('measure', getArea(geom));
+      }
+      // Calculate length if geometry is a line
+      else if (geom instanceof LineString) {
+        feature.set('formatedMeasure', this.formatLength(geom));
+        feature.set('measure', getLength(geom));
+      }
+    });
   }
 
   /**
@@ -231,55 +227,11 @@ class Measure extends Interaction {
     return output;
   }
 
-  /**
-   * Create and add a new overlay to the map
-   * @returns New overlay
-   */
-  private createTooltip(): Overlay {
-    const measureTooltipElement = document.createElement('div');
-
-    const measureTooltip = new Overlay({
-      element: measureTooltipElement,
-      className: 'measure-tooltip merriweather',
-      stopEvent: false,
-    });
-
-    measureTooltip.set('type', 'measure');
-
-    this.getMap()?.addOverlay(measureTooltip);
-
-    return measureTooltip;
-  }
-
-  /**
-   * Get measure style
-   * @returns Measure style
-   */
-  private getStyle(): Style {
-    const style = new Style({
-      fill: new Fill({
-        color: 'rgba(255, 200, 50, 0.2)',
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255, 200, 50, 1)',
-        lineCap: 'round',
-        lineDash: [2, 6],
-        width: 2,
-      }),
-      image: new Circle({
-        radius: 5,
-        stroke: new Stroke({
-          color: 'rgba(255, 255, 255, 1)',
-          width: 2,
-        }),
-        fill: new Fill({
-          color: 'rgba(255, 200, 50, 1)',
-        }),
-      }),
-    });
-
-    return style;
-  }
+  private styleFunction = (feature: FeatureLike, resolution: number): Style => {
+    this.style.getText()?.setText(feature.get('formatedMeasure'));
+    this.style.getText()?.setScale(10 / resolution);
+    return this.style;
+  };
 }
 
 export default Measure;
