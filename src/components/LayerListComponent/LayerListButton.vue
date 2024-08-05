@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // vue/pinia import
-import { onMounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 
 // Store import
@@ -13,7 +13,6 @@ import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 
 // Script
 const { panelParameters } = storeToRefs(useSidePanelStore());
-
 const isActive = ref(false);
 
 /**
@@ -31,6 +30,9 @@ function enableLayerList(mode: boolean): void {
   isActive.value = mode;
 }
 
+/**
+ * Watch for panel parameters change and set/unset active status.
+ */
 watch(
   () => panelParameters.value.location,
   () => {
@@ -39,6 +41,7 @@ watch(
   }
 );
 </script>
+
 <template>
   <q-btn
     :fab="$q.platform.is.desktop"
@@ -56,4 +59,5 @@ watch(
     "
   />
 </template>
+
 <style lang="scss"></style>

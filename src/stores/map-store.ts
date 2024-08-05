@@ -13,7 +13,7 @@ import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 /**
- * Store map and provide related functionnalities
+ * This store manage map and provide related functionnalities.
  */
 export const useMapStore = defineStore('map', () => {
   const map = ref(new Map());

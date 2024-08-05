@@ -24,7 +24,7 @@ import { AssociatedDocument } from 'src/model/associatedDocument';
 import { IDocument } from 'src/interface/IDocument';
 
 /**
- * Store application type references
+ * This store provide application type references.
  */
 export const useReferencesStore = defineStore('references', () => {
   const researchers: Ref<Researcher[]> = ref([]);
