@@ -2,32 +2,35 @@
 
 // Vue/Quasar imports
 import { onMounted, Ref, ref, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { defineStore, storeToRefs } from 'pinia';
 
 // Store imports
-import { defineStore, storeToRefs } from 'pinia';
+import { useMapInteractionStore } from './map-interaction-store';
+import { useSidePanelStore } from './side-panel-store';
 
 // Others imports
 import ApiRequestor from 'src/services/ApiRequestor';
-import { APP_PARAMS } from 'src/utils/params/appParams';
-import { Site } from 'src/model/site';
-import { ISite } from 'src/interface/ISite';
-import { useMapInteractionStore } from './map-interaction-store';
 import {
   VectorTileSelectEvent,
   VectorTileSelectEventType,
 } from 'src/plugins/VectorTileSelect';
+
+// Enum / Interface imports
+import { APP_PARAMS } from 'src/utils/params/appParams';
+import { Site } from 'src/model/site';
+import { ISite } from 'src/interface/ISite';
+import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
+
 /**
  * Store sites and and related functionnalities
  */
-export const useSiteStore = defineStore('site', () => {
-  const router = useRouter();
-  const route = useRoute();
-
+export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   const site: Ref<Site | undefined> = ref();
   const { selector, isMapInteractionsInitialized } = storeToRefs(
     useMapInteractionStore()
   );
+  const { panelParameters } = storeToRefs(useSidePanelStore());
+  const { setActive } = useSidePanelStore();
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -42,7 +45,7 @@ export const useSiteStore = defineStore('site', () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    router.push({ name: 'home' });
+    setActive(false);
   }
 
   /**
@@ -67,7 +70,14 @@ export const useSiteStore = defineStore('site', () => {
 
     if (result?.[0]) {
       site = new Site(result[0]);
-      router.push({ name: 'site', params: { siteId: site.siteId } });
+
+      if (panelParameters.value.parameterValue !== site.siteId.toString()) {
+        setActive(true, {
+          location: SIDE_PANEL_PARAM.SITE,
+          parameterName: 'siteId',
+          parameterValue: site.siteId.toString(),
+        });
+      }
     }
 
     return site;
@@ -100,15 +110,24 @@ export const useSiteStore = defineStore('site', () => {
    * watch for site change in URL
    */
   watch(
-    () => route.params.siteId,
-    (newSiteIdString) => {
-      const newSiteId = parseInt(newSiteIdString as string, 10);
+    () => panelParameters.value,
+    (newPanelParameters) => {
+      // Open site if URL contains site data
+      if (
+        newPanelParameters.location === SIDE_PANEL_PARAM.SITE &&
+        newPanelParameters.parameterValue
+      ) {
+        const siteId = parseInt(
+          newPanelParameters.parameterValue as string,
+          10
+        );
 
-      if (newSiteId) {
-        if (newSiteId !== site.value?.siteId) {
-          setSite(newSiteId);
+        if (siteId !== site.value?.siteId) {
+          setSite(siteId);
         }
-      } else {
+      }
+      // Close site if URL does not contains site data
+      else {
         site.value = undefined;
       }
     }
@@ -129,7 +148,9 @@ export const useSiteStore = defineStore('site', () => {
    * Initialize site
    */
   onMounted(async () => {
-    setSite(parseInt(route.params.siteId as string));
+    if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {
+      setSite(parseInt(panelParameters.value.parameterValue as string));
+    }
   });
 
   return { site, setSite, updateSite, clearSite };
