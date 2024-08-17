@@ -52,13 +52,33 @@ export class MeasureEndEvent extends Event {}
  * A measure interaction that return a string formated measure (formatedMeasure) and a raw measure.
  */
 class Measure extends Interaction {
-  public formatedMeasure = '';
-  public measure = 0;
   private drawInteraction: Draw | undefined;
   private measureLayer: VectorLayer;
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
   private drawStartEvent!: EventsKey;
+
+  private style = new Style({
+    fill: new Fill({
+      color: 'rgba(255, 200, 50, 0.2)',
+    }),
+    stroke: new Stroke({
+      color: 'rgba(255, 200, 50, 1)',
+      lineCap: 'round',
+      lineDash: [2, 6],
+      width: 2,
+    }),
+    image: new Circle({
+      radius: 5,
+      stroke: new Stroke({
+        color: 'rgba(255, 255, 255, 1)',
+        width: 2,
+      }),
+      fill: new Fill({
+        color: 'rgba(255, 200, 50, 1)',
+      }),
+    }),
+  });
 
   constructor(name: string, measureLayer: VectorLayer) {
     super();
@@ -76,12 +96,15 @@ class Measure extends Interaction {
     // Create draw interaction.
     this.drawInteraction = new Draw({
       source: drawSource ? drawSource : new VectorSource(),
-      style: this.getStyle(),
+      style: this.style,
       type: type,
     });
     this.getMap()?.addInteraction(this.drawInteraction);
 
     this.drawStartEvent = this.drawInteraction.on('drawstart', (evt) => {
+      evt.feature.set('formatedMeasure', '');
+      evt.feature.set('measure', '');
+
       const measureTooltip = this.createTooltip();
       this.updateTooltip(evt.feature, measureTooltip);
 
@@ -106,11 +129,11 @@ class Measure extends Interaction {
       if (geom instanceof Polygon) {
         tooltip.setPosition(geom.getInteriorPoint().getCoordinates());
         tooltip.setPositioning('center-center');
-        this.setTooltipText(tooltip.getElement(), geom);
+        this.setTooltipText(tooltip.getElement(), sketch);
       } else if (geom instanceof LineString) {
         tooltip.setPosition(geom.getLastCoordinate());
         tooltip.setOffset([15, 15]);
-        this.setTooltipText(tooltip.getElement(), geom);
+        this.setTooltipText(tooltip.getElement(), sketch);
       }
     });
   }
@@ -118,14 +141,14 @@ class Measure extends Interaction {
   /**
    * This function set the measure text to the overlay.
    * @param htmlElement Overlay html element
-   * @param geom Draw geometry
+   * @param feature Draw feature
    */
   private setTooltipText(
     htmlElement: HTMLElement | undefined,
-    geom: Geometry
+    feature: Feature
   ): void {
     if (htmlElement) {
-      htmlElement.innerHTML = this.calculateMeasure(geom);
+      htmlElement.innerHTML = this.calculateMeasure(feature);
     }
   }
 
@@ -145,7 +168,7 @@ class Measure extends Interaction {
       this.measure = 0;
 
       const measureLayer = this.measureLayer;
-
+      measureLayer.setStyle(this.style);
       measureLayer.setStyle(this.getStyle());
     });
 
@@ -154,9 +177,6 @@ class Measure extends Interaction {
         this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
         this.removeMeasure();
       }, 10);
-
-      this.formatedMeasure = '';
-      this.measure = 0;
 
       this.getMap()?.getOverlays().pop();
     });
@@ -181,18 +201,19 @@ class Measure extends Interaction {
    * Calculate measure for a given polygon.
    * @param geom Input geometry
    */
-  private calculateMeasure(geom: Geometry): string {
+  private calculateMeasure(feature: Feature): string {
+    const geom = feature.getGeometry();
     // Calculate area if geometry is a polygon
     if (geom instanceof Polygon) {
-      this.formatedMeasure = this.formatArea(geom);
-      this.measure = getArea(geom);
-      return this.formatedMeasure;
+      feature.set('formatedMeasure', this.formatArea(geom));
+      feature.set('measure', getArea(geom));
+      return feature.get('formatedMeasure');
     }
     // Calculate length if geometry is a line
     else if (geom instanceof LineString) {
-      this.formatedMeasure = this.formatLength(geom);
-      this.measure = getLength(geom);
-      return this.formatedMeasure;
+      feature.set('formatedMeasure', this.formatLength(geom));
+      feature.set('measure', getLength(geom));
+      return feature.get('formatedMeasure');
     }
     return '';
   }

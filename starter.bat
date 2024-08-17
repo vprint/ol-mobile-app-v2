@@ -7,6 +7,6 @@ start "" t_rex serve --config trexconfig_efeo_demo.toml
 cd C:\Program Files\GeoServer\bin
 start "" startup.bat
 
-cd C:\OSGeo4W\demoservice
+cd C:\Production\SIG\EFEO_MapProxy
 call C:\OSGeo4W\bin\o4w_env.bat
-start "" C:\OSGeo4W\apps\Python39\Scripts\mapproxy-util.exe serve-develop -b 8082 mapproxy.yaml
+start "" C:\OSGeo4W\apps\Python312\Scripts\mapproxy-util.exe serve-develop -b 8082 mapproxy.yaml
