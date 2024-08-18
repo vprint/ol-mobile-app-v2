@@ -21,6 +21,7 @@ import {
   VECTOR_TILE_LAYERS_SETTINGS,
   RASTER_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
+import addControlers from 'src/plugins/ControlersCreator';
 
 // Others imports
 
@@ -49,6 +50,7 @@ onMounted(() => {
   });
 
   setMap(map.value);
+  addControlers(map.value);
   initializeInteractions();
 });
 </script>
