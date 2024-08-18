@@ -6,7 +6,6 @@ import { ref, Ref, watch } from 'vue';
 
 // Store imports
 import { useMapInteractionStore } from './map-interaction-store';
-import { useMapStore } from './map-store';
 
 // Others imports
 
@@ -18,8 +17,6 @@ import Measure, {
 
 // Enum imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
-import { MEASURE_LAYER } from 'src/utils/params/layersParams';
-import VectorLayer from 'ol/layer/Vector';
 
 //script
 
@@ -28,7 +25,6 @@ import VectorLayer from 'ol/layer/Vector';
  */
 export const useMeasureStore = defineStore('measure', () => {
   const { enableInteraction } = useMapInteractionStore();
-  const { getLayerById, removeOverlaysByType } = useMapStore();
   const { measurePlugin } = storeToRefs(useMapInteractionStore());
   const formatedMeasure: Ref<string> = ref('');
   const measureMenu = ref(false);
@@ -47,21 +43,16 @@ export const useMeasureStore = defineStore('measure', () => {
    * Remove measure and activate selector
    */
   function removeMeasure(): void {
-    measurePlugin.value?.removeMeasure();
+    measurePlugin.value?.deactivateMeasure();
     enableInteraction(INTERACTIONS_PARAMS.selector, true);
   }
 
   /**
    * Remove all measures and associated overlays
+   * TODO: INTERNALISER CES FONCTIONS DANS LA CLASSE MEASURE
    */
   function removeAllMeasure(): void {
-    measurePlugin.value?.removeMeasure();
-
-    const measureLayer = getLayerById(MEASURE_LAYER.layerId) as VectorLayer;
-    measureLayer.getSource()?.clear();
-
-    removeOverlaysByType('measure');
-
+    measurePlugin.value?.clearMeasureFeatures();
     enableInteraction(INTERACTIONS_PARAMS.selector, true);
   }
 
