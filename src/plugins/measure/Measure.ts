@@ -1,7 +1,7 @@
 import { EventsKey } from 'ol/events';
 import { Draw, Interaction, Modify, Select } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import { Feature, Overlay } from 'ol';
+import { Feature, Overlay, Map } from 'ol';
 import { click } from 'ol/events/condition';
 import { getArea, getLength } from 'ol/sphere';
 import { Geometry, LineString, MultiPoint, Polygon } from 'ol/geom';
@@ -121,9 +121,9 @@ class Measure extends Interaction {
     }),
   ];
 
-  constructor(name: string, measureLayer: VectorLayer) {
+  constructor(interactionName: string, measureLayer: VectorLayer) {
     super();
-    this.set('name', name);
+    this.set('name', interactionName);
     this.measureLayer = measureLayer;
     this.measureLayer.set('measure-layer', true);
     this.measureLayer.setStyle(this.style);

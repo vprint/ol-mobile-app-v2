@@ -74,7 +74,7 @@ onMounted(() => {
 @import 'ol/ol.css';
 
 #map {
-  position: fixed;
+  position: absolute;
   height: 100%;
   width: 100%;
 }
