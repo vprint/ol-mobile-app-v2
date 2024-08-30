@@ -95,7 +95,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
         if (features) {
           const sitesFeatures = features.filter(
-            (feature) => feature.get('layer') === 'sites'
+            (feature) => feature.get('layer') === 'features'
           );
 
           if (sitesFeatures[0]) {
@@ -135,6 +135,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
   /**
    * Watch for interaction initialization
+   * TODO: Voir si il est possible de supprimer immediate
    */
   watch(
     () => isMapInteractionsInitialized.value,
