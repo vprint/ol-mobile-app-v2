@@ -13,7 +13,6 @@ function addControlers(map: Map): void {
   map.addControl(
     new ScaleLine({
       units: 'metric',
-      bar: false,
       text: true,
       minWidth: 140,
     })

@@ -4,7 +4,6 @@ import { onMounted, ref, Ref } from 'vue';
 
 // Component imports
 import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.vue';
-import OverlayComponent from '../OverlayComponent/OverlayComponent.vue';
 
 // Store imports
 import { useMapStore } from '../../stores/map-store';
@@ -15,13 +14,21 @@ import Map from 'ol/Map';
 import { MAPSETTINGS } from '../../utils/params/mapParams';
 import { View } from 'ol';
 import { fromLonLat } from 'ol/proj';
-import { importLayer } from '../../plugins/LayerImporter';
+import {
+  addMeasureLayer,
+  addOGCLayer,
+  addRasterBackgroundLayers,
+  addVectorBackgroundLayers,
+  addVectorTileLayers,
+} from '../../plugins/LayerImporter';
 import {
   BACKGROUND_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
   RASTER_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
 import addControlers from 'src/plugins/ControlersCreator';
+import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
+import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 // Others imports
 
@@ -42,12 +49,29 @@ onMounted(() => {
     }),
   });
 
-  importLayer({
-    map: map.value,
-    backgroundLayers: BACKGROUND_LAYERS_SETTINGS,
-    vectorTileLayers: VECTOR_TILE_LAYERS_SETTINGS,
-    rasterLayers: RASTER_LAYERS_SETTINGS,
+  // An empty mapLibre layer is added to the map
+  const mapLibreLayer = new MapLibreLayer({
+    mapLibreOptions: {},
+    zIndex: 0,
+    properties: {
+      layerProperties: {
+        id: 'maplibre-layer',
+        title: 'maplibre-layer',
+        tunable: false,
+      } as ILayerProperties,
+    },
   });
+  map.value.addLayer(mapLibreLayer);
+
+  /**
+   * Add the application layers.
+   */
+  addVectorBackgroundLayers(mapLibreLayer, BACKGROUND_LAYERS_SETTINGS);
+  addRasterBackgroundLayers(map.value, BACKGROUND_LAYERS_SETTINGS);
+  addVectorTileLayers(map.value, VECTOR_TILE_LAYERS_SETTINGS);
+  addOGCLayer(map.value, RASTER_LAYERS_SETTINGS);
+  // TODO: Déplacer ailleurs
+  addMeasureLayer(map.value);
 
   setMap(map.value);
   addControlers(map.value);
@@ -56,8 +80,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <OverlayComponent v-if="map"></OverlayComponent>
-
   <div id="map" class="map">
     <ContextMenuComponent></ContextMenuComponent>
   </div>
@@ -77,6 +99,6 @@ onMounted(() => {
   position: absolute;
   height: 100%;
   width: 100%;
+  background-color: lightgrey;
 }
 </style>
-src/utils/VectorTileSelector ../../plugins/LayerImporter

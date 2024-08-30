@@ -49,7 +49,6 @@ export const useMeasureStore = defineStore('measure', () => {
 
   /**
    * Remove all measures and associated overlays
-   * TODO: INTERNALISER CES FONCTIONS DANS LA CLASSE MEASURE
    */
   function removeAllMeasure(): void {
     measurePlugin.value?.clearMeasureFeatures();

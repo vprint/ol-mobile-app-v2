@@ -1,7 +1,7 @@
 import { EventsKey } from 'ol/events';
 import { Draw, Interaction, Modify, Select } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import { Feature, Overlay, Map } from 'ol';
+import { Feature, Overlay } from 'ol';
 import { click } from 'ol/events/condition';
 import { getArea, getLength } from 'ol/sphere';
 import { Geometry, LineString, MultiPoint, Polygon } from 'ol/geom';
@@ -55,10 +55,10 @@ class Measure extends Interaction {
 
   private style = new Style({
     fill: new Fill({
-      color: 'rgba(255, 200, 50, 0.2)',
+      color: 'rgba(255, 180, 25, 0.2)',
     }),
     stroke: new Stroke({
-      color: 'rgba(255, 200, 50, 1)',
+      color: 'rgba(255, 180, 25, 1)',
       lineCap: 'round',
       lineDash: [2, 6],
       width: 2,
@@ -70,7 +70,7 @@ class Measure extends Interaction {
         width: 2,
       }),
       fill: new Fill({
-        color: 'rgba(255, 200, 50, 1)',
+        color: 'rgba(255, 180, 25, 1)',
       }),
     }),
   });
@@ -78,7 +78,7 @@ class Measure extends Interaction {
   private selectedStyle = [
     new Style({
       stroke: new Stroke({
-        color: 'rgba(255, 200, 50, 1)',
+        color: 'rgba(255, 180, 25, 1)',
         lineCap: 'round',
         lineDash: [2, 6],
         width: 3,
@@ -86,7 +86,7 @@ class Measure extends Interaction {
     }),
     new Style({
       fill: new Fill({
-        color: 'rgba(255, 200, 50, 0.2)',
+        color: 'rgba(255, 180, 25, 0.2)',
       }),
       stroke: new Stroke({
         color: 'rgba(255, 255, 255, 0.2)',
@@ -102,7 +102,7 @@ class Measure extends Interaction {
           width: 2,
         }),
         fill: new Fill({
-          color: 'rgba(255, 200, 50, 1)',
+          color: 'rgba(255, 180, 25, 1)',
         }),
       }),
       geometry: (feature): Geometry | undefined => {
