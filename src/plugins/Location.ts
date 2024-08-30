@@ -80,7 +80,7 @@ class Location extends Interaction {
       newAccuracyStyle ??
       new Style({
         fill: new Fill({
-          color: 'rgba(51, 153, 204, 0.5)',
+          color: 'rgba(51, 153, 204, 0.2)',
         }),
       });
 
