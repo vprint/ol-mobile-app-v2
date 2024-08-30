@@ -10,6 +10,7 @@ import { useMapStore } from 'src/stores/map-store';
 
 // Component import
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
+import BackgroundSelector from '../BackgroundSelector/BackgroundSelector.vue';
 import LayerControler from './LayerControler.vue';
 
 // Others imports
@@ -41,10 +42,12 @@ function getTunableLayers(): void {
   const mapLayers = map.value.getAllLayers();
 
   mapLayers.forEach((layer) => {
-    const layerProperties = layer.get(LAYER_PROPERTIES) as ILayerProperties;
+    const layerProperties = layer.get(LAYER_PROPERTIES) as
+      | ILayerProperties
+      | undefined;
     const zIndex = layer.getZIndex();
 
-    if (layerProperties.tunable) {
+    if (layerProperties?.tunable) {
       const layerInformation = {
         layerId: layerProperties.id,
         zIndex: zIndex ? zIndex : 0,
@@ -107,6 +110,7 @@ watch(
           <q-separator></q-separator>
         </div>
       </VueDraggable>
+      <BackgroundSelector></BackgroundSelector>
     </template>
   </SidePanelComponent>
 </template>
