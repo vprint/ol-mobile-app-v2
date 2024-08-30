@@ -1,4 +1,8 @@
+import { Fill, Style, Circle, Stroke } from 'ol/style';
+import { APP_PARAMS } from './appParams';
 import { TOKEN } from './tokenParams';
+import { Feature } from 'ol';
+import { StyleFunction } from 'ol/style/Style';
 
 export const LAYER_PROPERTIES = 'layerProperties';
 
@@ -10,10 +14,11 @@ export interface IBaseLayer {
 }
 
 export interface IBackgroundLayer extends IBaseLayer {
-  url: string;
   img: string;
   token?: string;
   attribution: string[];
+  url: string;
+  vector: boolean;
 }
 
 export interface IRasterLayer extends IBaseLayer {
@@ -22,6 +27,7 @@ export interface IRasterLayer extends IBaseLayer {
   editable: boolean;
   dynamic: boolean;
   attribution: string[];
+  url: string;
 }
 
 export interface IVectorTileLayer extends IBaseLayer {
@@ -29,6 +35,8 @@ export interface IVectorTileLayer extends IBaseLayer {
   attribution: string[];
   editable: boolean;
   selectionnable: boolean;
+  url: string;
+  style: Style | StyleFunction;
 }
 
 /**
@@ -38,7 +46,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
   {
     name: 'Basic',
     layerId: 'jawg-streets',
-    url: 'https://tile.jawg.io/jawg-streets/{z}/{x}/{y}@2x.png?',
+    url: 'https://api.jawg.io/styles/jawg-streets.json',
     img: 'https://tile.jawg.io/jawg-streets/13/6459/3787@2x.png?',
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
@@ -46,11 +54,12 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     token: TOKEN.jawgs,
     zIndex: 0,
     visible: false,
+    vector: true,
   },
   {
     name: 'Light',
     layerId: 'jawg-light',
-    url: 'https://tile.jawg.io/jawg-light/{z}/{x}/{y}@2x.png?',
+    url: 'https://api.jawg.io/styles/jawg-light.json',
     img: 'https://tile.jawg.io/jawg-light/13/6459/3787@2x.png?',
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
@@ -58,11 +67,12 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     token: TOKEN.jawgs,
     zIndex: 0,
     visible: false,
+    vector: true,
   },
   {
     name: 'Dark',
     layerId: 'jawg-dark',
-    url: 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}@2x.png?',
+    url: 'https://api.jawg.io/styles/jawg-dark.json',
     img: 'https://tile.jawg.io/jawg-dark/13/6459/3787@2x.png?',
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
@@ -70,6 +80,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     token: TOKEN.jawgs,
     zIndex: 0,
     visible: false,
+    vector: true,
   },
   {
     name: 'OSM',
@@ -81,17 +92,19 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     ],
     zIndex: 0,
     visible: false,
+    vector: false,
   },
   {
-    name: 'Esri World Imagery',
+    name: 'Satellite',
     layerId: 'esri_world_Imagery',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    img: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/6459/3787',
+    img: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/13/3787/6459.png?',
     attribution: [
       'Tiles © <a href="https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer">ArcGIS</a>',
     ],
     zIndex: 1,
     visible: true,
+    vector: false,
   },
 ];
 
@@ -101,13 +114,28 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
 export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
   {
     name: 'Sites',
-    layerId: 'sites',
-    featureId: 'site_id',
+    layerId: 'archaeological',
+    featureId: 'id',
     attribution: ['Données cartographiques | <b>EFEO</b>'],
     zIndex: 5,
     visible: true,
     editable: false,
     selectionnable: true,
+    url: `${APP_PARAMS.vectorTileServer}/maps/archaeological/{z}/{x}/{y}.pbf`,
+    style: function (feature: Feature): Style {
+      return new Style({
+        image: new Circle({
+          fill: new Fill({
+            color: feature.get('ground_verified') ? '#8a1946' : '#2f7a34',
+          }),
+          radius: 8,
+          stroke: new Stroke({
+            color: 'rgba(255,255,255,1)',
+            width: 2,
+          }),
+        }),
+      });
+    } as StyleFunction,
   },
 ];
 
@@ -126,6 +154,7 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     visible: true,
     editable: true,
     dynamic: true,
+    url: `${APP_PARAMS.qgisServer}/wms?`,
   },
   {
     mode: 'wms',
@@ -138,6 +167,7 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     visible: false,
     editable: true,
     dynamic: false,
+    url: `${APP_PARAMS.qgisServer}/wms?`,
   },
   {
     mode: 'wmts',
@@ -150,6 +180,7 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     visible: false,
     editable: true,
     dynamic: false,
+    url: `${APP_PARAMS.qgisServer}/wms?`,
   },
 ];
 
