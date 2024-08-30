@@ -1,3 +1,4 @@
+import { ILayerProperties } from 'src/interface/ILayerParameters';
 import { Map } from 'ol';
 import {
   IBackgroundLayer,
@@ -5,53 +6,35 @@ import {
   IVectorTileLayer,
   MEASURE_LAYER,
 } from '../utils/params/layersParams';
-import TileLayer from 'ol/layer/Tile';
-import XYZ from 'ol/source/XYZ';
-import LayerGroup from 'ol/layer/Group';
+import { ImageWMS } from 'ol/source';
+import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
+import ImageTile from 'ol/source/ImageTile.js';
+import TileLayer from 'ol/layer/WebGLTile.js';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
-import { APP_PARAMS } from '../utils/params/appParams';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import { ILayerProperties } from 'src/interface/ILayerParameters';
 import ImageLayer from 'ol/layer/Image';
-import { ImageWMS } from 'ol/source';
+import LayerGroup from 'ol/layer/Group';
 
 /**
- * interface for importLayer() function
- */
-interface IImportLayer {
-  /**
-   * Target map where the layers shoud be imported
-   */
-  map: Map;
-  /**
-   * Array of background layers to import
-   */
-  backgroundLayers: IBackgroundLayer[];
-  /**
-   * Array of vector tile layers to import
-   */
-  vectorTileLayers: IVectorTileLayer[];
-  /**
-   * Array of raster to import
-   */
-  rasterLayers: IRasterLayer[];
-}
-
-/**
- * Add background layers to the map
+ * Add raster background layers to the map
  * @param map OpenLayers map
+ * @layerList List of layers to add
  */
-function addBackgroundLayers(map: Map, layerList: IBackgroundLayer[]): void {
-  const backgroundLayers: TileLayer<XYZ>[] = layerList.map((layer) => {
-    return new TileLayer({
-      source: new XYZ({
+export function addRasterBackgroundLayers(
+  map: Map,
+  layerList: IBackgroundLayer[]
+): void {
+  const rasterBackgroundLayers = layerList.filter((layer) => !layer.vector);
+
+  rasterBackgroundLayers.forEach((layer) => {
+    const xyzLayer = new TileLayer({
+      source: new ImageTile({
         url: layer.token
-          ? `${layer.url}access-token=${layer.token}`
+          ? `${layer.url}?access-token=${layer.token}`
           : `${layer.url}`,
-        tilePixelRatio: 2,
         attributions: layer.attribution,
       }),
       zIndex: layer.zIndex,
@@ -64,32 +47,48 @@ function addBackgroundLayers(map: Map, layerList: IBackgroundLayer[]): void {
       },
       visible: layer.visible,
     });
-  });
 
-  map.addLayer(
-    new LayerGroup({
-      layers: backgroundLayers,
-      properties: {
-        title: 'Background',
-      },
-    })
-  );
+    map.addLayer(xyzLayer);
+  });
+}
+
+/**
+ * Add the vector background layer
+ * @param mapLibreLayer Maplibre layer
+ * @param layerList List of layer
+ */
+export function addVectorBackgroundLayers(
+  mapLibreLayer: MapLibreLayer,
+  layerList: IBackgroundLayer[]
+): void {
+  const visibleLayer = layerList.find((layer) => layer.visible && layer.vector);
+
+  if (visibleLayer) {
+    mapLibreLayer.mapLibreMap?.setStyle(
+      `${visibleLayer.url}?access-token=${visibleLayer.token}`
+    );
+  }
 }
 
 /**
  * Add vector tile layers to the map
  * @param map OpenLayers map
  */
-function addVectorTileLayers(map: Map, layerList: IVectorTileLayer[]): void {
+export function addVectorTileLayers(
+  map: Map,
+  layerList: IVectorTileLayer[]
+): void {
   const vectorTileLayers: VectorTileLayer[] = layerList.map((layer) => {
     return new VectorTileLayer({
       source: new VectorTileSource({
         format: new MVT({
           idProperty: layer.featureId,
         }),
-        url: `${APP_PARAMS.vectorTileServer}/${layer.layerId}/{z}/{x}/{y}.pbf`,
+        url: layer.url,
         attributions: layer.attribution,
       }),
+
+      style: layer.style,
       zIndex: layer.zIndex,
       properties: {
         layerProperties: {
@@ -101,7 +100,6 @@ function addVectorTileLayers(map: Map, layerList: IVectorTileLayer[]): void {
         } as ILayerProperties,
         featureId: layer.featureId,
       },
-      preload: Infinity,
       visible: layer.visible,
     });
   });
@@ -121,7 +119,7 @@ function addVectorTileLayers(map: Map, layerList: IVectorTileLayer[]): void {
  * @param map
  * @param layerList
  */
-function addOGCLayer(map: Map, layerList: IRasterLayer[]): void {
+export function addOGCLayer(map: Map, layerList: IRasterLayer[]): void {
   const wmsLayers = layerList.filter((layer) => layer.mode === 'wms');
   addWMSLayers(map, wmsLayers);
 
@@ -134,15 +132,16 @@ function addOGCLayer(map: Map, layerList: IRasterLayer[]): void {
  * @param map OpenLayers map
  * @param layerList WMS layer list
  */
-function addWMSLayers(map: Map, layerList: IRasterLayer[]): void {
+export function addWMSLayers(map: Map, layerList: IRasterLayer[]): void {
   layerList.forEach((layer) => {
     map.addLayer(
       new ImageLayer({
         source: new ImageWMS({
-          url: `${APP_PARAMS.qgisServer}/wms?`,
+          url: layer.url,
           params: { LAYERS: `${layer.layerId}` },
           attributions: layer.attribution,
         }),
+
         properties: {
           layerProperties: {
             id: `${layer.layerId}_wms`,
@@ -153,6 +152,7 @@ function addWMSLayers(map: Map, layerList: IRasterLayer[]): void {
             tunable: true,
           } as ILayerProperties,
         },
+
         zIndex: layer.zIndex,
         visible: layer.visible,
       })
@@ -202,9 +202,10 @@ function addWMTSLayers(map: Map, layerList: IRasterLayer[]): void {
 
 /**
  * Add the measure layer to the map
+ * TODO: Déplacer cette fonction ailleurs, elle n'a pas sa place ici
  * @param map Openlayers map
  */
-function addMeasureLayer(map: Map): void {
+export function addMeasureLayer(map: Map): void {
   const measureLayer = new VectorLayer({
     source: new VectorSource(),
     properties: {
@@ -219,20 +220,4 @@ function addMeasureLayer(map: Map): void {
   });
 
   map.addLayer(measureLayer);
-}
-
-/**
- * This function add a list of layer to the map.
- * @param parameters importing parameters.
- */
-export function importLayer({
-  map,
-  backgroundLayers,
-  vectorTileLayers,
-  rasterLayers,
-}: IImportLayer): void {
-  addBackgroundLayers(map, backgroundLayers);
-  addVectorTileLayers(map, vectorTileLayers);
-  addOGCLayer(map, rasterLayers);
-  addMeasureLayer(map);
 }

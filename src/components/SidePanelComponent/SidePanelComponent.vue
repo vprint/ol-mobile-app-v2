@@ -22,7 +22,7 @@
   position: absolute;
   right: 0;
   width: 400px;
-  height: calc(100% - 20px);
+  height: calc(100% - 40px);
   overflow: auto;
   background-color: $secondary;
   margin: 10px;

@@ -10,6 +10,7 @@ import { useReferencesStore } from 'src/stores/references-store';
 import SiteSearchBox from './SiteSearchBox.vue';
 import MeasureComponent from '../MeasureComponent/MeasureComponent.vue';
 import LayerListButton from '../LayerListComponent/LayerListButton.vue';
+import LocatorComponent from '../LocatorComponent/LocatorComponent.vue';
 
 // Others
 import { APP_PARAMS } from '../../utils/params/appParams';
@@ -33,6 +34,9 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 
     <!-- Space -->
     <q-space></q-space>
+
+    <!-- Enable location -->
+    <LocatorComponent></LocatorComponent>
 
     <!-- Layer list button -->
     <LayerListButton></LayerListButton>

@@ -1,22 +1,16 @@
-// Map import
 import { EventsKey } from 'ol/events';
-import { Draw, Interaction } from 'ol/interaction';
+import { Draw, Interaction, Modify, Select } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
 import { Feature, Overlay } from 'ol';
+import { click } from 'ol/events/condition';
 import { getArea, getLength } from 'ol/sphere';
-import { Geometry, LineString, Polygon } from 'ol/geom';
+import { Geometry, LineString, MultiPoint, Polygon } from 'ol/geom';
 import { Style, Fill, Stroke, Circle } from 'ol/style';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Event from 'ol/events/Event.js';
-
-// Vue/Quasar imports
-
-// Store imports
-
-// Interface imports
-
-// Others imports
+import { getUid } from 'ol/util';
+import { Coordinate } from 'ol/coordinate';
 import './Measure.css';
 
 /**
@@ -28,8 +22,6 @@ export enum MeasureEventType {
 }
 
 export type IMeasureType = 'Polygon' | 'LineString';
-
-//const { getLayerByName } = useMapStore();
 
 /**
  * Measure start event. This event is emmited when a draw start. The measure feature is returned by the event.
@@ -50,9 +42,12 @@ export class MeasureEndEvent extends Event {}
 
 /**
  * A measure interaction that return a string formated measure (formatedMeasure) and a raw measure.
+ * The measure interaction also creates overlays. Theses overlays can be managed with removeAllMeasureOverlays and removeOverlayById methods
  */
 class Measure extends Interaction {
   private drawInteraction: Draw | undefined;
+  private modifyInteraction: Modify | undefined;
+  private selectInteraction: Select | undefined;
   private measureLayer: VectorLayer;
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
@@ -60,10 +55,10 @@ class Measure extends Interaction {
 
   private style = new Style({
     fill: new Fill({
-      color: 'rgba(255, 200, 50, 0.2)',
+      color: 'rgba(255, 180, 25, 0.2)',
     }),
     stroke: new Stroke({
-      color: 'rgba(255, 200, 50, 1)',
+      color: 'rgba(255, 180, 25, 1)',
       lineCap: 'round',
       lineDash: [2, 6],
       width: 2,
@@ -75,15 +70,66 @@ class Measure extends Interaction {
         width: 2,
       }),
       fill: new Fill({
-        color: 'rgba(255, 200, 50, 1)',
+        color: 'rgba(255, 180, 25, 1)',
       }),
     }),
   });
 
-  constructor(name: string, measureLayer: VectorLayer) {
+  private selectedStyle = [
+    new Style({
+      stroke: new Stroke({
+        color: 'rgba(255, 180, 25, 1)',
+        lineCap: 'round',
+        lineDash: [2, 6],
+        width: 3,
+      }),
+    }),
+    new Style({
+      fill: new Fill({
+        color: 'rgba(255, 180, 25, 0.2)',
+      }),
+      stroke: new Stroke({
+        color: 'rgba(255, 255, 255, 0.2)',
+        lineCap: 'round',
+        width: 6,
+      }),
+    }),
+    new Style({
+      image: new Circle({
+        radius: 5,
+        stroke: new Stroke({
+          color: 'rgba(255, 255, 255, 1)',
+          width: 2,
+        }),
+        fill: new Fill({
+          color: 'rgba(255, 180, 25, 1)',
+        }),
+      }),
+      geometry: (feature): Geometry | undefined => {
+        const geom = feature.getGeometry();
+        let coordinates: Coordinate[] | undefined;
+
+        if (geom instanceof Polygon) {
+          coordinates = geom.getCoordinates()[0];
+        }
+        if (geom instanceof LineString) {
+          coordinates = geom.getCoordinates();
+        }
+
+        return coordinates ? new MultiPoint(coordinates) : undefined;
+      },
+    }),
+  ];
+
+  constructor(interactionName: string, measureLayer: VectorLayer) {
     super();
-    this.set('name', name);
+    this.set('name', interactionName);
     this.measureLayer = measureLayer;
+    this.measureLayer.set('measure-layer', true);
+    this.measureLayer.setStyle(this.style);
+
+    document.addEventListener('keydown', this.clearSelection);
+    document.addEventListener('keydown', this.deleteSelectedMeasure);
   }
 
   /**
@@ -102,10 +148,13 @@ class Measure extends Interaction {
     this.getMap()?.addInteraction(this.drawInteraction);
 
     this.drawStartEvent = this.drawInteraction.on('drawstart', (evt) => {
+      this.removeMeasureModifier();
+
       evt.feature.set('formatedMeasure', '');
       evt.feature.set('measure', '');
 
-      const measureTooltip = this.createTooltip();
+      const fid = getUid(evt.feature);
+      const measureTooltip = this.createTooltip(fid);
       this.updateTooltip(evt.feature, measureTooltip);
 
       this.dispatchEvent(
@@ -153,39 +202,35 @@ class Measure extends Interaction {
   }
 
   /**
-   * This function remove event listener, reset measure values and throw a new measure end event.
+   * Manage draw-end and draw-abort event.
    * @param drawInteraction Draw plugin
    */
   private manageDrawEnd(drawInteraction: Draw): void {
     this.drawEndEvent = drawInteraction.on('drawend', () => {
-      // As the user double-click to end draw, this can lead to an unvolutary zoom. This ugly timeout prevent this behaviour.
-      setTimeout(() => {
-        this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
-        this.removeMeasure();
-      }, 10);
-
-      this.formatedMeasure = '';
-      this.measure = 0;
-
-      const measureLayer = this.measureLayer;
-      measureLayer.setStyle(this.style);
-      measureLayer.setStyle(this.getStyle());
+      this.dispatchDrawEndEvent(), this.addMeasureModifier();
     });
 
     this.drawAbortEvent = drawInteraction.on('drawabort', () => {
-      setTimeout(() => {
-        this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
-        this.removeMeasure();
-      }, 10);
-
+      this.dispatchDrawEndEvent();
       this.getMap()?.getOverlays().pop();
     });
   }
 
   /**
+   * Throw a new measure end event.
+   * A timeout is applied to avoid unwanted zoom after a double click.
+   */
+  private dispatchDrawEndEvent(): void {
+    setTimeout(() => {
+      this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
+      this.deactivateMeasure();
+    }, 10);
+  }
+
+  /**
    * Remove interaction and event listener.
    */
-  public removeMeasure(): void {
+  public deactivateMeasure(): void {
     if (this.drawInteraction) {
       this.getMap()?.removeInteraction(this.drawInteraction);
     }
@@ -195,6 +240,16 @@ class Measure extends Interaction {
     unByKey(this.drawStartEvent);
 
     this.setActive(false);
+  }
+
+  /**
+   * Clear the measure layer and deactivate measure
+   */
+  public clearMeasureFeatures(): void {
+    this.deactivateMeasure();
+    this.removeMeasureModifier();
+    this.removeAllMeasureOverlays();
+    this.measureLayer.getSource()?.clear();
   }
 
   /**
@@ -256,13 +311,14 @@ class Measure extends Interaction {
    * Create and add a new overlay to the map
    * @returns New overlay
    */
-  private createTooltip(): Overlay {
+  private createTooltip(id: string): Overlay {
     const measureTooltipElement = document.createElement('div');
 
     const measureTooltip = new Overlay({
       element: measureTooltipElement,
       className: 'measure-tooltip merriweather',
       stopEvent: false,
+      id: id,
     });
 
     measureTooltip.set('type', 'measure');
@@ -273,33 +329,113 @@ class Measure extends Interaction {
   }
 
   /**
-   * Get measure style
-   * @returns Measure style
+   * Add select and modify interactions to the map
    */
-  private getStyle(): Style {
-    const style = new Style({
-      fill: new Fill({
-        color: 'rgba(255, 200, 50, 0.2)',
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255, 200, 50, 1)',
-        lineCap: 'round',
-        lineDash: [2, 6],
-        width: 2,
-      }),
-      image: new Circle({
-        radius: 5,
-        stroke: new Stroke({
-          color: 'rgba(255, 255, 255, 1)',
-          width: 2,
-        }),
-        fill: new Fill({
-          color: 'rgba(255, 200, 50, 1)',
-        }),
-      }),
-    });
+  private addMeasureModifier(): void {
+    const measureSource = this.measureLayer.getSource();
 
-    return style;
+    if (measureSource) {
+      this.selectInteraction = new Select({
+        layers: (layer): boolean => {
+          return (
+            layer.get('measure-layer') ===
+            this.measureLayer.get('measure-layer')
+          );
+        },
+        condition: click,
+        style: this.selectedStyle,
+        hitTolerance: 15,
+      });
+
+      this.modifyInteraction = new Modify({
+        style: this.style,
+        features: this.selectInteraction.getFeatures(),
+      });
+
+      this.getMap()?.addInteraction(this.selectInteraction);
+      this.getMap()?.addInteraction(this.modifyInteraction);
+    }
+  }
+
+  /**
+   * Remove select and modify interactions
+   */
+  public removeMeasureModifier(): void {
+    if (this.modifyInteraction && this.selectInteraction) {
+      this.getMap()?.removeInteraction(this.modifyInteraction);
+      this.getMap()?.removeInteraction(this.selectInteraction);
+    }
+  }
+
+  /**
+   * Remove all measure overlays
+   */
+  private removeAllMeasureOverlays(): void {
+    const overlays = this.getMap()?.getOverlays().getArray();
+
+    if (overlays) {
+      const measureOverlays = overlays.filter(
+        (overlay) => overlay.get('type') === 'measure'
+      );
+
+      measureOverlays.forEach((overlay) => {
+        this.getMap()?.removeOverlay(overlay);
+      });
+    }
+  }
+
+  /**
+   * Remove an overlay for a given id
+   * @param id Overlay id
+   */
+  private removeOverlayById(id: string): void {
+    const overlays = this.getMap()?.getOverlays().getArray();
+
+    if (overlays) {
+      const measureOverlay = overlays.find((overlay) => overlay.getId() === id);
+      if (measureOverlay) {
+        this.getMap()?.removeOverlay(measureOverlay);
+      }
+    }
+  }
+
+  /**
+   * Clear selection if the user press escape key.
+   * @param evt a keyboard event
+   */
+  clearSelection = (evt: KeyboardEvent): void => {
+    if (evt.key === 'Escape') {
+      this.selectInteraction?.getFeatures().clear();
+    }
+  };
+
+  /**
+   * Delete the selected measure if the user click on delete key.
+   * @param evt a keyboard event
+   */
+  deleteSelectedMeasure = (evt: KeyboardEvent): void => {
+    if (evt.key === 'Delete') {
+      const feature = this.selectInteraction?.getFeatures().getArray()[0];
+
+      if (feature) {
+        const fid = getUid(feature);
+        const measureFeatures = this.measureLayer.getSource()?.getFeatures();
+        const measureToDelete = measureFeatures?.find(
+          (measureFeature) => getUid(measureFeature) === fid
+        );
+        this.removeMeasureFeature(measureToDelete);
+      }
+    }
+  };
+
+  /**
+   * Remove a measure feature from the map
+   * @param feature Measure feature to remove
+   */
+  private removeMeasureFeature(feature: Feature): void {
+    this.measureLayer.getSource()?.removeFeature(feature);
+    this.selectInteraction?.getFeatures().clear();
+    this.removeOverlayById(getUid(feature));
   }
 }
 

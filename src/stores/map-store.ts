@@ -34,24 +34,10 @@ export const useMapStore = defineStore('map', () => {
    */
   function getLayerById(id: string): Layer | undefined {
     return map.value.getAllLayers().find((layer) => {
-      const layerProperties = layer.get(LAYER_PROPERTIES) as ILayerProperties;
-      return layerProperties.id === id;
-    });
-  }
-
-  /**
-   * Remove overlay of a given type
-   * @param type overlay type
-   */
-  function removeOverlaysByType(type: string): void {
-    const overlays = map.value.getOverlays().getArray();
-
-    const measureOverlays = overlays.filter(
-      (overlay) => overlay.get('type') === type
-    );
-
-    measureOverlays.forEach((overlay) => {
-      map.value.removeOverlay(overlay);
+      const layerProperties = layer.get(LAYER_PROPERTIES) as
+        | ILayerProperties
+        | undefined;
+      return layerProperties?.id === id;
     });
   }
 
@@ -60,6 +46,5 @@ export const useMapStore = defineStore('map', () => {
     isMapInitialized,
     setMap,
     getLayerById,
-    removeOverlaysByType,
   };
 });

@@ -22,6 +22,7 @@ const { getLayerById } = useMapStore();
 const visible = ref(false);
 const opacity = ref(1);
 const layer: Ref<BaseLayer | undefined> = ref(undefined);
+const isDragging = ref(false);
 
 let layerProperties: ILayerProperties;
 
@@ -49,6 +50,20 @@ function updateOpacity(newOpacity: number | null): void {
 function updateVisibility(newVisibility: boolean): void {
   visible.value = newVisibility;
   layer.value?.setVisible(newVisibility);
+}
+
+/**
+ * Manage drag start
+ */
+function startDragging(): void {
+  isDragging.value = true;
+}
+
+/**
+ * Manage drag stop
+ */
+function stopDragging(): void {
+  isDragging.value = false;
 }
 </script>
 
@@ -91,8 +106,15 @@ function updateVisibility(newVisibility: boolean): void {
       />
 
       <!-- zIndex modifier-->
-      <q-icon name="sym_o_expand_all" class="handle cursor-move expand-icon">
+      <q-icon
+        name="sym_o_expand_all"
+        class="handle cursor-move expand-icon"
+        @mousedown="startDragging"
+        @mouseup="stopDragging"
+        @mouseleave="stopDragging"
+      >
         <q-tooltip
+          v-if="!isDragging"
           anchor="bottom middle"
           self="bottom middle"
           :offset="[0, 40]"
