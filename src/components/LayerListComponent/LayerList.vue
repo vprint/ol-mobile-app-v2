@@ -110,6 +110,8 @@ watch(
           <q-separator></q-separator>
         </div>
       </VueDraggable>
+    </template>
+    <template #footer>
       <BackgroundSelector></BackgroundSelector>
     </template>
   </SidePanelComponent>
