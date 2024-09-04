@@ -1,4 +1,4 @@
 export enum SIDE_PANEL_PARAM {
-  LAYER_LIST = 'layerlist',
+  LAYER_LIST = 'layermanager',
   SITE = 'site',
 }

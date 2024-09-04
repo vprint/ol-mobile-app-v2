@@ -65,7 +65,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
     let site: Site | undefined = undefined;
 
     const result = await ApiRequestor.getJSON<ISite[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_site_by_id/items.json?id=${siteId}`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_site_by_id/items.json?id=${siteId}`
     );
 
     if (result?.[0]) {
@@ -95,7 +95,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
         if (features) {
           const sitesFeatures = features.filter(
-            (feature) => feature.get('layer') === 'features'
+            (feature) => feature.get('layer') === 'archsites'
           );
 
           if (sitesFeatures[0]) {

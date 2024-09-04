@@ -10,7 +10,7 @@ import { useMapStore } from 'src/stores/map-store';
 
 // Component import
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
-import BackgroundSelector from '../BackgroundSelector/BackgroundSelector.vue';
+import BackgroundSelector from './BackgroundSelector/BackgroundSelector.vue';
 import LayerControler from './LayerControler.vue';
 
 // Others imports

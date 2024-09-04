@@ -115,7 +115,7 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
   {
     name: 'Sites',
     layerId: 'archaeological',
-    featureId: 'id',
+    featureId: 'archsite_id',
     attribution: ['Données cartographiques | <b>EFEO</b>'],
     zIndex: 5,
     visible: true,
@@ -126,7 +126,9 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
       return new Style({
         image: new Circle({
           fill: new Fill({
-            color: feature.get('ground_verified') ? '#8a1946' : '#2f7a34',
+            color: feature.get('archsite_ground_verified')
+              ? '#8a1946'
+              : '#2f7a34',
           }),
           radius: 8,
           stroke: new Stroke({

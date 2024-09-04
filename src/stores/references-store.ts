@@ -43,7 +43,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getResearcherList(): Promise<Researcher[]> {
     const result = await ApiRequestor.getJSON<IResearcher[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_researcher_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_researcher_list/items.json`
     );
 
     if (result) {
@@ -59,7 +59,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getBuildMaterialList(): Promise<BuildMaterial[]> {
     const result = await ApiRequestor.getJSON<IBuildMaterial[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_build_material_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_build_material_list/items.json`
     );
 
     if (result) {
@@ -74,7 +74,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getDocumentList(): Promise<AssociatedDocument[]> {
     const result = await ApiRequestor.getJSON<IDocument[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_document_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_document_list/items.json`
     );
 
     if (result) {
@@ -89,7 +89,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getArtefactList(): Promise<Artefact[]> {
     const result = await ApiRequestor.getJSON<IArtefact[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_artefact_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_artefact_list/items.json`
     );
 
     if (result) {
@@ -104,7 +104,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getFeatureTypeList(): Promise<string[]> {
     const result = await ApiRequestor.getJSON<IFeatureType[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_feature_type_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_feature_type_list/items.json`
     );
 
     if (result) {
@@ -119,7 +119,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getStudyAreaList(): Promise<string[]> {
     const result = await ApiRequestor.getJSON<IStudyArea[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_study_area_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_study_area_list/items.json`
     );
 
     if (result) {
@@ -135,7 +135,7 @@ export const useReferencesStore = defineStore('references', () => {
    */
   async function getSiteList(): Promise<ISiteList[]> {
     const result = await ApiRequestor.getJSON<ISiteList[]>(
-      `${APP_PARAMS.featureServer}/functions/public.get_site_list/items.json`
+      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_site_list/items.json`
     );
 
     if (result) {
