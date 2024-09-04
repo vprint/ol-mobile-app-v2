@@ -17,6 +17,7 @@ import Event from 'ol/events/Event.js';
 export enum LocationEventsType {
   LOCATION_FOUND = 'location:found',
   LOCATION_ERROR = 'location:error',
+  VIEW_MODIFICATION = 'location:view-modification',
 }
 
 /**
@@ -29,23 +30,19 @@ export class LocationEvents extends Event {}
  * The user can set the position and accuracy style.
  */
 class Location extends Interaction {
-  public trackingEnabled = false;
-  private hasZoomedToLocation = false;
-
+  private trackingEnabled = false;
+  private isViewCentered = false;
+  private isLocationFound = false;
   private positionFeature: Feature | undefined;
   private accuracyFeature: Feature | undefined;
-
-  private geolocation: Geolocation;
   private locationLayer: VectorLayer;
-
   private positionStyle: Style;
   private accuracyStyle: Style;
-
+  private geolocation: Geolocation;
   private featureAddTracker!: EventsKey;
   private accuracyTracker!: EventsKey;
   private positionTracker!: EventsKey;
   private errorTracker!: EventsKey;
-
   private isInitialized = false;
 
   constructor(
@@ -93,6 +90,30 @@ class Location extends Interaction {
   }
 
   /**
+   * Get the position feature
+   * @returns Position feature (point).
+   */
+  public getPositionFeature(): Feature | undefined {
+    return this.positionFeature;
+  }
+
+  /**
+   * Get theaccuracy feature
+   * @returns Accuracy feature (polygone).
+   */
+  public getAccuracyFeature(): Feature | undefined {
+    return this.accuracyFeature;
+  }
+
+  /**
+   * Get information about view centering
+   * @returns true if the view is centered on the accuracy feature, false otherwise.
+   */
+  public getViewCentered(): boolean {
+    return this.isViewCentered;
+  }
+
+  /**
    * Log location error in the console
    */
   private handleError(): void {
@@ -122,20 +143,53 @@ class Location extends Interaction {
         const point = new Point(coordinates);
         this.positionFeature?.setGeometry(point);
 
-        if (!this.hasZoomedToLocation) {
-          const extent = point.getExtent();
-          this.getMap()?.getView().fit(extent, {
-            maxZoom: 15,
-            duration: 500,
-            easing: easeOut,
-          });
-          this.hasZoomedToLocation = true;
-          this.dispatchEvent(
-            new LocationEvents(LocationEventsType.LOCATION_FOUND)
-          );
+        if (!this.isLocationFound) {
+          const locationFoundCallback = (): void => {
+            this.isLocationFound = true;
+            this.dispatchEvent(
+              new LocationEvents(LocationEventsType.LOCATION_FOUND)
+            );
+            this.addViewChangeListener();
+            this.isViewCentered = true;
+          };
+          this.fitViewToLocation(locationFoundCallback);
         }
       }
     });
+  }
+
+  /**
+   * Manage the map view change and throw a view change event.
+   */
+  public addViewChangeListener = (): void => {
+    this.getMap()
+      ?.getView()
+      .once('change', (): void => {
+        this.isViewCentered = false;
+        this.dispatchEvent(
+          new LocationEvents(LocationEventsType.VIEW_MODIFICATION)
+        );
+      });
+  };
+
+  /**
+   * Fit the map view to the location extent and execute a callback if necessary.
+   * @param callback Function to execute after the map fit.
+   */
+  public fitViewToLocation(callback?: () => void): void {
+    const animationDuration = 500;
+    const extent = this.accuracyFeature?.getGeometry()?.getExtent();
+
+    if (extent) {
+      this.getMap()
+        ?.getView()
+        .fit(extent, {
+          maxZoom: 15,
+          duration: animationDuration,
+          easing: easeOut,
+          callback: callback ? callback : undefined,
+        });
+    }
   }
 
   /**
@@ -149,7 +203,7 @@ class Location extends Interaction {
     this.initializeParameters();
 
     this.locationLayer.getSource()?.clear();
-    this.hasZoomedToLocation = false;
+    this.isLocationFound = false;
 
     unByKey(this.featureAddTracker);
     unByKey(this.accuracyTracker);
