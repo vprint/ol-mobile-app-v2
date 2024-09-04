@@ -9,7 +9,7 @@ import { useReferencesStore } from 'src/stores/references-store';
 // Component import
 import SiteSearchBox from './SiteSearchBox.vue';
 import MeasureComponent from '../MeasureComponent/MeasureComponent.vue';
-import LayerListButton from '../LayerListComponent/LayerListButton.vue';
+import LayerManagerButton from '../LayerListComponent/LayerManagerButton.vue';
 import LocatorComponent from '../LocatorComponent/LocatorComponent.vue';
 
 // Others
@@ -39,7 +39,7 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
     <LocatorComponent></LocatorComponent>
 
     <!-- Layer list button -->
-    <LayerListButton></LayerListButton>
+    <LayerManagerButton></LayerManagerButton>
 
     <!-- Measure button -->
     <MeasureComponent v-if="$q.platform.is.desktop"></MeasureComponent>
