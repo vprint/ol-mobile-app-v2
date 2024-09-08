@@ -2,7 +2,7 @@
 // Map imports
 
 // Vue/Quasar imports
-import { nextTick, onMounted, Ref, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, Ref, ref, watch } from 'vue';
 
 // Store imports
 import { storeToRefs } from 'pinia';
@@ -17,19 +17,34 @@ import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 // Others imports
 
 // Script
-interface ISearchItems {
+interface ISearchItem {
   label: string;
   value: number;
 }
 
 const { site } = storeToRefs(useSiteStore());
+const { clearSite } = useSiteStore();
 const { setActive } = useSidePanelStore();
 const { siteList } = storeToRefs(useReferencesStore());
 
-let searchList: ISearchItems[] = [];
-const options: Ref<ISearchItems[]> = ref([]);
+const searchList = computed<ISearchItem[]>(() =>
+  siteList.value.map((site) => ({
+    label: site.siteName
+      ? `${site.siteName} - ${site.siteId}`
+      : site.siteId.toString(),
+    value: site.siteId,
+  }))
+);
+
+const options: Ref<ISearchItem[]> = ref([]);
 const searchbox: Ref<QSelect | null> = ref(null);
-const model: Ref<string> = ref(site.value ? site.value.englishName : '');
+const model = computed({
+  get: () =>
+    site.value ? `${site.value.englishName} - ${site.value.siteId}` : '',
+  set: () => {
+    return;
+  },
+});
 
 /**
  * Filters entries according to the text entered by the user
@@ -39,7 +54,7 @@ const model: Ref<string> = ref(site.value ? site.value.englishName : '');
 function filterFn(val: string, update: (fn: () => void) => void): void {
   update(() => {
     const needle = val.toLowerCase();
-    options.value = searchList
+    options.value = searchList.value
       .filter((v) => v.label.toLowerCase().includes(needle))
       .slice(0, 5);
   });
@@ -49,12 +64,10 @@ function filterFn(val: string, update: (fn: () => void) => void): void {
  * Fetch and set site after selecting it in the list
  * @param site
  */
-function selectSite(site: ISearchItems | undefined): void {
+function selectSite(site: ISearchItem | undefined): void {
   if (site) {
     nextTick(() => {
-      if (searchbox.value) {
-        searchbox.value.blur();
-      }
+      searchbox.value?.blur();
     });
 
     setActive(true, {
@@ -65,10 +78,8 @@ function selectSite(site: ISearchItems | undefined): void {
   }
 }
 
-/**
- * Close the panel and the opened site
- */
-function clearSite(): void {
+function closeSite(): void {
+  clearSite();
   setActive(false);
 }
 
@@ -76,13 +87,7 @@ function clearSite(): void {
  * Initialize values
  */
 onMounted(() => {
-  const mappedResult = siteList.value.map((site) => ({
-    label: site.site_name,
-    value: site.site_id,
-  }));
-
-  options.value = [...mappedResult];
-  searchList = mappedResult;
+  options.value = [...searchList.value];
 });
 
 /**
@@ -91,7 +96,7 @@ onMounted(() => {
 watch(
   () => site.value,
   (newSite) => {
-    model.value = newSite ? newSite.englishName : '';
+    model.value = newSite ? `${newSite.englishName} - ${newSite.siteId}` : '';
   }
 );
 </script>
@@ -116,7 +121,8 @@ watch(
     clearable
     @filter="filterFn"
     @update:model-value="selectSite"
-    @clear="clearSite"
+    @clear="closeSite"
+    @keyup.enter="selectSite(options[0])"
   >
     <template #append>
       <q-icon name="sym_s_search" class="cursor-pointer icon-weight-thin">
@@ -127,7 +133,7 @@ watch(
 
 <style scoped lang="scss">
 .searchbox-select {
-  width: 250px;
+  width: 300px;
   padding: 4px;
 }
 </style>

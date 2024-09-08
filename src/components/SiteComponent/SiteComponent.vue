@@ -21,12 +21,12 @@ import { SITE_TYPE_REFS_PARAMS } from '../../utils/params/siteTypeRefsParams';
 
 // script
 const { site } = storeToRefs(useSiteStore());
-const { researchers, buildMaterials, artefacts, featureTypeList, studyArea } =
-  storeToRefs(useReferencesStore());
+const { individuals, siteTypeList } = storeToRefs(useReferencesStore());
 const editionMode = ref(false);
 const confirmDialogVisibility = ref(false);
 
-let originalSite = site.value?.clone();
+console.log('verif', site.value);
+let originalSite = site.value ? site.value.clone() : undefined;
 
 const { updateSite } = useSiteStore();
 
@@ -72,7 +72,7 @@ watch(
 <template>
   <SidePanelComponent v-if="site">
     <template #title>
-      {{ `${site?.englishName} - (${site?.khmerName})` }}
+      {{ `${site?.englishName} - ${site?.siteId}` }}
     </template>
 
     <template #component>
@@ -127,15 +127,7 @@ watch(
           <FormSelect
             v-model="site!.featureType"
             :label="SITE_TYPE_REFS_PARAMS.featureType"
-            :options="featureTypeList"
-            :edition-mode="editionMode"
-          />
-
-          <!-- Study area -->
-          <FormSelect
-            v-model="site!.studyArea"
-            :label="SITE_TYPE_REFS_PARAMS.studyArea"
-            :options="studyArea"
+            :options="siteTypeList"
             :edition-mode="editionMode"
           />
 
@@ -153,24 +145,13 @@ watch(
             :edition-mode="editionMode"
           />
 
-          <!-- Researchers -->
-          <FormSelect
-            v-model="site!.researchers"
-            :label="SITE_TYPE_REFS_PARAMS.researchers"
-            :options="researchers"
-            option-value="researcherId"
-            option-label="fullName"
-            :edition-mode="editionMode"
-            multiple
-          />
-
           <!-- Located by -->
           <FormSelect
             v-model="site!.locatedBy"
             :label="SITE_TYPE_REFS_PARAMS.locatedBy"
-            :options="researchers"
-            option-value="researcherId"
-            option-label="fullName"
+            :options="individuals"
+            option-value="individualId"
+            option-label="individualName"
             :edition-mode="editionMode"
             no-padding
           />
@@ -219,17 +200,6 @@ watch(
         <fieldset>
           <legend>Artefacts</legend>
 
-          <!-- Artefacts -->
-          <FormSelect
-            v-model="site!.artefacts"
-            :label="SITE_TYPE_REFS_PARAMS.artefacts"
-            :options="artefacts"
-            option-value="artefactId"
-            option-label="artefactName"
-            :edition-mode="editionMode"
-            multiple
-          />
-
           <!-- artefact comment -->
           <FormInput
             v-model="site!.artefactsComments"
@@ -242,17 +212,6 @@ watch(
 
         <fieldset>
           <legend>Build Materials</legend>
-
-          <!-- build materials-->
-          <FormSelect
-            v-model="site!.buildMaterials"
-            :label="SITE_TYPE_REFS_PARAMS.buildMaterials"
-            :options="buildMaterials"
-            option-value="buildMaterialId"
-            option-label="buildMaterialName"
-            :edition-mode="editionMode"
-            multiple
-          />
 
           <!-- build material details-->
           <FormInput

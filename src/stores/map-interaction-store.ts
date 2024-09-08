@@ -26,13 +26,14 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const { getLayerById } = useMapStore();
   const { map } = storeToRefs(useMapStore());
 
-  const selector = ref(new VectorTileSelect(INTERACTIONS_PARAMS.selector));
+  const selector: Ref<null | VectorTileSelect> = ref(null);
   const measurePlugin: Ref<null | Measure> = ref(null);
 
   /**
    * Initialize all interactions
    */
   function initializeInteractions(): void {
+    selector.value = new VectorTileSelect(INTERACTIONS_PARAMS.selector);
     map.value.addInteraction(selector.value as VectorTileSelect);
 
     measurePlugin.value = new Measure(

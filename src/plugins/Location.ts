@@ -30,7 +30,6 @@ export class LocationEvents extends Event {}
  * The user can set the position and accuracy style.
  */
 class Location extends Interaction {
-  private trackingEnabled = false;
   private isViewCentered = false;
   private isLocationFound = false;
   private positionFeature: Feature | undefined;
@@ -198,7 +197,6 @@ class Location extends Interaction {
    */
   public enableTracking(enable: boolean): void {
     this.geolocation.setTracking(enable);
-    this.trackingEnabled = enable;
 
     this.initializeParameters();
 
