@@ -1,8 +1,10 @@
 import { Fill, Style, Circle, Stroke } from 'ol/style';
 import { APP_PARAMS } from './appParams';
 import { TOKEN } from './tokenParams';
-import { Feature } from 'ol';
 import { StyleFunction } from 'ol/style/Style';
+import { useMapStore } from 'src/stores/map-store';
+import VectorTileLayer from 'ol/layer/VectorTile';
+import { FeatureLike } from 'ol/Feature';
 
 export const LAYER_PROPERTIES = 'layerProperties';
 
@@ -36,7 +38,7 @@ export interface IVectorTileLayer extends IBaseLayer {
   editable: boolean;
   selectionnable: boolean;
   url: string;
-  style: Style | StyleFunction;
+  style: Style[] | Style | StyleFunction;
 }
 
 /**
@@ -114,7 +116,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
 export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
   {
     name: 'Sites',
-    layerId: 'archaeological',
+    layerId: 'archsites',
     featureId: 'archsite_id',
     attribution: ['Données cartographiques | <b>EFEO</b>'],
     zIndex: 5,
@@ -122,22 +124,47 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
     editable: false,
     selectionnable: true,
     url: `${APP_PARAMS.vectorTileServer}/maps/archaeological/{z}/{x}/{y}.pbf`,
-    style: function (feature: Feature): Style {
-      return new Style({
-        image: new Circle({
-          fill: new Fill({
-            color: feature.get('archsite_ground_verified')
-              ? '#8a1946'
-              : '#2f7a34',
-          }),
-          radius: 8,
-          stroke: new Stroke({
-            color: 'rgba(255,255,255,1)',
-            width: 2,
+    style: (feature: FeatureLike): Style[] => {
+      const layerId = feature.get('layer');
+      const layer = useMapStore().getLayerById(layerId) as
+        | VectorTileLayer
+        | undefined;
+      const selectedFeatureId = layer?.get('selectedFeature');
+      const isSelected = feature.getId() === selectedFeatureId;
+
+      const styles = [
+        new Style({
+          image: new Circle({
+            fill: new Fill({
+              color: feature.get('archsite_ground_verified')
+                ? '#2f7a34'
+                : '#8a1946',
+            }),
+            radius: 8,
+            stroke: new Stroke({
+              color: 'rgba(255,255,255,1)',
+              width: 2,
+            }),
           }),
         }),
-      });
-    } as StyleFunction,
+      ];
+
+      if (isSelected) {
+        styles.push(
+          new Style({
+            image: new Circle({
+              radius: 10,
+              stroke: new Stroke({
+                color: 'rgba(220,50,225,1)',
+                width: 3,
+              }),
+            }),
+          })
+        );
+      }
+
+      return styles;
+    },
   },
 ];
 

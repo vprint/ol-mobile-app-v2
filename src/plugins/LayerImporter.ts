@@ -91,6 +91,7 @@ export function addVectorTileLayers(
       style: layer.style,
       zIndex: layer.zIndex,
       properties: {
+        selectedFeature: undefined,
         layerProperties: {
           id: layer.layerId,
           title: layer.name,

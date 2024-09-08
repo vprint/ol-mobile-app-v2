@@ -1,4 +1,6 @@
 // Map imports
+import GeoJSON from 'ol/format/GeoJSON.js';
+import { Feature } from 'ol';
 
 // Vue/Quasar imports
 import { onMounted, Ref, ref, watch } from 'vue';
@@ -7,6 +9,7 @@ import { defineStore, storeToRefs } from 'pinia';
 // Store imports
 import { useMapInteractionStore } from './map-interaction-store';
 import { useSidePanelStore } from './side-panel-store';
+import { useMapStore } from './map-store';
 
 // Others imports
 import ApiRequestor from 'src/services/ApiRequestor';
@@ -14,12 +17,12 @@ import {
   VectorTileSelectEvent,
   VectorTileSelectEventType,
 } from 'src/plugins/VectorTileSelect';
+import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface imports
-import { APP_PARAMS } from 'src/utils/params/appParams';
 import { Site } from 'src/model/site';
-import { ISite } from 'src/interface/ISite';
 import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
+import { ISite } from 'src/interface/ISite';
 
 /**
  * Store sites and and related functionnalities
@@ -31,21 +34,24 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   );
   const { panelParameters } = storeToRefs(useSidePanelStore());
   const { setActive } = useSidePanelStore();
+  const { fitMapToFeature, getLayerById } = useMapStore();
 
   /**
    * Main site-store function that allow to set the working site by it's id.
    * @param newSiteId
    */
   async function setSite(newSiteId: number): Promise<void> {
-    site.value = await getSiteById(newSiteId);
+    console.log('siteStore().setSite');
+    site.value = await setSiteById(newSiteId);
   }
 
   /**
    * Clear site in store and close widget
    */
   function clearSite(): void {
+    console.log('siteStore().clearSite');
     site.value = undefined;
-    setActive(false);
+    updateMap();
   }
 
   /**
@@ -53,23 +59,22 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param site New site
    */
   function updateSite(newSite: Site): void {
+    console.log('siteStore().updateSite');
     site.value = newSite;
   }
 
   /**
-   * Get full site information by id
+   * Request site information by id and open the panel
    * @param siteId SiteId
    * @returns
    */
-  async function getSiteById(siteId: number): Promise<Site | undefined> {
-    let site: Site | undefined = undefined;
+  async function setSiteById(siteId: number): Promise<Site | undefined> {
+    console.log('siteStore().setSiteById');
+    const rawSite = await ApiRequestor.getSiteById(siteId);
+    const feature = rawSite?.features[0];
 
-    const result = await ApiRequestor.getJSON<ISite[]>(
-      `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_site_by_id/items.json?id=${siteId}`
-    );
-
-    if (result?.[0]) {
-      site = new Site(result[0]);
+    if (feature) {
+      const site = new Site(feature.properties as ISite);
 
       if (panelParameters.value.parameterValue !== site.siteId.toString()) {
         setActive(true, {
@@ -78,9 +83,31 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
           parameterValue: site.siteId.toString(),
         });
       }
-    }
 
-    return site;
+      updateMap(feature);
+      return site;
+    }
+  }
+
+  /**
+   * Fit the map to the selected site and set the style.
+   * @param geoJsonFeature Selected feature
+   */
+  function updateMap(geoJsonFeature?: GeoJSONFeature): void {
+    console.log('siteStore().updateMap');
+    const archLayer = getLayerById('archsites');
+
+    if (geoJsonFeature) {
+      const feature = new GeoJSON().readFeature(geoJsonFeature, {
+        dataProjection: 'EPSG:4326',
+        featureProjection: 'EPSG:3857',
+      }) as Feature;
+      fitMapToFeature(feature);
+      archLayer?.set('selectedFeature', feature.get('siteId'));
+    } else {
+      archLayer?.set('selectedFeature', undefined);
+    }
+    archLayer?.changed();
   }
 
   /**
@@ -91,6 +118,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
       // @ts-expect-error - Type problems due to typescript / ol
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
+        console.log('siteStore().siteSelectionListener');
         const features = e.selected;
 
         if (features) {
@@ -121,25 +149,22 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
           newPanelParameters.parameterValue as string,
           10
         );
-
         if (siteId !== site.value?.siteId) {
           setSite(siteId);
         }
-      }
-      // Close site if URL does not contains site data
-      else {
-        site.value = undefined;
+      } else {
+        clearSite();
       }
     }
   );
 
   /**
    * Watch for interaction initialization
-   * TODO: Voir si il est possible de supprimer immediate
    */
   watch(
     () => isMapInteractionsInitialized.value,
     () => {
+      console.log('siteStore().WatcherIsMapInteractionsInitialized');
       siteSelectionListener();
     },
     { immediate: true }
@@ -149,6 +174,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * Initialize site
    */
   onMounted(async () => {
+    console.log('siteStore().onMounted');
     if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {
       setSite(parseInt(panelParameters.value.parameterValue as string));
     }
