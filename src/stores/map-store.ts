@@ -11,6 +11,8 @@ import { defineStore } from 'pinia';
 // Others imports
 import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
+import { easeOut } from 'ol/easing';
+import { Feature } from 'ol';
 
 /**
  * This store manage map and provide related functionnalities.
@@ -41,10 +43,29 @@ export const useMapStore = defineStore('map', () => {
     });
   }
 
+  /**
+   * Fit the map to a given extent and execute a callback if necessary
+   * @param extent
+   * @param callback
+   */
+  function fitMapToFeature(feature: Feature, callback?: () => void): void {
+    const extent = feature.getGeometry()?.getExtent();
+
+    if (extent) {
+      map.value.getView().fit(extent, {
+        maxZoom: 15,
+        duration: 500,
+        easing: easeOut,
+        callback: callback ? callback : undefined,
+      });
+    }
+  }
+
   return {
     map,
     isMapInitialized,
     setMap,
     getLayerById,
+    fitMapToFeature,
   };
 });
