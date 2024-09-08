@@ -1,101 +1,147 @@
 import { format } from 'date-fns';
-import { Geometry } from 'ol/geom';
 import { ISite } from 'src/interface/ISite';
-import { Researcher } from './researcher';
-import { BuildMaterial } from './buildMaterial';
-import { Artefact } from './artefact';
-import { AssociatedDocument } from './associatedDocument';
 
 /**
  * Site
  */
 export class Site {
-  private _siteId: number;
-  public englishName: string;
-  public frenchName: string;
-  public khmerName: string;
-  public alternativeName: string;
-  public alternativeKhmerName: string;
-  public description: string;
-  public ikId: number;
-  public mhId: number;
-  public verified: boolean;
-  public researchers: Researcher[];
-  public artefacts: Artefact[];
-  public verificationDate: string;
-  public locatedBy: Researcher;
-  public ceramicsDetails: string;
-  public ceramics: boolean;
-  public buildMaterials: BuildMaterial[];
-  public buildMaterialComments: string;
-  public artefactsComments: string;
-  public looted: boolean;
-  public cultivated: boolean;
-  public cleared: boolean;
-  public threatened: boolean;
-  public databasingComments: string;
-  public creationDate: string;
-  public modificationDate: string;
-  public userCreation: string;
-  public userModification: string;
-  public featureType: string;
-  public studyArea: string;
-  public documents: AssociatedDocument[];
-  public geom?: Geometry;
+  public siteId: number;
+  public englishName?: string;
+  public frenchName?: string;
+  public khmerName?: string;
+  public alternativeName?: string;
+  public alternativeKhmerName?: string;
+  public description?: string;
+  public verified?: boolean;
+  public ceramicsDetails?: string;
+  public ceramics?: boolean;
+  public buildMaterialComments?: string;
+  public artefactsComments?: string;
+  public looted?: boolean;
+  public cultivated?: boolean;
+  public cleared?: boolean;
+  public threatened?: boolean;
+  public databasingComments?: string;
+  public userCreation?: string;
+  public userModification?: string;
+  public featureType?: string;
+  public locatedBy?: number;
+  public groundVerifiedBy?: number;
+  public materialSandstone?: boolean;
+  public materialPinkSandstone?: boolean;
+  public materialLaterite?: boolean;
+  public materialBrick?: boolean;
+  public materialThmaphnom?: boolean;
+  public materialOther?: boolean;
+  public artefactsPedestal?: boolean;
+  public artefactsColonette?: boolean;
+  public artefactsDoorframe?: boolean;
+  public artefactsStatuary?: boolean;
+  public artefactsDecoratedBlocks?: boolean;
+  public artefactsOther?: boolean;
+  public idAmbiguity?: boolean;
+  public idAmbiguityDetail?: string;
+  public ckId?: number;
+  public ikId?: string;
+  public mhId?: string;
+  public ikStarred?: boolean;
+  public bdId?: string;
+  public gtId?: number;
+  public cpId?: number;
+  public dcId?: string;
+  public gaId?: number;
+  public jbId?: number;
+  public emId?: number;
+  public pkId?: number;
+  public isId?: number;
+  public coordinateSource?: string;
+  public inGapStudyArea?: boolean;
+  public inLidarStudyArea?: boolean;
+  public toBeInvestigated?: boolean;
+  public toBeRemapped?: boolean;
+  public toBeRemoved?: boolean;
+  public dbResolved?: number;
+  public creationDate?: string;
+  public verificationDate?: string;
+  public modificationDate?: string;
 
   constructor(partialEntity: ISite | Site) {
-    this._siteId =
+    this.siteId =
       partialEntity instanceof Site
-        ? partialEntity._siteId
+        ? partialEntity.siteId
         : Number(partialEntity.siteId);
-    this.englishName = partialEntity.englishName;
-    this.frenchName = partialEntity.frenchName;
-    this.khmerName = partialEntity.khmerName;
-    this.alternativeName = partialEntity.alternativeName;
-    this.alternativeKhmerName = partialEntity.alternativeKhmerName;
-    this.description = partialEntity.description;
-    this.ikId = Number(partialEntity.ikId);
-    this.mhId = Number(partialEntity.mhId);
+    this.englishName = partialEntity.englishName ?? undefined;
+    this.frenchName = partialEntity.frenchName ?? undefined;
+    this.khmerName = partialEntity.khmerName ?? undefined;
+    this.alternativeName = partialEntity.alternativeName ?? undefined;
+    this.alternativeKhmerName = partialEntity.alternativeKhmerName ?? undefined;
+    this.description = partialEntity.description ?? undefined;
+    this.ikId = partialEntity.ikId ?? undefined;
+    this.mhId = partialEntity.mhId ?? undefined;
     this.verified = Boolean(partialEntity.verified);
-    this.verificationDate = format(
-      partialEntity.verificationDate,
-      'yyyy/MM/dd'
-    );
-    this.locatedBy = new Researcher(partialEntity.locatedBy);
-    this.ceramicsDetails = partialEntity.ceramicsDetails;
+    this.locatedBy = partialEntity.locatedBy ?? undefined;
+    this.ceramicsDetails = partialEntity.ceramicsDetails ?? undefined;
     this.ceramics = Boolean(partialEntity.ceramics);
-    this.buildMaterials = partialEntity.buildMaterials.map(
-      (buildMaterial) => new BuildMaterial(buildMaterial)
-    );
-    this.buildMaterialComments = partialEntity.buildMaterialComments;
-    this.artefactsComments = partialEntity.artefactsComments;
+    this.buildMaterialComments =
+      partialEntity.buildMaterialComments ?? undefined;
+    this.artefactsComments = partialEntity.artefactsComments ?? undefined;
     this.looted = Boolean(partialEntity.looted);
     this.cultivated = Boolean(partialEntity.cultivated);
     this.cleared = Boolean(partialEntity.cleared);
     this.threatened = Boolean(partialEntity.threatened);
-    this.databasingComments = partialEntity.databasingComments;
-    this.creationDate = format(partialEntity.creationDate, 'yyyy/MM/dd');
-    this.modificationDate = format(
-      partialEntity.modificationDate,
-      'yyyy/MM/dd'
-    );
-    this.userCreation = partialEntity.userCreation;
-    this.userModification = partialEntity.userModification;
-    this.featureType = partialEntity.featureType;
-    this.studyArea = partialEntity.studyArea;
-    this.researchers = partialEntity.researchers.map(
-      (researcher) => new Researcher(researcher)
-    );
-    this.artefacts = partialEntity.artefacts.map(
-      (artefact) => new Artefact(artefact)
-    );
-    this.documents = partialEntity.documents.map(
-      (document) => new AssociatedDocument(document)
-    );
-  }
+    this.databasingComments = partialEntity.databasingComments ?? undefined;
+    this.userCreation = partialEntity.userCreation ?? undefined;
+    this.userModification = partialEntity.userModification ?? undefined;
+    this.featureType = partialEntity.featureType ?? undefined;
+    this.groundVerifiedBy = partialEntity.groundVerifiedBy ?? undefined;
+    this.materialSandstone = partialEntity.materialSandstone ?? undefined;
+    this.materialPinkSandstone =
+      partialEntity.materialPinkSandstone ?? undefined;
+    this.materialLaterite = partialEntity.materialLaterite ?? undefined;
+    this.materialBrick = partialEntity.materialBrick ?? undefined;
+    this.materialThmaphnom = partialEntity.materialThmaphnom ?? undefined;
+    this.materialOther = partialEntity.materialOther ?? undefined;
+    this.artefactsPedestal = partialEntity.artefactsPedestal ?? undefined;
+    this.artefactsColonette = partialEntity.artefactsColonette ?? undefined;
+    this.artefactsDoorframe = partialEntity.artefactsDoorframe ?? undefined;
+    this.artefactsStatuary = partialEntity.artefactsStatuary ?? undefined;
+    this.artefactsDecoratedBlocks =
+      partialEntity.artefactsDecoratedBlocks ?? undefined;
+    this.artefactsOther = partialEntity.artefactsOther ?? undefined;
+    this.idAmbiguity = partialEntity.idAmbiguity ?? undefined;
+    this.idAmbiguityDetail = partialEntity.idAmbiguityDetail ?? undefined;
+    this.ckId = partialEntity.ckId ?? undefined;
+    this.ikId = partialEntity.ikId ?? undefined;
+    this.mhId = partialEntity.mhId ?? undefined;
+    this.ikStarred = partialEntity.ikStarred ?? undefined;
+    this.bdId = partialEntity.bdId ?? undefined;
+    this.gtId = partialEntity.gtId ?? undefined;
+    this.cpId = partialEntity.cpId ?? undefined;
+    this.dcId = partialEntity.dcId ?? undefined;
+    this.gaId = partialEntity.gaId ?? undefined;
+    this.jbId = partialEntity.jbId ?? undefined;
+    this.emId = partialEntity.emId ?? undefined;
+    this.pkId = partialEntity.pkId ?? undefined;
+    this.isId = partialEntity.isId ?? undefined;
+    this.coordinateSource = partialEntity.coordinateSource ?? undefined;
+    this.inGapStudyArea = partialEntity.inGapStudyArea ?? undefined;
+    this.inLidarStudyArea = partialEntity.inLidarStudyArea ?? undefined;
+    this.toBeInvestigated = partialEntity.toBeInvestigated ?? undefined;
+    this.toBeRemapped = partialEntity.toBeRemapped ?? undefined;
+    this.toBeRemoved = partialEntity.toBeRemoved ?? undefined;
+    this.dbResolved = partialEntity.dbResolved ?? undefined;
 
-  get siteId(): number {
-    return this._siteId;
+    this.creationDate = partialEntity.creationDate
+      ? format(partialEntity.creationDate, 'yyyy/MM/dd')
+      : undefined;
+
+    this.modificationDate = partialEntity.modificationDate
+      ? format(partialEntity.modificationDate, 'yyyy/MM/dd')
+      : undefined;
+
+    this.verificationDate = partialEntity.verificationDate
+      ? format(partialEntity.verificationDate, 'yyyy/MM/dd')
+      : undefined;
   }
 
   /**
