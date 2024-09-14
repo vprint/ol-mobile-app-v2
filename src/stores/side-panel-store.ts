@@ -10,6 +10,7 @@ import { RouteRecordName, useRoute, useRouter } from 'vue-router';
 // Interface and enum imports
 
 // Others imports
+import _ from 'lodash';
 
 export interface ISidePanelParameters {
   location: RouteRecordName | undefined;
@@ -91,8 +92,12 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   watch(
     () => route.path,
     () => {
-      console.log('useSidePanelStore().watchRoutePath');
-      panelParameters.value = getSidePanelParametersFromRoute();
+      console.log('useSidePanelStore().routeChangeWatcher');
+
+      const newPanelParameters = getSidePanelParametersFromRoute();
+      if (!_.isEqual(newPanelParameters, panelParameters.value)) {
+        panelParameters.value = newPanelParameters;
+      }
     }
   );
 

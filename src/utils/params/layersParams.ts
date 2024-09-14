@@ -124,46 +124,21 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
     editable: false,
     selectionnable: true,
     url: `${APP_PARAMS.vectorTileServer}/maps/archaeological/{z}/{x}/{y}.pbf`,
-    style: (feature: FeatureLike): Style[] => {
-      const layerId = feature.get('layer');
-      const layer = useMapStore().getLayerById(layerId) as
-        | VectorTileLayer
-        | undefined;
-      const selectedFeatureId = layer?.get('selectedFeature');
-      const isSelected = feature.getId() === selectedFeatureId;
-
-      const styles = [
-        new Style({
-          image: new Circle({
-            fill: new Fill({
-              color: feature.get('archsite_ground_verified')
-                ? '#2f7a34'
-                : '#8a1946',
-            }),
-            radius: 8,
-            stroke: new Stroke({
-              color: 'rgba(255,255,255,1)',
-              width: 2,
-            }),
+    style: (feature: FeatureLike): Style => {
+      return new Style({
+        image: new Circle({
+          fill: new Fill({
+            color: feature.get('archsite_ground_verified')
+              ? '#2f7a34'
+              : '#8a1946',
+          }),
+          radius: 8,
+          stroke: new Stroke({
+            color: 'rgba(255,255,255,1)',
+            width: 2,
           }),
         }),
-      ];
-
-      if (isSelected) {
-        styles.push(
-          new Style({
-            image: new Circle({
-              radius: 10,
-              stroke: new Stroke({
-                color: 'rgba(220,50,225,1)',
-                width: 3,
-              }),
-            }),
-          })
-        );
-      }
-
-      return styles;
+      });
     },
   },
 ];

@@ -32,7 +32,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   const { selector, isMapInteractionsInitialized } = storeToRefs(
     useMapInteractionStore()
   );
-  const { panelParameters } = storeToRefs(useSidePanelStore());
+  const { isActive, panelParameters } = storeToRefs(useSidePanelStore());
   const { setActive } = useSidePanelStore();
   const { fitMapToFeature, getLayerById } = useMapStore();
 
@@ -42,7 +42,11 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   async function setSite(newSiteId: number): Promise<void> {
     console.log('siteStore().setSite');
-    site.value = await setSiteById(newSiteId);
+    setActive(true, {
+      location: SIDE_PANEL_PARAM.SITE,
+      parameterName: 'siteId',
+      parameterValue: newSiteId.toString(),
+    });
   }
 
   /**
@@ -74,18 +78,19 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
     const feature = rawSite?.features[0];
 
     if (feature) {
-      const site = new Site(feature.properties as ISite);
+      const newSite = new Site(feature.properties as ISite);
 
-      if (panelParameters.value.parameterValue !== site.siteId.toString()) {
+      if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
         setActive(true, {
           location: SIDE_PANEL_PARAM.SITE,
           parameterName: 'siteId',
-          parameterValue: site.siteId.toString(),
+          parameterValue: newSite.siteId.toString(),
         });
       }
 
       updateMap(feature);
-      return site;
+      site.value = newSite;
+      return newSite;
     }
   }
 
@@ -107,6 +112,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
     } else {
       archLayer?.set('selectedFeature', undefined);
     }
+
     archLayer?.changed();
   }
 
@@ -114,7 +120,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    selector.value.on(
+    selector.value?.on(
       // @ts-expect-error - Type problems due to typescript / ol
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
@@ -135,11 +141,22 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   }
 
   /**
+   *
+   * @param event the keyboard press envent
+   */
+  function handleEscape(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && isActive.value && site.value) {
+      clearSite();
+    }
+  }
+
+  /**
    * watch for site change in URL
    */
   watch(
     () => panelParameters.value,
     (newPanelParameters) => {
+      console.log('siteStore.panelParametersWatcher()');
       // Open site if URL contains site data
       if (
         newPanelParameters.location === SIDE_PANEL_PARAM.SITE &&
@@ -150,7 +167,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
           10
         );
         if (siteId !== site.value?.siteId) {
-          setSite(siteId);
+          setSiteById(siteId);
         }
       } else {
         clearSite();
@@ -163,9 +180,10 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   watch(
     () => isMapInteractionsInitialized.value,
-    () => {
-      console.log('siteStore().WatcherIsMapInteractionsInitialized');
-      siteSelectionListener();
+    (newValue) => {
+      if (newValue) {
+        siteSelectionListener();
+      }
     },
     { immediate: true }
   );
@@ -175,6 +193,9 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   onMounted(async () => {
     console.log('siteStore().onMounted');
+
+    window.addEventListener('keydown', handleEscape);
+
     if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {
       setSite(parseInt(panelParameters.value.parameterValue as string));
     }

@@ -25,8 +25,7 @@ const { individuals, siteTypeList } = storeToRefs(useReferencesStore());
 const editionMode = ref(false);
 const confirmDialogVisibility = ref(false);
 
-console.log('verif', site.value);
-let originalSite = site.value ? site.value.clone() : undefined;
+let originalSite = site.value?.clone();
 
 const { updateSite } = useSiteStore();
 

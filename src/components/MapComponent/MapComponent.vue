@@ -26,7 +26,7 @@ import {
   VECTOR_TILE_LAYERS_SETTINGS,
   RASTER_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
-import addControlers from 'src/plugins/ControlersCreator';
+import addControllers from 'src/plugins/ControllersCreator';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
@@ -74,7 +74,7 @@ onMounted(() => {
   addMeasureLayer(map.value);
 
   setMap(map.value);
-  addControlers(map.value);
+  addControllers(map.value);
   initializeInteractions();
 });
 </script>
@@ -102,3 +102,4 @@ onMounted(() => {
   background-color: lightgrey;
 }
 </style>
+src/plugins/ControllersCreator

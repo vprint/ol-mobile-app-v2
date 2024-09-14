@@ -7,7 +7,7 @@ import { Map } from 'ol';
  * This function add basic interaction and control to the map
  * @param map Carte
  */
-function addControlers(map: Map): void {
+function addControllers(map: Map): void {
   map.addInteraction(new Link());
 
   map.addControl(
@@ -25,4 +25,4 @@ function addControlers(map: Map): void {
   );
 }
 
-export default addControlers;
+export default addControllers;

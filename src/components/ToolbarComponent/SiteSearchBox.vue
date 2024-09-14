@@ -26,7 +26,8 @@ const { site } = storeToRefs(useSiteStore());
 const { clearSite } = useSiteStore();
 const { setActive } = useSidePanelStore();
 const { siteList } = storeToRefs(useReferencesStore());
-
+const options: Ref<ISearchItem[]> = ref([]);
+const searchbox: Ref<QSelect | null> = ref(null);
 const searchList = computed<ISearchItem[]>(() =>
   siteList.value.map((site) => ({
     label: site.siteName
@@ -35,9 +36,6 @@ const searchList = computed<ISearchItem[]>(() =>
     value: site.siteId,
   }))
 );
-
-const options: Ref<ISearchItem[]> = ref([]);
-const searchbox: Ref<QSelect | null> = ref(null);
 const model = computed({
   get: () =>
     site.value ? `${site.value.englishName} - ${site.value.siteId}` : '',
@@ -96,6 +94,7 @@ onMounted(() => {
 watch(
   () => site.value,
   (newSite) => {
+    console.log(newSite);
     model.value = newSite ? `${newSite.englishName} - ${newSite.siteId}` : '';
   }
 );

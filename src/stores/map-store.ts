@@ -55,6 +55,7 @@ export const useMapStore = defineStore('map', () => {
       map.value.getView().fit(extent, {
         maxZoom: 15,
         duration: 500,
+        padding: [0, 400, 0, 0],
         easing: easeOut,
         callback: callback ? callback : undefined,
       });
