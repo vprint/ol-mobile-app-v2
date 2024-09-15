@@ -91,12 +91,11 @@ export function addVectorTileLayers(
       style: layer.style,
       zIndex: layer.zIndex,
       properties: {
-        selectedFeature: undefined,
         layerProperties: {
           id: layer.layerId,
           title: layer.name,
           editable: layer.editable,
-          selectionnable: layer.selectionnable,
+          selectable: layer.selectable,
           tunable: true,
         } as ILayerProperties,
         featureId: layer.featureId,

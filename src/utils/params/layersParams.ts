@@ -2,8 +2,6 @@ import { Fill, Style, Circle, Stroke } from 'ol/style';
 import { APP_PARAMS } from './appParams';
 import { TOKEN } from './tokenParams';
 import { StyleFunction } from 'ol/style/Style';
-import { useMapStore } from 'src/stores/map-store';
-import VectorTileLayer from 'ol/layer/VectorTile';
 import { FeatureLike } from 'ol/Feature';
 
 export const LAYER_PROPERTIES = 'layerProperties';
@@ -36,10 +34,12 @@ export interface IVectorTileLayer extends IBaseLayer {
   featureId: string;
   attribution: string[];
   editable: boolean;
-  selectionnable: boolean;
+  selectable: boolean;
   url: string;
   style: Style[] | Style | StyleFunction;
 }
+
+type IStyleCache = Record<string, Style>;
 
 /**
  * List of application background layers
@@ -122,24 +122,39 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
     zIndex: 5,
     visible: true,
     editable: false,
-    selectionnable: true,
+    selectable: true,
     url: `${APP_PARAMS.vectorTileServer}/maps/archaeological/{z}/{x}/{y}.pbf`,
-    style: (feature: FeatureLike): Style => {
-      return new Style({
-        image: new Circle({
-          fill: new Fill({
-            color: feature.get('archsite_ground_verified')
-              ? '#2f7a34'
-              : '#8a1946',
+    style: ((): StyleFunction => {
+      console.log('am i executed ?');
+      // Style cache. Used to optimize display.
+      const styleCache: IStyleCache = {};
+
+      return (feature: FeatureLike): Style => {
+        const archsiteId = feature.get('archsite_id');
+        const groundVerified = feature.get('archsite_ground_verified');
+        const key = `${archsiteId}-${groundVerified}`;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (styleCache[key]) {
+          return styleCache[key];
+        }
+
+        const style = new Style({
+          image: new Circle({
+            fill: new Fill({
+              color: groundVerified ? '#2f7a34' : '#8a1946',
+            }),
+            radius: 8,
+            stroke: new Stroke({
+              color: 'rgba(255,255,255,1)',
+              width: 2,
+            }),
           }),
-          radius: 8,
-          stroke: new Stroke({
-            color: 'rgba(255,255,255,1)',
-            width: 2,
-          }),
-        }),
-      });
-    },
+        });
+
+        styleCache[key] = style;
+        return style;
+      };
+    })(),
   },
 ];
 

@@ -35,6 +35,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   const { isActive, panelParameters } = storeToRefs(useSidePanelStore());
   const { setActive } = useSidePanelStore();
   const { fitMapToFeature, getLayerById } = useMapStore();
+  const SITE_LAYER = 'archsites';
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -100,7 +101,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   function updateMap(geoJsonFeature?: GeoJSONFeature): void {
     console.log('siteStore().updateMap');
-    const archLayer = getLayerById('archsites');
+    const archLayer = getLayerById(SITE_LAYER);
 
     if (geoJsonFeature) {
       const feature = new GeoJSON().readFeature(geoJsonFeature, {
@@ -108,9 +109,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
         featureProjection: 'EPSG:3857',
       }) as Feature;
       fitMapToFeature(feature);
-      archLayer?.set('selectedFeature', feature.get('siteId'));
-    } else {
-      archLayer?.set('selectedFeature', undefined);
     }
 
     archLayer?.changed();
@@ -129,7 +127,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
         if (features) {
           const sitesFeatures = features.filter(
-            (feature) => feature.get('layer') === 'archsites'
+            (feature) => feature.get('layer') === SITE_LAYER
           );
 
           if (sitesFeatures[0]) {

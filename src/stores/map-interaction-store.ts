@@ -3,7 +3,7 @@ import { Interaction } from 'ol/interaction';
 
 // Vue/Quasar imports
 import { defineStore, storeToRefs } from 'pinia';
-import { Ref, ref } from 'vue';
+import { Ref, ref, watch } from 'vue';
 
 // Store imports
 import { useMapStore } from './map-store';
@@ -16,6 +16,7 @@ import Measure from 'src/plugins/measure/Measure';
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
 import { MEASURE_LAYER } from 'src/utils/params/layersParams';
 import VectorLayer from 'ol/layer/Vector';
+import VectorTileLayer from 'ol/layer/VectorTile';
 
 /**
  * Store and manage mapInteraction.
@@ -24,7 +25,7 @@ import VectorLayer from 'ol/layer/Vector';
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const isMapInteractionsInitialized = ref(false);
   const { getLayerById } = useMapStore();
-  const { map } = storeToRefs(useMapStore());
+  const { map, isMapInitialized } = storeToRefs(useMapStore());
 
   const selector: Ref<null | VectorTileSelect> = ref(null);
   const measurePlugin: Ref<null | Measure> = ref(null);
@@ -33,9 +34,14 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * Initialize all interactions
    */
   function initializeInteractions(): void {
-    selector.value = new VectorTileSelect(INTERACTIONS_PARAMS.selector);
+    // Add select interaction
+    selector.value = new VectorTileSelect(
+      INTERACTIONS_PARAMS.selector,
+      getLayerById('archsites') as VectorTileLayer
+    );
     map.value.addInteraction(selector.value as VectorTileSelect);
 
+    // Add measure interaction
     measurePlugin.value = new Measure(
       INTERACTIONS_PARAMS.measure,
       getLayerById(MEASURE_LAYER.layerId) as VectorLayer
@@ -75,6 +81,18 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
     return findedElement;
   }
+
+  /**
+   * Watch for map initialization and then enable the interaction
+   */
+  watch(
+    () => isMapInitialized.value,
+    (isInitialized) => {
+      if (isInitialized) {
+        initializeInteractions();
+      }
+    }
+  );
 
   return {
     isMapInteractionsInitialized,

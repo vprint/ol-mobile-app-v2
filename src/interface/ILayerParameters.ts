@@ -18,7 +18,7 @@ export interface ILayerProperties {
   /**
    * Does this layer allows to select features ?
    */
-  selectionnable?: boolean;
+  selectable?: boolean;
   /**
    * Is the layers dynamically adjusted after every zoom ?
    */

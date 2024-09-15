@@ -7,7 +7,6 @@ import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.v
 
 // Store imports
 import { useMapStore } from '../../stores/map-store';
-import { useMapInteractionStore } from '../../stores/map-interaction-store';
 
 // Map imports
 import Map from 'ol/Map';
@@ -34,7 +33,6 @@ import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 // Script
 const { setMap } = useMapStore();
-const { initializeInteractions } = useMapInteractionStore();
 const map: Ref<Map | undefined> = ref(undefined);
 
 onMounted(() => {
@@ -70,12 +68,12 @@ onMounted(() => {
   addRasterBackgroundLayers(map.value, BACKGROUND_LAYERS_SETTINGS);
   addVectorTileLayers(map.value, VECTOR_TILE_LAYERS_SETTINGS);
   addOGCLayer(map.value, RASTER_LAYERS_SETTINGS);
+
   // TODO: Déplacer ailleurs
   addMeasureLayer(map.value);
 
   setMap(map.value);
   addControllers(map.value);
-  initializeInteractions();
 });
 </script>
 

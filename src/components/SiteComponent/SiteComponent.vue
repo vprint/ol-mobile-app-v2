@@ -22,12 +22,11 @@ import { SITE_TYPE_REFS_PARAMS } from '../../utils/params/siteTypeRefsParams';
 // script
 const { site } = storeToRefs(useSiteStore());
 const { individuals, siteTypeList } = storeToRefs(useReferencesStore());
+const { updateSite } = useSiteStore();
 const editionMode = ref(false);
 const confirmDialogVisibility = ref(false);
 
 let originalSite = site.value?.clone();
-
-const { updateSite } = useSiteStore();
 
 /**
  * Manage dialog event
