@@ -34,7 +34,6 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * Read panel parameters from the url at startup
    */
   onMounted(() => {
-    console.log('useSidePanelStore().onMounted');
     panelParameters.value = getSidePanelParametersFromRoute();
   });
 
@@ -42,7 +41,6 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * This function analyze the route settings to set the panelParameters.
    */
   function getSidePanelParametersFromRoute(): ISidePanelParameters {
-    console.log('useSidePanelStore().getSidePanelParametersFromRoute');
     const key = Object.keys(route.params)[0] as string | undefined;
 
     return {
@@ -57,7 +55,6 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * @param active Should the side panel be opened or closed ?
    */
   function setActive(active: boolean, parameters?: ISidePanelParameters): void {
-    console.log('useSidePanelStore().setActive');
     isActive.value = active;
 
     if (!active) {
@@ -92,8 +89,6 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   watch(
     () => route.path,
     () => {
-      console.log('useSidePanelStore().routeChangeWatcher');
-
       const newPanelParameters = getSidePanelParametersFromRoute();
       if (!_.isEqual(newPanelParameters, panelParameters.value)) {
         panelParameters.value = newPanelParameters;

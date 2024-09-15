@@ -42,7 +42,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param newSiteId
    */
   async function setSite(newSiteId: number): Promise<void> {
-    console.log('siteStore().setSite');
     setActive(true, {
       location: SIDE_PANEL_PARAM.SITE,
       parameterName: 'siteId',
@@ -54,8 +53,8 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * Clear site in store and close widget
    */
   function clearSite(): void {
-    console.log('siteStore().clearSite');
     site.value = undefined;
+    selector.value?.clearFeatures();
     updateMap();
   }
 
@@ -64,7 +63,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param site New site
    */
   function updateSite(newSite: Site): void {
-    console.log('siteStore().updateSite');
     site.value = newSite;
   }
 
@@ -74,7 +72,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @returns
    */
   async function setSiteById(siteId: number): Promise<Site | undefined> {
-    console.log('siteStore().setSiteById');
     const rawSite = await ApiRequestor.getSiteById(siteId);
     const feature = rawSite?.features[0];
 
@@ -91,6 +88,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
       updateMap(feature);
       site.value = newSite;
+      selector.value?.setFeaturesById([siteId.toString()]);
       return newSite;
     }
   }
@@ -100,9 +98,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param geoJsonFeature Selected feature
    */
   function updateMap(geoJsonFeature?: GeoJSONFeature): void {
-    console.log('siteStore().updateMap');
-    const archLayer = getLayerById(SITE_LAYER);
-
     if (geoJsonFeature) {
       const feature = new GeoJSON().readFeature(geoJsonFeature, {
         dataProjection: 'EPSG:4326',
@@ -111,6 +106,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
       fitMapToFeature(feature);
     }
 
+    const archLayer = getLayerById(SITE_LAYER);
     archLayer?.changed();
   }
 
@@ -122,17 +118,11 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
       // @ts-expect-error - Type problems due to typescript / ol
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
-        console.log('siteStore().siteSelectionListener');
         const features = e.selected;
 
-        if (features) {
-          const sitesFeatures = features.filter(
-            (feature) => feature.get('layer') === SITE_LAYER
-          );
-
-          if (sitesFeatures[0]) {
-            setSite(sitesFeatures[0].getId() as number);
-          }
+        if (features && features.length > 0) {
+          setSite(features[0].getId() as number);
+          selector.value?.setFeaturesById([features[0].getId()?.toString()]);
         }
       }
     );
@@ -154,7 +144,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   watch(
     () => panelParameters.value,
     (newPanelParameters) => {
-      console.log('siteStore.panelParametersWatcher()');
       // Open site if URL contains site data
       if (
         newPanelParameters.location === SIDE_PANEL_PARAM.SITE &&
@@ -190,8 +179,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * Initialize site
    */
   onMounted(async () => {
-    console.log('siteStore().onMounted');
-
     window.addEventListener('keydown', handleEscape);
 
     if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {

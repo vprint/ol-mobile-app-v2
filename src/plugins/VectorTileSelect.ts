@@ -5,6 +5,7 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import Event from 'ol/events/Event.js';
 import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
+import { getUid } from 'ol/util.js';
 
 /**
  * Vector tile select event type definition
@@ -36,50 +37,47 @@ export class VectorTileSelectEvent extends Event {
  * The class selects features for a given visible vector tile layer on the map.
  */
 class VectorTileSelect extends Interaction {
-  public selectedFeatures: Record<string, FeatureLike> = {};
+  public selectedFeatures: string[] = [];
   private styleCache: Record<string, Style> = {};
-
   private selectableLayer: VectorTileLayer | undefined;
   private isInitialized = false;
 
-  private selectionStyle = (feature: FeatureLike): Style | undefined => {
-    const featureId = feature.getId();
-    if (featureId && featureId in this.selectedFeatures) {
-      if (!(featureId in this.styleCache)) {
-        const style = new Style({
-          image: new CircleStyle({
-            radius: 15,
-            fill: new Fill({
-              color: '#3399CC',
-            }),
-            stroke: new Stroke({
-              color: '#fff',
-              width: 2,
-            }),
-          }),
-        });
-        this.styleCache[featureId] = style;
-      }
-      return this.styleCache[featureId];
-    }
-    return undefined;
-  };
+  private selectionStyle = new Style({
+    image: new CircleStyle({
+      radius: 10,
+      fill: new Fill({ color: '#3399CC' }),
+      stroke: new Stroke({ color: '#fff', width: 2 }),
+    }),
+  });
 
   private selectionLayer = new VectorTileLayer({
     renderMode: 'vector',
     zIndex: 999,
-    style: this.selectionStyle,
+    style: (feature: FeatureLike): Style | undefined => {
+      const featureId = feature.getId();
+      if (featureId && this.selectedFeatures.includes(featureId.toString())) {
+        if (!(featureId in this.styleCache)) {
+          this.styleCache[featureId] = this.selectionStyle;
+        }
+        return this.styleCache[featureId];
+      }
+      return undefined;
+    },
   });
 
-  constructor(name: string, selectableLayer: VectorTileLayer) {
+  constructor(
+    name: string,
+    selectableLayer: VectorTileLayer,
+    selectionStyle?: Style
+  ) {
     super({
-      handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean => {
-        return this.selectFeaturesAtPixel(evt);
-      },
+      handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean =>
+        this.selectFeaturesAtPixel(evt),
     });
     this.set('name', name);
     this.selectableLayer = selectableLayer;
     this.selectionLayer.setSource(this.selectableLayer.getSource() ?? null);
+    this.selectionStyle = selectionStyle ? selectionStyle : this.selectionStyle;
   }
 
   /**
@@ -92,15 +90,17 @@ class VectorTileSelect extends Interaction {
     this.initialize();
 
     if (e.type === 'click') {
-      this.clearSelect();
-
       const features = this.getMap()?.getFeaturesAtPixel(e.pixel, {
         layerFilter: (layer) => {
-          //@ts-expect-error access to private properties
-          return layer.ol_uid === this.selectableLayer.ol_uid;
+          return getUid(layer) === getUid(this.selectableLayer);
         },
         hitTolerance: 10,
       });
+
+      const featureIds = features?.map((feature) =>
+        feature.getId()?.toString()
+      );
+      this.setFeaturesById(featureIds);
 
       this.dispatchEvent(
         new VectorTileSelectEvent(
@@ -109,30 +109,40 @@ class VectorTileSelect extends Interaction {
           e
         )
       );
-
-      if (features) {
-        features.forEach((feature) => {
-          const fid = feature.getId();
-          if (fid) {
-            this.selectedFeatures[fid] = feature;
-          }
-        });
-        this.selectionLayer.changed();
-      }
     }
     return true;
   }
 
+  /**
+   * Clear selected features.
+   */
+  public clearFeatures(): void {
+    this.selectedFeatures = [];
+    this.selectionLayer.changed();
+  }
+
+  /**
+   * Show the given feature as selected
+   * @param featuresId a list of id
+   */
+  public setFeaturesById(featuresId: (string | undefined)[] | undefined): void {
+    this.clearFeatures();
+
+    featuresId?.forEach((featureId) => {
+      if (featureId) this.selectedFeatures.push(featureId);
+    });
+
+    this.selectionLayer.changed();
+  }
+
+  /**
+   * Initialize component
+   */
   private initialize(): void {
     if (!this.isInitialized) {
       this.getMap()?.addLayer(this.selectionLayer);
       this.isInitialized = true;
     }
-  }
-
-  public clearSelect(): void {
-    this.selectedFeatures = {};
-    this.selectionLayer.changed();
   }
 }
 

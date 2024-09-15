@@ -17,6 +17,8 @@ import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
 import { MEASURE_LAYER } from 'src/utils/params/layersParams';
 import VectorLayer from 'ol/layer/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
+import { Style, Stroke, Fill } from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
 
 /**
  * Store and manage mapInteraction.
@@ -29,6 +31,13 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   const selector: Ref<null | VectorTileSelect> = ref(null);
   const measurePlugin: Ref<null | Measure> = ref(null);
+  const selectionStyle = new Style({
+    image: new CircleStyle({
+      radius: 15,
+      fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
+      stroke: new Stroke({ color: '#e820c0', width: 2 }),
+    }),
+  });
 
   /**
    * Initialize all interactions
@@ -37,7 +46,8 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     // Add select interaction
     selector.value = new VectorTileSelect(
       INTERACTIONS_PARAMS.selector,
-      getLayerById('archsites') as VectorTileLayer
+      getLayerById('archsites') as VectorTileLayer,
+      selectionStyle
     );
     map.value.addInteraction(selector.value as VectorTileSelect);
 

@@ -50,10 +50,11 @@ export const useMapStore = defineStore('map', () => {
    */
   function fitMapToFeature(feature: Feature, callback?: () => void): void {
     const extent = feature.getGeometry()?.getExtent();
+    const zoom = map.value.getView().getZoom();
 
-    if (extent) {
+    if (extent && zoom) {
       map.value.getView().fit(extent, {
-        maxZoom: 15,
+        maxZoom: zoom < 15 ? 15 : zoom,
         duration: 500,
         padding: [0, 400, 0, 0],
         easing: easeOut,

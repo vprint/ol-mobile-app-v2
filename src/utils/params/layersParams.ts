@@ -125,7 +125,6 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
     selectable: true,
     url: `${APP_PARAMS.vectorTileServer}/maps/archaeological/{z}/{x}/{y}.pbf`,
     style: ((): StyleFunction => {
-      console.log('am i executed ?');
       // Style cache. Used to optimize display.
       const styleCache: IStyleCache = {};
 
@@ -133,6 +132,7 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
         const archsiteId = feature.get('archsite_id');
         const groundVerified = feature.get('archsite_ground_verified');
         const key = `${archsiteId}-${groundVerified}`;
+
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (styleCache[key]) {
           return styleCache[key];

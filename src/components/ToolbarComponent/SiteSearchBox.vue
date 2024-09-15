@@ -94,7 +94,6 @@ onMounted(() => {
 watch(
   () => site.value,
   (newSite) => {
-    console.log(newSite);
     model.value = newSite ? `${newSite.englishName} - ${newSite.siteId}` : '';
   }
 );
