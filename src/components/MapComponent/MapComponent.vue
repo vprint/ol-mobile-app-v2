@@ -61,6 +61,8 @@ onMounted(() => {
   });
   map.value.addLayer(mapLibreLayer);
 
+  addControllers(map.value);
+
   /**
    * Add the application layers.
    */
@@ -71,9 +73,7 @@ onMounted(() => {
 
   // TODO: Déplacer ailleurs
   addMeasureLayer(map.value);
-
   setMap(map.value);
-  addControllers(map.value);
 });
 </script>
 

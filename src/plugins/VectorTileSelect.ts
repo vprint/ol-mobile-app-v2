@@ -37,33 +37,11 @@ export class VectorTileSelectEvent extends Event {
  * The class selects features for a given visible vector tile layer on the map.
  */
 class VectorTileSelect extends Interaction {
-  public selectedFeatures: string[] = [];
-  private styleCache: Record<string, Style> = {};
-  private selectableLayer: VectorTileLayer | undefined;
+  public selectedFeatures = new Set<string>();
+  private selectableLayer: VectorTileLayer;
   private isInitialized = false;
-
-  private selectionStyle = new Style({
-    image: new CircleStyle({
-      radius: 10,
-      fill: new Fill({ color: '#3399CC' }),
-      stroke: new Stroke({ color: '#fff', width: 2 }),
-    }),
-  });
-
-  private selectionLayer = new VectorTileLayer({
-    renderMode: 'vector',
-    zIndex: 999,
-    style: (feature: FeatureLike): Style | undefined => {
-      const featureId = feature.getId();
-      if (featureId && this.selectedFeatures.includes(featureId.toString())) {
-        if (!(featureId in this.styleCache)) {
-          this.styleCache[featureId] = this.selectionStyle;
-        }
-        return this.styleCache[featureId];
-      }
-      return undefined;
-    },
-  });
+  private selectionStyle: Style;
+  private selectionLayer: VectorTileLayer;
 
   constructor(
     name: string,
@@ -76,24 +54,41 @@ class VectorTileSelect extends Interaction {
     });
     this.set('name', name);
     this.selectableLayer = selectableLayer;
-    this.selectionLayer.setSource(this.selectableLayer.getSource() ?? null);
-    this.selectionStyle = selectionStyle ? selectionStyle : this.selectionStyle;
+    this.selectionStyle =
+      selectionStyle ??
+      new Style({
+        image: new CircleStyle({
+          radius: 10,
+          fill: new Fill({ color: '#3399CC' }),
+          stroke: new Stroke({ color: '#fff', width: 2 }),
+        }),
+      });
+
+    this.selectionLayer = new VectorTileLayer({
+      renderMode: 'vector',
+      zIndex: 999,
+      source: this.selectableLayer.getSource() ?? undefined,
+      style: (feature: FeatureLike): Style | undefined => {
+        const featureId = feature.getId()?.toString();
+        if (featureId && this.selectedFeatures.has(featureId)) {
+          return this.selectionStyle;
+        }
+        return undefined;
+      },
+    });
   }
 
   /**
    * Select vector features at a given pixel and fires
    * a vector tile select event on selection (select:vectortile).
    * @param e - Map browser event
-   * @returns true when the selection is made
+   * @returns false to stop event propagation if selection is made, true otherwise
    */
   private selectFeaturesAtPixel(e: MapBrowserEvent<UIEvent>): boolean {
     this.initialize();
-
     if (e.type === 'click') {
       const features = this.getMap()?.getFeaturesAtPixel(e.pixel, {
-        layerFilter: (layer) => {
-          return getUid(layer) === getUid(this.selectableLayer);
-        },
+        layerFilter: (layer) => getUid(layer) === getUid(this.selectableLayer),
         hitTolerance: 10,
       });
 
@@ -109,6 +104,7 @@ class VectorTileSelect extends Interaction {
           e
         )
       );
+      return false;
     }
     return true;
   }
@@ -117,21 +113,19 @@ class VectorTileSelect extends Interaction {
    * Clear selected features.
    */
   public clearFeatures(): void {
-    this.selectedFeatures = [];
+    this.selectedFeatures.clear();
     this.selectionLayer.changed();
   }
 
   /**
    * Show the given feature as selected
-   * @param featuresId a list of id
+   * @param featuresId a list of ids
    */
   public setFeaturesById(featuresId: (string | undefined)[] | undefined): void {
     this.clearFeatures();
-
     featuresId?.forEach((featureId) => {
-      if (featureId) this.selectedFeatures.push(featureId);
+      if (featureId) this.selectedFeatures.add(featureId);
     });
-
     this.selectionLayer.changed();
   }
 
