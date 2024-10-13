@@ -41,7 +41,7 @@ onMounted(() => {
 });
 
 function updateOpacity(newOpacity: number | null): void {
-  if (newOpacity) {
+  if (typeof newOpacity === 'number') {
     opacity.value = newOpacity;
     layer.value?.setOpacity(newOpacity);
   }

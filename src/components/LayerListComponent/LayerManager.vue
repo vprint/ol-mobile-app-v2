@@ -72,13 +72,12 @@ function sortLayersByIndex(layerlist: ILayerIndex[]): ILayerIndex[] {
  * Drag end event manager
  */
 function onEnd(): void {
-  const reversedLayers = layers.value.slice().reverse();
-  let i = 1;
+  const layersCount = layers.value.length;
 
-  reversedLayers.forEach((layer) => {
-    layer.zIndex = i;
-    getLayerById(layer.layerId)?.setZIndex(i);
-    i++;
+  layers.value.forEach((layer, index) => {
+    const newZIndex = layersCount - index;
+    layer.zIndex = newZIndex;
+    getLayerById(layer.layerId)?.setZIndex(newZIndex);
   });
 }
 
