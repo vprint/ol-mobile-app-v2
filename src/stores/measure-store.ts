@@ -1,7 +1,7 @@
 // Map import
 
 // Vue/Quasar imports
-import { defineStore, storeToRefs } from 'pinia';
+import { defineStore } from 'pinia';
 import { ref, Ref, watch } from 'vue';
 
 // Store imports
@@ -24,8 +24,7 @@ import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
  * This store provide measure management tools (e.g remove measure, add measure)
  */
 export const useMeasureStore = defineStore('measure', () => {
-  const { enableInteraction } = useMapInteractionStore();
-  const { measurePlugin } = storeToRefs(useMapInteractionStore());
+  const mis = useMapInteractionStore();
   const formatedMeasure: Ref<string> = ref('');
   const measureMenu = ref(false);
 
@@ -34,37 +33,37 @@ export const useMeasureStore = defineStore('measure', () => {
    * @param mode Measure mode - can be either Polygon or LineString
    */
   function addMeasure(mode: IMeasureType): void {
-    measurePlugin.value?.setActive(true);
-    measurePlugin.value?.addMeasure(mode);
-    enableInteraction(INTERACTIONS_PARAMS.selector, false);
+    mis.measurePlugin?.setActive(true);
+    mis.measurePlugin?.addMeasureFeature(mode);
+    mis.enableInteraction(INTERACTIONS_PARAMS.selector, false);
   }
 
   /**
    * Remove measure and activate selector
    */
   function removeMeasure(): void {
-    measurePlugin.value?.deactivateMeasure();
-    enableInteraction(INTERACTIONS_PARAMS.selector, true);
+    mis.measurePlugin?.deactivateMeasure();
+    mis.enableInteraction(INTERACTIONS_PARAMS.selector, true);
   }
 
   /**
    * Remove all measures and associated overlays
    */
   function removeAllMeasure(): void {
-    measurePlugin.value?.clearMeasureFeatures();
-    enableInteraction(INTERACTIONS_PARAMS.selector, true);
+    mis.measurePlugin?.clearMeasureFeatures();
+    mis.enableInteraction(INTERACTIONS_PARAMS.selector, true);
   }
 
   /**
    * Manage measure end event and remove listeners
    */
   watch(
-    () => measurePlugin.value,
+    () => mis.measurePlugin,
     (newMeasurePlugin) => {
       if (newMeasurePlugin instanceof Measure) {
         // @ts-expect-error - Type problems due to typescript / ol
-        measurePlugin.value.on(MeasureEventType.MEASURE_END, () => {
-          enableInteraction(INTERACTIONS_PARAMS.selector, true);
+        mis.measurePlugin.on(MeasureEventType.MEASURE_END, () => {
+          mis.enableInteraction(INTERACTIONS_PARAMS.selector, true);
         });
       }
     }

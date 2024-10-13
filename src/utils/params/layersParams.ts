@@ -202,10 +202,3 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     url: `${APP_PARAMS.qgisServer}/wms?`,
   },
 ];
-
-export const MEASURE_LAYER: IBaseLayer = {
-  name: 'MEASURE_LAYER',
-  layerId: 'layer:measure',
-  zIndex: 100,
-  visible: true,
-};

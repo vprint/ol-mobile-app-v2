@@ -4,7 +4,6 @@ import {
   IBackgroundLayer,
   IRasterLayer,
   IVectorTileLayer,
-  MEASURE_LAYER,
 } from '../utils/params/layersParams';
 import { ImageWMS } from 'ol/source';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
@@ -13,8 +12,6 @@ import TileLayer from 'ol/layer/WebGLTile.js';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
 import ImageLayer from 'ol/layer/Image';
 import LayerGroup from 'ol/layer/Group';
 
@@ -199,25 +196,3 @@ function addWMTSLayers(map: Map, layerList: IRasterLayer[]): void {
   });
 }
 */
-
-/**
- * Add the measure layer to the map
- * TODO: Déplacer cette fonction ailleurs, elle n'a pas sa place ici
- * @param map Openlayers map
- */
-export function addMeasureLayer(map: Map): void {
-  const measureLayer = new VectorLayer({
-    source: new VectorSource(),
-    properties: {
-      layerProperties: {
-        id: MEASURE_LAYER.layerId,
-        title: MEASURE_LAYER.name,
-        tunable: false,
-      } as ILayerProperties,
-    },
-    visible: MEASURE_LAYER.visible,
-    zIndex: MEASURE_LAYER.zIndex,
-  });
-
-  map.addLayer(measureLayer);
-}

@@ -11,14 +11,14 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Interface imports
 
 // Script
-const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
+const mes = useMeasureStore();
 </script>
 
 <template>
   <q-menu square touch-position context-menu class="bg-secondary merriweather">
     <q-list dense style="min-width: 100px">
       <!-- Measure section -->
-      <q-item clickable @click="removeMeasure">
+      <q-item clickable @click="mes.removeMeasure()">
         <q-item-section>Measure</q-item-section>
         <q-item-section side>
           <q-icon name="keyboard_arrow_right" />
@@ -36,7 +36,7 @@ const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
               v-close-popup
               dense
               clickable
-              @click="addMeasure('LineString')"
+              @click="mes.addMeasure('LineString')"
               ><q-item-section>Distance</q-item-section>
             </q-item>
 
@@ -45,13 +45,18 @@ const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
               v-close-popup
               dense
               clickable
-              @click="addMeasure('Polygon')"
+              @click="mes.addMeasure('Polygon')"
             >
               <q-item-section>Area</q-item-section>
             </q-item>
 
             <!-- Remove measure-->
-            <q-item v-close-popup dense clickable @click="removeAllMeasure()">
+            <q-item
+              v-close-popup
+              dense
+              clickable
+              @click="mes.removeAllMeasure()"
+            >
               <q-item-section>Remove measure</q-item-section>
             </q-item>
           </q-list>

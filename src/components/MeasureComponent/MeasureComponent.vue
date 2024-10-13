@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // Vue/Quasar imports
-import { storeToRefs } from 'pinia';
 
 // Store imports
 import { useMeasureStore } from 'src/stores/measure-store';
@@ -10,8 +9,7 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Others imports
 
 // Script
-const { addMeasure, removeMeasure, removeAllMeasure } = useMeasureStore();
-const { measureMenu } = storeToRefs(useMeasureStore());
+const mes = useMeasureStore();
 </script>
 
 <template>
@@ -24,10 +22,10 @@ const { measureMenu } = storeToRefs(useMeasureStore());
     icon="sym_s_straighten"
     class="icon-weight-thin"
     :text-color="$q.platform.is.mobile ? 'primary' : undefined"
-    @click="removeMeasure"
+    @click="mes.removeMeasure"
   >
     <q-menu
-      v-model="measureMenu"
+      v-model="mes.measureMenu"
       square
       :offset="[-5, 10]"
       class="bg-secondary text-primary"
@@ -37,7 +35,7 @@ const { measureMenu } = storeToRefs(useMeasureStore());
           v-close-popup
           clickable
           class="icon-weight-thin"
-          @click="addMeasure('LineString')"
+          @click="mes.addMeasure('LineString')"
         >
           <q-item-section>
             <q-icon name="straighten" />
@@ -54,7 +52,7 @@ const { measureMenu } = storeToRefs(useMeasureStore());
           </q-tooltip>
         </q-item>
 
-        <q-item v-close-popup clickable @click="addMeasure('Polygon')">
+        <q-item v-close-popup clickable @click="mes.addMeasure('Polygon')">
           <q-item-section>
             <q-icon name="square_foot" />
           </q-item-section>
@@ -74,7 +72,7 @@ const { measureMenu } = storeToRefs(useMeasureStore());
           v-close-popup
           clickable
           class="icon-weight-thin"
-          @click="removeAllMeasure()"
+          @click="mes.removeAllMeasure()"
         >
           <q-item-section>
             <q-icon name="delete" />

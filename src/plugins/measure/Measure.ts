@@ -1,7 +1,7 @@
 import { EventsKey } from 'ol/events';
 import { Draw, Interaction, Modify, Select } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import { Feature, Overlay } from 'ol';
+import { Feature, Map, Overlay } from 'ol';
 import { click } from 'ol/events/condition';
 import { getArea, getLength } from 'ol/sphere';
 import { Geometry, LineString, MultiPoint, Polygon } from 'ol/geom';
@@ -41,14 +41,19 @@ export class MeasureStartEvent extends Event {
 export class MeasureEndEvent extends Event {}
 
 /**
- * A measure interaction that return a string formated measure (formatedMeasure) and a raw measure.
- * The measure interaction also creates overlays. Theses overlays can be managed with removeAllMeasureOverlays and removeOverlayById methods
+ * This class provides measurement functionality and allows measuring
+ * distances (LineString) and areas (Polygon) by drawing over the map.
+ *
+ * A tooltip is generated to show measurements in appropriate units (m, km, m², km²).
+ * These tooltips can be managed by removeAllMeasureOverlays() and removeOverlayById() functions.
+ *
+ * @extends Interaction
  */
 class Measure extends Interaction {
   private drawInteraction: Draw | undefined;
   private modifyInteraction: Modify | undefined;
   private selectInteraction: Select | undefined;
-  private measureLayer: VectorLayer;
+  private measureLayer: VectorLayer | undefined;
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
   private drawStartEvent!: EventsKey;
@@ -121,23 +126,45 @@ class Measure extends Interaction {
     }),
   ];
 
-  constructor(interactionName: string, measureLayer: VectorLayer) {
+  constructor(interactionName: string) {
     super();
     this.set('name', interactionName);
-    this.measureLayer = measureLayer;
-    this.measureLayer.set('measure-layer', true);
-    this.measureLayer.setStyle(this.style);
 
     document.addEventListener('keydown', this.clearSelection);
     document.addEventListener('keydown', this.deleteSelectedMeasure);
   }
 
   /**
+   * Initialize the component
+   * @param map OpenLayers map
+   */
+  public setMap(map: Map | null): void {
+    super.setMap(map);
+    if (map) this.addMeasureLayer(map);
+  }
+
+  /**
+   * Add the measure layer to the map
+   * @param map OpenLayers map
+   */
+  private addMeasureLayer(map: Map): void {
+    const measureLayer = new VectorLayer({
+      source: new VectorSource(),
+      visible: true,
+      zIndex: Infinity,
+    });
+
+    map.addLayer(measureLayer);
+    measureLayer.setStyle(this.style);
+    this.measureLayer = measureLayer;
+  }
+
+  /**
    * Add measure interaction to the map.
    * @param type Measure type
    */
-  public addMeasure(type: IMeasureType): void {
-    const drawSource = this.measureLayer.getSource();
+  public addMeasureFeature(type: IMeasureType): void {
+    const drawSource = this.measureLayer?.getSource();
 
     // Create draw interaction.
     this.drawInteraction = new Draw({
@@ -207,7 +234,8 @@ class Measure extends Interaction {
    */
   private manageDrawEnd(drawInteraction: Draw): void {
     this.drawEndEvent = drawInteraction.on('drawend', () => {
-      this.dispatchDrawEndEvent(), this.addMeasureModifier();
+      this.dispatchDrawEndEvent();
+      this.addMeasureModifier();
     });
 
     this.drawAbortEvent = drawInteraction.on('drawabort', () => {
@@ -249,7 +277,7 @@ class Measure extends Interaction {
     this.deactivateMeasure();
     this.removeMeasureModifier();
     this.removeAllMeasureOverlays();
-    this.measureLayer.getSource()?.clear();
+    this.measureLayer?.getSource()?.clear();
   }
 
   /**
@@ -329,18 +357,13 @@ class Measure extends Interaction {
   }
 
   /**
-   * Add select and modify interactions to the map
+   * Add a select and modify interactions to the measure layer
    */
   private addMeasureModifier(): void {
-    const measureSource = this.measureLayer.getSource();
-
-    if (measureSource) {
+    if (this.measureLayer?.getSource()) {
       this.selectInteraction = new Select({
         layers: (layer): boolean => {
-          return (
-            layer.get('measure-layer') ===
-            this.measureLayer.get('measure-layer')
-          );
+          return getUid(layer) === getUid(this.measureLayer);
         },
         condition: click,
         style: this.selectedStyle,
@@ -419,7 +442,7 @@ class Measure extends Interaction {
 
       if (feature) {
         const fid = getUid(feature);
-        const measureFeatures = this.measureLayer.getSource()?.getFeatures();
+        const measureFeatures = this.measureLayer?.getSource()?.getFeatures();
         const measureToDelete = measureFeatures?.find(
           (measureFeature) => getUid(measureFeature) === fid
         );
@@ -433,7 +456,7 @@ class Measure extends Interaction {
    * @param feature Measure feature to remove
    */
   private removeMeasureFeature(feature: Feature): void {
-    this.measureLayer.getSource()?.removeFeature(feature);
+    this.measureLayer?.getSource()?.removeFeature(feature);
     this.selectInteraction?.getFeatures().clear();
     this.removeOverlayById(getUid(feature));
   }
