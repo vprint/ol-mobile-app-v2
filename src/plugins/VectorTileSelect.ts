@@ -1,5 +1,5 @@
 import { Interaction } from 'ol/interaction';
-import { MapBrowserEvent } from 'ol';
+import { Map, MapBrowserEvent } from 'ol';
 import { FeatureLike } from 'ol/Feature';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import Event from 'ol/events/Event.js';
@@ -33,27 +33,34 @@ export class VectorTileSelectEvent extends Event {
 }
 
 /**
- * Vector Tile selector class.
- * The class selects features for a given visible vector tile layer on the map.
+ * This class provides selection functionality for a
+ * given vector tile layer. It is possible to interact
+ * with selection by using clearFeatures() and setFeaturesById()
+ *
+ * @extends Interaction
  */
 class VectorTileSelect extends Interaction {
   public selectedFeatures = new Set<string>();
   private selectableLayer: VectorTileLayer;
-  private isInitialized = false;
   private selectionStyle: Style;
   private selectionLayer: VectorTileLayer;
 
-  constructor(
-    name: string,
-    selectableLayer: VectorTileLayer,
-    selectionStyle?: Style
-  ) {
+  constructor({
+    name,
+    selectableLayer,
+    selectionStyle,
+  }: {
+    name: string;
+    selectableLayer: VectorTileLayer;
+    selectionStyle?: Style;
+  }) {
     super({
       handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean =>
         this.selectFeaturesAtPixel(evt),
     });
     this.set('name', name);
     this.selectableLayer = selectableLayer;
+
     this.selectionStyle =
       selectionStyle ??
       new Style({
@@ -79,13 +86,21 @@ class VectorTileSelect extends Interaction {
   }
 
   /**
+   * Initialize the component
+   * @param map OpenLayers map
+   */
+  public setMap(map: Map | null): void {
+    super.setMap(map);
+    this.getMap()?.addLayer(this.selectionLayer);
+  }
+
+  /**
    * Select vector features at a given pixel and fires
    * a vector tile select event on selection (select:vectortile).
    * @param e - Map browser event
    * @returns false to stop event propagation if selection is made, true otherwise
    */
   private selectFeaturesAtPixel(e: MapBrowserEvent<UIEvent>): boolean {
-    this.initialize();
     if (e.type === 'click') {
       const features = this.getMap()?.getFeaturesAtPixel(e.pixel, {
         layerFilter: (layer) => getUid(layer) === getUid(this.selectableLayer),
@@ -127,16 +142,6 @@ class VectorTileSelect extends Interaction {
       if (featureId) this.selectedFeatures.add(featureId);
     });
     this.selectionLayer.changed();
-  }
-
-  /**
-   * Initialize component
-   */
-  private initialize(): void {
-    if (!this.isInitialized) {
-      this.getMap()?.addLayer(this.selectionLayer);
-      this.isInitialized = true;
-    }
   }
 }
 

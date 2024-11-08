@@ -1,8 +1,8 @@
 // Map import
-import { Interaction } from 'ol/interaction';
+import { Interaction, Link } from 'ol/interaction';
 
 // Vue/Quasar imports
-import { defineStore, storeToRefs } from 'pinia';
+import { defineStore } from 'pinia';
 import { Ref, ref, watch } from 'vue';
 
 // Store imports
@@ -14,11 +14,10 @@ import Measure from 'src/plugins/measure/Measure';
 
 // Interface imports
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
-import { MEASURE_LAYER } from 'src/utils/params/layersParams';
-import VectorLayer from 'ol/layer/Vector';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import { Style, Stroke, Fill } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
+import { Attribution, ScaleLine } from 'ol/control';
 
 /**
  * Store and manage mapInteraction.
@@ -42,21 +41,42 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * Initialize all interactions
    */
   function initializeInteractions(): void {
-    // Add select interaction
-    selector.value = new VectorTileSelect(
-      INTERACTIONS_PARAMS.selector,
-      getLayerById('archsites') as VectorTileLayer,
-      selectionStyle
-    );
-    map.value.addInteraction(selector.value as VectorTileSelect);
+    // Create select interaction
+    selector.value = new VectorTileSelect({
+      name: INTERACTIONS_PARAMS.selector,
+      selectableLayer: ms.getLayerById('archsites') as VectorTileLayer,
+      selectionStyle: selectionStyle,
+    });
 
-    // Add measure interaction
-    measurePlugin.value = new Measure(
-      INTERACTIONS_PARAMS.measure,
-      getLayerById(MEASURE_LAYER.layerId) as VectorLayer
-    );
+    // Create measure interaction
+    measurePlugin.value = new Measure(INTERACTIONS_PARAMS.measure);
     measurePlugin.value.setActive(false);
-    map.value.addInteraction(measurePlugin.value as Measure);
+
+    // Create link
+    const link = new Link({
+      params: ['x', 'y', 'z', 'r'],
+    });
+    link.set('name', INTERACTIONS_PARAMS.link);
+
+    // Create scaleline
+    const scaleline = new ScaleLine({
+      units: 'metric',
+      text: true,
+      minWidth: 140,
+    });
+    scaleline.set('name', INTERACTIONS_PARAMS.scaleline);
+
+    // Create attribution
+    const attribution = new Attribution({
+      collapsible: false,
+    });
+    attribution.set('name', INTERACTIONS_PARAMS.attribution);
+
+    ms.map.addInteraction(measurePlugin.value as Measure);
+    ms.map.addInteraction(selector.value as VectorTileSelect);
+    ms.map.addInteraction(link);
+    ms.map.addControl(scaleline);
+    ms.map.addControl(attribution);
 
     isMapInteractionsInitialized.value = true;
   }
@@ -82,7 +102,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   function getInteractionByName(name: string): Interaction | undefined {
     let findedElement: Interaction | undefined;
 
-    map.value.getInteractions().forEach((interaction) => {
+    ms.map.getInteractions().forEach((interaction) => {
       if (interaction.get('name') === name) {
         findedElement = interaction;
       }
@@ -95,7 +115,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * Watch for map initialization and then enable the interaction
    */
   watch(
-    () => isMapInitialized.value,
+    () => ms.isMapInitialized,
     (isInitialized) => {
       if (isInitialized) {
         initializeInteractions();
