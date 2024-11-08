@@ -25,10 +25,14 @@ const { map } = storeToRefs(useMapStore());
 const isLocationEnabled = ref(false);
 const islocationFound = ref(false);
 const isViewCentered = ref(false);
+const hasError = ref(false);
 const tooltipMessage = ref(TOOLTIP_MESSAGE.ACTIVATE_LOCATION);
+const color = ref('primary');
+const icon = ref('sym_s_location_on');
 
 let locationFoundListener: (EventsKey & EventsKey[]) | undefined;
 let viewModificationListener: (EventsKey & EventsKey[]) | undefined;
+let locationErrorListener: (EventsKey & EventsKey[]) | undefined;
 
 const location = new Location(INTERACTIONS_PARAMS.location);
 map.value.addInteraction(location);
@@ -64,6 +68,8 @@ function enableTracking(): void {
     () => {
       islocationFound.value = true;
       isViewCentered.value = true;
+      icon.value = 'location_on';
+      color.value = 'orange';
     }
   );
 
@@ -73,6 +79,18 @@ function enableTracking(): void {
     () => {
       isViewCentered.value = false;
       tooltipMessage.value = TOOLTIP_MESSAGE.FIT_VIEW_TO_LOCATION;
+      icon.value = 'location_on';
+      color.value = 'primary';
+    }
+  );
+
+  locationErrorListener = location.on(
+    // @ts-expect-error OL Event error.
+    LocationEventsType.LOCATION_ERROR,
+    () => {
+      hasError.value = true;
+      icon.value = 'sym_s_location_off';
+      color.value = 'primary';
     }
   );
 }
@@ -85,11 +103,14 @@ function disableTracking(): void {
   isLocationEnabled.value = false;
   islocationFound.value = false;
   isViewCentered.value = false;
-  if (locationFoundListener && viewModificationListener) {
-    unByKey(locationFoundListener);
-    unByKey(viewModificationListener);
-  }
+
+  if (locationFoundListener) unByKey(locationFoundListener);
+  if (viewModificationListener) unByKey(viewModificationListener);
+  if (locationErrorListener) unByKey(locationErrorListener);
+
   tooltipMessage.value = TOOLTIP_MESSAGE.ACTIVATE_LOCATION;
+  icon.value = 'sym_s_location_on';
+  color.value = 'primary';
 }
 
 /**
@@ -99,6 +120,8 @@ function fitView(): void {
   location.fitViewToLocation(location.addViewChangeListener);
   isViewCentered.value = true;
   tooltipMessage.value = TOOLTIP_MESSAGE.DEACTIVATE_LOCATION;
+  icon.value = 'location_on';
+  color.value = 'orange';
 }
 </script>
 
@@ -107,15 +130,10 @@ function fitView(): void {
     flat
     fab
     square
-    :color="
-      isViewCentered && isLocationEnabled && islocationFound
-        ? 'orange'
-        : 'primary'
-    "
-    :loading="isLocationEnabled && !islocationFound"
-    :icon="
-      isLocationEnabled && islocationFound ? 'location_on' : 'sym_s_location_on'
-    "
+    :color="color"
+    :loading="isLocationEnabled && !islocationFound && !hasError"
+    :icon="icon"
+    :disable="hasError"
     @click="manageLocation()"
   >
     <q-tooltip

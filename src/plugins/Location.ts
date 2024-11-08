@@ -1,4 +1,4 @@
-import { Feature } from 'ol';
+import { Feature, Map } from 'ol';
 import { Interaction } from 'ol/interaction';
 import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
@@ -28,6 +28,8 @@ export class LocationEvents extends Event {}
 /**
  * This class add a location tracker to the map.
  * The user can set the position and accuracy style.
+ *
+ * @extends Interaction
  */
 class Location extends Interaction {
   private isViewCentered = false;
@@ -42,7 +44,6 @@ class Location extends Interaction {
   private accuracyTracker!: EventsKey;
   private positionTracker!: EventsKey;
   private errorTracker!: EventsKey;
-  private isInitialized = false;
 
   constructor(
     interactionName: string,
@@ -86,6 +87,16 @@ class Location extends Interaction {
       },
       projection: this.getMap()?.getView().getProjection(),
     });
+  }
+
+  /**
+   * Initialize component.
+   * @param map OpenLayers map.
+   */
+  public setMap(map: Map | null): void {
+    super.setMap(map);
+    this.geolocation.setProjection(this.getMap()?.getView().getProjection());
+    this.getMap()?.addLayer(this.locationLayer);
   }
 
   /**
@@ -198,8 +209,6 @@ class Location extends Interaction {
   public enableTracking(enable: boolean): void {
     this.geolocation.setTracking(enable);
 
-    this.initializeParameters();
-
     this.locationLayer.getSource()?.clear();
     this.isLocationFound = false;
 
@@ -222,17 +231,6 @@ class Location extends Interaction {
       this.trackAccuracy();
       this.trackPosition();
       this.handleError();
-    }
-  }
-
-  /**
-   * Initialize location parameters and add the location layer to the map
-   */
-  private initializeParameters(): void {
-    if (!this.isInitialized) {
-      this.geolocation.setProjection(this.getMap()?.getView().getProjection());
-      this.getMap()?.addLayer(this.locationLayer);
-      this.isInitialized = true;
     }
   }
 }
