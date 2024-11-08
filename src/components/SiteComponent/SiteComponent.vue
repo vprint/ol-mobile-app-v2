@@ -20,13 +20,13 @@ import { SITE_TYPE_REFS_PARAMS } from '../../utils/params/siteTypeRefsParams';
 // Type & interface
 
 // script
-const { site } = storeToRefs(useSiteStore());
-const { individuals, siteTypeList } = storeToRefs(useReferencesStore());
-const { updateSite } = useSiteStore();
+const sis = useSiteStore();
+const { site } = storeToRefs(sis);
+const res = useReferencesStore();
 const editionMode = ref(false);
 const confirmDialogVisibility = ref(false);
 
-let originalSite = site.value?.clone();
+let originalSite = sis.site?.clone();
 
 /**
  * Manage dialog event
@@ -50,7 +50,7 @@ function openDialog(): void {
  */
 function cancel(): void {
   if (originalSite) {
-    updateSite(originalSite.clone());
+    sis.updateSite(originalSite.clone());
   }
   editionMode.value = false;
 }
@@ -125,7 +125,7 @@ watch(
           <FormSelect
             v-model="site!.featureType"
             :label="SITE_TYPE_REFS_PARAMS.featureType"
-            :options="siteTypeList"
+            :options="res.siteTypeList"
             :edition-mode="editionMode"
           />
 
@@ -147,7 +147,7 @@ watch(
           <FormSelect
             v-model="site!.locatedBy"
             :label="SITE_TYPE_REFS_PARAMS.locatedBy"
-            :options="individuals"
+            :options="res.individuals"
             option-value="individualId"
             option-label="individualName"
             :edition-mode="editionMode"

@@ -26,8 +26,7 @@ import CircleStyle from 'ol/style/Circle';
  */
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const isMapInteractionsInitialized = ref(false);
-  const { getLayerById } = useMapStore();
-  const { map, isMapInitialized } = storeToRefs(useMapStore());
+  const ms = useMapStore();
 
   const selector: Ref<null | VectorTileSelect> = ref(null);
   const measurePlugin: Ref<null | Measure> = ref(null);

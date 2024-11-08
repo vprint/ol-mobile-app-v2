@@ -22,20 +22,22 @@ interface ISearchItem {
   value: number;
 }
 
-const { site } = storeToRefs(useSiteStore());
-const { clearSite } = useSiteStore();
-const { setActive } = useSidePanelStore();
-const { siteList } = storeToRefs(useReferencesStore());
+const sis = useSiteStore();
+const sps = useSidePanelStore();
+const res = useReferencesStore();
+const { site } = storeToRefs(sis);
 const options: Ref<ISearchItem[]> = ref([]);
 const searchbox: Ref<QSelect | null> = ref(null);
+
 const searchList = computed<ISearchItem[]>(() =>
-  siteList.value.map((site) => ({
+  res.siteList.map((site) => ({
     label: site.siteName
       ? `${site.siteName} - ${site.siteId}`
       : site.siteId.toString(),
     value: site.siteId,
   }))
 );
+
 const model = computed({
   get: () =>
     site.value ? `${site.value.englishName} - ${site.value.siteId}` : '',
@@ -45,7 +47,7 @@ const model = computed({
 });
 
 /**
- * Filters entries according to the text entered by the user
+ * Filters entries according to the text entered by the user.
  * @param val value entered by user
  * @param update update
  */
@@ -59,7 +61,7 @@ function filterFn(val: string, update: (fn: () => void) => void): void {
 }
 
 /**
- * Fetch and set site after selecting it in the list
+ * Fetch and set site after selecting it in the list.
  * @param site
  */
 function selectSite(site: ISearchItem | undefined): void {
@@ -68,7 +70,7 @@ function selectSite(site: ISearchItem | undefined): void {
       searchbox.value?.blur();
     });
 
-    setActive(true, {
+    sps.setActive(true, {
       location: SIDE_PANEL_PARAM.SITE,
       parameterName: 'siteId',
       parameterValue: site.value.toString(),
@@ -76,9 +78,12 @@ function selectSite(site: ISearchItem | undefined): void {
   }
 }
 
+/**
+ * Close the opened site and the side panel.
+ */
 function closeSite(): void {
-  clearSite();
-  setActive(false);
+  sis.clearSite();
+  sps.setActive(false);
 }
 
 /**
@@ -89,7 +94,7 @@ onMounted(() => {
 });
 
 /**
- * Watch for site change and update the text displayed in the searchbox
+ * Watch for site change and update the text displayed in the searchbox.
  */
 watch(
   () => site.value,

@@ -17,7 +17,7 @@ import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 // script
-const { getLayerById } = useMapStore();
+const mas = useMapStore();
 
 const visible = ref(false);
 const opacity = ref(1);
@@ -31,7 +31,7 @@ const props = defineProps<{
 }>();
 
 onMounted(() => {
-  layer.value = getLayerById(props.layerId);
+  layer.value = mas.getLayerById(props.layerId);
 
   if (layer.value) {
     layerProperties = layer.value.get(LAYER_PROPERTIES);
@@ -69,10 +69,9 @@ function stopDragging(): void {
 
 <template>
   <div v-if="layer" class="layer-div">
-    <!-- Title -->
-    <p class="merriweather layer-title">{{ layerProperties.title }}</p>
-
     <div class="layer-control">
+      <!-- Title -->
+      <p class="merriweather layer-title">{{ layerProperties.title }}</p>
       <!-- Visibility checkbox -->
       <q-checkbox
         v-model="visible"
@@ -154,11 +153,12 @@ function stopDragging(): void {
 
 <style lang="scss">
 .layer-div {
-  margin: 5px 0px 0px 30px;
+  margin: 0px 0px 0px 30px;
   position: relative;
   align-items: center;
   left: -15px;
   padding: 10px 0px 0px 10px;
+  border: 2px solid rgba(255, 255, 255, 0);
 }
 
 .layer-control {
@@ -170,6 +170,7 @@ function stopDragging(): void {
 
 .expand-icon {
   margin-left: 30px;
+  cursor: grab;
 }
 
 .layer-title {
@@ -197,5 +198,10 @@ function stopDragging(): void {
 .tertiary-text {
   font-size: 0.75rem;
   font-weight: 400;
+}
+
+.ghost {
+  box-shadow: inset 5px 0px 0px 0px rgb(52, 152, 219);
+  background-color: rgba(52, 152, 219, 0.125);
 }
 </style>

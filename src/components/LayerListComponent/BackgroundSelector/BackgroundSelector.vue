@@ -20,7 +20,7 @@ import {
   IBackgroundLayer,
 } from 'src/utils/params/layersParams';
 
-const { getLayerById } = useMapStore();
+const mas = useMapStore();
 const activeLayer = ref('');
 
 /**
@@ -29,10 +29,11 @@ const activeLayer = ref('');
 function setActive(layerInformation: IBackgroundLayer): void {
   activeLayer.value = layerInformation.layerId;
   BACKGROUND_LAYERS_SETTINGS.forEach((background) => {
-    if (!background.vector) getLayerById(background.layerId)?.setVisible(false);
+    if (!background.vector)
+      mas.getLayerById(background.layerId)?.setVisible(false);
   });
 
-  const mapLibreLayer = getLayerById('maplibre-layer') as
+  const mapLibreLayer = mas.getLayerById('maplibre-layer') as
     | MapLibreLayer
     | undefined;
 
@@ -45,7 +46,7 @@ function setActive(layerInformation: IBackgroundLayer): void {
     }, 100);
   } else {
     mapLibreLayer?.setVisible(false);
-    const layer = getLayerById(layerInformation.layerId);
+    const layer = mas.getLayerById(layerInformation.layerId);
     layer?.setVisible(true);
   }
 }

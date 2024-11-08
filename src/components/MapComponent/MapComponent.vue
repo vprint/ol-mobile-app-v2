@@ -14,7 +14,6 @@ import { MAPSETTINGS } from '../../utils/params/mapParams';
 import { View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import {
-  addMeasureLayer,
   addOGCLayer,
   addRasterBackgroundLayers,
   addVectorBackgroundLayers,
@@ -25,14 +24,13 @@ import {
   VECTOR_TILE_LAYERS_SETTINGS,
   RASTER_LAYERS_SETTINGS,
 } from '../../utils/params/layersParams';
-import addControllers from 'src/plugins/ControllersCreator';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 // Others imports
 
 // Script
-const { setMap } = useMapStore();
+const mas = useMapStore();
 const map: Ref<Map | undefined> = ref(undefined);
 
 onMounted(() => {
@@ -61,8 +59,6 @@ onMounted(() => {
   });
   map.value.addLayer(mapLibreLayer);
 
-  addControllers(map.value);
-
   /**
    * Add the application layers.
    */
@@ -71,9 +67,7 @@ onMounted(() => {
   addVectorTileLayers(map.value, VECTOR_TILE_LAYERS_SETTINGS);
   addOGCLayer(map.value, RASTER_LAYERS_SETTINGS);
 
-  // TODO: Déplacer ailleurs
-  addMeasureLayer(map.value);
-  setMap(map.value);
+  mas.setMap(map.value);
 });
 </script>
 

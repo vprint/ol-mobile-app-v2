@@ -3,7 +3,6 @@
 
 // Vue/Quasar imports
 import { onMounted, Ref, ref, watch } from 'vue';
-import { storeToRefs } from 'pinia';
 
 // Store imports
 import { useMapStore } from 'src/stores/map-store';
@@ -26,9 +25,8 @@ interface ILayerIndex {
   zIndex: number;
 }
 
-const { map, isMapInitialized } = storeToRefs(useMapStore());
+const mas = useMapStore();
 
-const { getLayerById } = useMapStore();
 const layers: Ref<ILayerIndex[]> = ref([]);
 
 onMounted(() => {
@@ -39,7 +37,7 @@ onMounted(() => {
  * Get all tunable layers.
  */
 function getTunableLayers(): void {
-  const mapLayers = map.value.getAllLayers();
+  const mapLayers = mas.map.getAllLayers();
 
   mapLayers.forEach((layer) => {
     const layerProperties = layer.get(LAYER_PROPERTIES) as
@@ -77,7 +75,7 @@ function onEnd(): void {
   layers.value.forEach((layer, index) => {
     const newZIndex = layersCount - index;
     layer.zIndex = newZIndex;
-    getLayerById(layer.layerId)?.setZIndex(newZIndex);
+    mas.getLayerById(layer.layerId)?.setZIndex(newZIndex);
   });
 }
 
@@ -85,7 +83,7 @@ function onEnd(): void {
  * Watch for map initialization and then enable the layer tree.
  */
 watch(
-  () => isMapInitialized.value,
+  () => mas.isMapInitialized,
   (isInitialized) => {
     if (isInitialized) {
       getTunableLayers();
@@ -102,6 +100,7 @@ watch(
         v-model="layers"
         :animation="250"
         handle=".handle"
+        ghost-class="ghost"
         @end="onEnd"
       >
         <div v-for="layer in layers" :key="layer.layerId">

@@ -32,9 +32,9 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   const { selector, isMapInteractionsInitialized } = storeToRefs(
     useMapInteractionStore()
   );
-  const { isActive, panelParameters } = storeToRefs(useSidePanelStore());
-  const { setActive } = useSidePanelStore();
-  const { fitMapToFeature, getLayerById } = useMapStore();
+  const sps = useSidePanelStore();
+  const mas = useMapStore();
+  const { isActive, panelParameters } = storeToRefs(sps);
   const SITE_LAYER = 'archsites';
 
   /**
@@ -42,7 +42,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param newSiteId
    */
   async function setSite(newSiteId: number): Promise<void> {
-    setActive(true, {
+    sps.setActive(true, {
       location: SIDE_PANEL_PARAM.SITE,
       parameterName: 'siteId',
       parameterValue: newSiteId.toString(),
@@ -79,7 +79,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
       const newSite = new Site(feature.properties as ISite);
 
       if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
-        setActive(true, {
+        sps.setActive(true, {
           location: SIDE_PANEL_PARAM.SITE,
           parameterName: 'siteId',
           parameterValue: newSite.siteId.toString(),
@@ -103,10 +103,10 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
-      fitMapToFeature(feature);
+      mas.fitMapToFeature(feature);
     }
 
-    const archLayer = getLayerById(SITE_LAYER);
+    const archLayer = mas.getLayerById(SITE_LAYER);
     archLayer?.changed();
   }
 
@@ -115,7 +115,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   function siteSelectionListener(): void {
     selector.value?.on(
-      // @ts-expect-error - Type problems due to typescript / ol
+      // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
         const features = e.selected;
