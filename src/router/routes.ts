@@ -1,5 +1,3 @@
-import LayerManager from 'src/components/LayerListComponent/LayerManager.vue';
-import SiteComponent from '../components/SiteComponent/SiteComponent.vue';
 import { RouteRecordRaw } from 'vue-router';
 import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 
@@ -12,12 +10,15 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'site=:siteId',
         name: SIDE_PANEL_PARAM.SITE,
-        component: SiteComponent,
+        component: () =>
+          import('../components/SiteComponent/SiteComponent.vue'),
+        props: true,
       },
       {
         path: SIDE_PANEL_PARAM.LAYER_LIST,
         name: SIDE_PANEL_PARAM.LAYER_LIST,
-        component: LayerManager,
+        component: () =>
+          import('src/components/LayerListComponent/LayerManager.vue'),
       },
     ],
   },
@@ -26,7 +27,7 @@ const routes: RouteRecordRaw[] = [
   // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('components/MapComponent/MapComponent.vue'),
+    component: () => import('layouts/MainLayout.vue'),
   },
 ];
 
