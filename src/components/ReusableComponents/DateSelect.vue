@@ -4,25 +4,20 @@ const props = withDefaults(
   defineProps<{
     label: string;
     editionMode: boolean;
-    date?: boolean;
-    autogrow?: boolean;
     noPadding?: boolean;
   }>(),
   {
-    date: false,
-    autogrow: false,
     noPadding: false,
   }
 );
 
-const model = defineModel<string | number>();
+const model = defineModel<string>();
 </script>
 
 <template>
   <q-input
     v-model="model"
     :readonly="!editionMode"
-    :autogrow="autogrow"
     outlined
     square
     color="accent"
@@ -30,16 +25,12 @@ const model = defineModel<string | number>();
     dense
     :class="noPadding ? undefined : 'form-input-element'"
     :label="label"
-    hide-bottom-space
+    type="date"
   >
   </q-input>
 </template>
 
-<style lang="scss">
-.form-input-element {
-  margin-bottom: 10px;
-}
-
+<style lang="scss" scoped>
 .q-field {
   &.q-field--readonly {
     &.q-field--outlined {

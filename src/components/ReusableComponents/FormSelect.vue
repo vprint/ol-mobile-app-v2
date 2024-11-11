@@ -4,11 +4,10 @@ import { computed } from 'vue';
 const props = withDefaults(
   defineProps<{
     label: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    options: any;
-    optionValue?: string | undefined;
-    optionLabel?: string | undefined;
+    options: unknown;
     editionMode: boolean;
+    optionValue?: string;
+    optionLabel?: string;
     multiple?: boolean;
     noPadding?: boolean;
   }>(),
@@ -20,26 +19,31 @@ const props = withDefaults(
   }
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const model = defineModel<any>();
+const model = defineModel<unknown>();
 
 /**
- * This computed value allows to read properties of sub-objets
+ * Read properties of objets
  */
 const computedModel = computed({
   get: () => {
-    // sub-object case (such as locatedBy in SiteComponent)
-    if (props.optionLabel && !props.multiple) {
-      return model.value[props.optionLabel];
-    }
-    // other case
-    else {
+    if (props.optionLabel && props.optionValue && !props.multiple) {
+      // @ts-expect-error Unknown element
+      const properties = props.options.find(
+        // @ts-expect-error Element is any and ts says props.optionValue can be undefined for unknown reason.
+        (element) => element[props.optionValue] === model.value
+      );
+      return properties?.[props.optionLabel];
+    } else {
       return model.value;
     }
   },
 
   set: (newValue) => {
-    model.value = newValue;
+    if (props.optionValue) {
+      model.value = newValue[props.optionValue];
+    } else {
+      model.value = newValue;
+    }
   },
 });
 </script>
@@ -47,7 +51,7 @@ const computedModel = computed({
 <template>
   <q-select
     v-model="computedModel"
-    :options="options"
+    :options="(options as any)"
     :label="label"
     :readonly="!editionMode"
     :hide-dropdown-icon="!editionMode"

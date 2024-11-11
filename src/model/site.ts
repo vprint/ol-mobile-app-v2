@@ -132,15 +132,15 @@ export class Site {
     this.dbResolved = partialEntity.dbResolved ?? undefined;
 
     this.creationDate = partialEntity.creationDate
-      ? format(partialEntity.creationDate, 'yyyy/MM/dd')
+      ? format(partialEntity.creationDate, 'yyyy-MM-dd')
       : undefined;
 
     this.modificationDate = partialEntity.modificationDate
-      ? format(partialEntity.modificationDate, 'yyyy/MM/dd')
+      ? format(partialEntity.modificationDate, 'yyyy-MM-dd')
       : undefined;
 
     this.verificationDate = partialEntity.verificationDate
-      ? format(partialEntity.verificationDate, 'yyyy/MM/dd')
+      ? format(partialEntity.verificationDate, 'yyyy-MM-dd')
       : undefined;
   }
 

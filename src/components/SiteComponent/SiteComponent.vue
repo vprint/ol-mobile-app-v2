@@ -12,6 +12,7 @@ import { useReferencesStore } from 'src/stores/references-store';
 // Component import
 import FormInput from '../ReusableComponents/FormInput.vue';
 import FormSelect from '../ReusableComponents/FormSelect.vue';
+import DateSelect from '../ReusableComponents/DateSelect.vue';
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 
 // Others imports
@@ -119,6 +120,7 @@ watch(
             v-model="site!.description"
             :label="SITE_TYPE_REFS_PARAMS.description"
             :edition-mode="editionMode"
+            autogrow
           />
 
           <!-- Feature type -->
@@ -126,6 +128,8 @@ watch(
             v-model="site!.featureType"
             :label="SITE_TYPE_REFS_PARAMS.featureType"
             :options="res.siteTypeList"
+            option-value="siteTypeId"
+            option-label="siteTypeName"
             :edition-mode="editionMode"
           />
 
@@ -166,11 +170,10 @@ watch(
           />
 
           <!-- Verification date -->
-          <FormInput
+          <DateSelect
             v-model="site!.verificationDate"
             :label="SITE_TYPE_REFS_PARAMS.verificationDate"
             :edition-mode="editionMode"
-            date
             no-padding
           />
         </fieldset>
@@ -271,19 +274,17 @@ watch(
           />
 
           <!-- Creation date -->
-          <FormInput
+          <DateSelect
             v-model="site!.creationDate"
             :label="SITE_TYPE_REFS_PARAMS.creationDate"
             :edition-mode="editionMode"
-            date
           />
 
           <!-- Modificiation date-->
-          <FormInput
+          <DateSelect
             v-model="site!.modificationDate"
             :label="SITE_TYPE_REFS_PARAMS.modificationDate"
             :edition-mode="editionMode"
-            date
           />
 
           <!-- user creation -->
