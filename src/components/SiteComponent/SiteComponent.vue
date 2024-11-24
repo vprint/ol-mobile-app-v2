@@ -12,7 +12,6 @@ import { useReferencesStore } from 'src/stores/references-store';
 // Component import
 import FormInput from '../ReusableComponents/FormInput.vue';
 import FormSelect from '../ReusableComponents/FormSelect.vue';
-import DateSelect from '../ReusableComponents/DateSelect.vue';
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 
 // Others imports
@@ -170,10 +169,11 @@ watch(
           />
 
           <!-- Verification date -->
-          <DateSelect
+          <FormInput
             v-model="site!.verificationDate"
             :label="SITE_TYPE_REFS_PARAMS.verificationDate"
             :edition-mode="editionMode"
+            date
             no-padding
           />
         </fieldset>
@@ -274,17 +274,19 @@ watch(
           />
 
           <!-- Creation date -->
-          <DateSelect
+          <FormInput
             v-model="site!.creationDate"
             :label="SITE_TYPE_REFS_PARAMS.creationDate"
             :edition-mode="editionMode"
+            date
           />
 
           <!-- Modificiation date-->
-          <DateSelect
+          <FormInput
             v-model="site!.modificationDate"
             :label="SITE_TYPE_REFS_PARAMS.modificationDate"
             :edition-mode="editionMode"
+            date
           />
 
           <!-- user creation -->
