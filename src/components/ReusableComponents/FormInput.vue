@@ -49,7 +49,6 @@ const model = defineModel<string | number>();
     :readonly="!editionMode"
     :autogrow="autogrow"
     outlined
-    square
     color="accent"
     stack-label
     dense
@@ -73,12 +72,12 @@ const model = defineModel<string | number>();
   </q-input>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .form-input-element {
   margin-bottom: 10px;
 }
 
-.q-field {
+:deep.q-field {
   &.q-field--readonly {
     &.q-field--outlined {
       .q-field__control {
@@ -86,6 +85,12 @@ const model = defineModel<string | number>();
           border: transparent;
         }
       }
+    }
+  }
+
+  &.q-field--outlined {
+    .q-field__control {
+      background: rgba(128, 128, 128, 0.1);
     }
   }
 }

@@ -290,16 +290,22 @@ watch(
           />
 
           <!-- user creation -->
-          <FormInput
+          <FormSelect
             v-model="site!.userCreation"
             :label="SITE_TYPE_REFS_PARAMS.userCreation"
+            :options="res.individuals"
+            option-value="individualId"
+            option-label="individualName"
             :edition-mode="editionMode"
           />
 
           <!-- user modification -->
-          <FormInput
+          <FormSelect
             v-model="site!.userModification"
             :label="SITE_TYPE_REFS_PARAMS.userModification"
+            :options="res.individuals"
+            option-value="individualId"
+            option-label="individualName"
             :edition-mode="editionMode"
             no-padding
           />

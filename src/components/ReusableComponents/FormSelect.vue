@@ -60,11 +60,10 @@ const computedModel = computed({
     :multiple="multiple"
     :use-chips="multiple"
     :class="noPadding ? undefined : 'form-select-element'"
-    popup-content-class="merriweather"
+    popup-content-class="asm-select-list"
     outlined
-    square
     dense
-    :color="multiple ? 'primary' : 'accent'"
+    color="accent"
   >
     <template v-if="multiple && optionLabel" #selected-item="scope">
       <q-chip
@@ -81,12 +80,12 @@ const computedModel = computed({
   </q-select>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .form-select-element {
   margin-bottom: 10px;
 }
 
-.q-field {
+:deep.q-field {
   &.q-field--readonly {
     &.q-field--outlined {
       .q-field__control {
@@ -94,6 +93,12 @@ const computedModel = computed({
           border: transparent;
         }
       }
+    }
+  }
+
+  &.q-field--outlined {
+    .q-field__control {
+      background: rgba(128, 128, 128, 0.1);
     }
   }
 }

@@ -114,7 +114,7 @@ watch(
     label-color="grey-8"
     color="primary"
     bg-color="white"
-    popup-content-class="text-grey-8 merriweather"
+    popup-content-class="text-grey-8 asm-select-list"
     class="searchbox-select merriweather"
     input-debounce="0"
     outlined
