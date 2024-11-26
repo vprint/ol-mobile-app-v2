@@ -2,7 +2,7 @@
 import { Overlay } from 'ol';
 
 // Vue/Quasar imports
-import { defineStore, storeToRefs } from 'pinia';
+import { defineStore } from 'pinia';
 import { Ref, ref } from 'vue';
 
 // Store imports
@@ -18,7 +18,6 @@ import { useMapStore } from './map-store';
 export const useMapOverlayStore = defineStore('mapOverlay', () => {
   const defaultOverlay: Ref<HTMLElement | null> = ref(null);
   const isVisible = ref(false);
-  const { map } = storeToRefs(useMapStore());
   const overlay: Ref<Overlay | undefined> = ref(undefined);
   const title = ref('Measure');
   const content = ref('Click to start drawing');
@@ -28,6 +27,7 @@ export const useMapOverlayStore = defineStore('mapOverlay', () => {
    * @param newOverlay Overlay
    */
   function setOverlay(htmlElement: HTMLElement): void {
+    const mas = useMapStore();
     defaultOverlay.value = htmlElement;
 
     const _overlay = new Overlay({
@@ -35,10 +35,10 @@ export const useMapOverlayStore = defineStore('mapOverlay', () => {
       offset: [15, 15],
     });
 
-    map.value.addOverlay(_overlay);
+    mas.map.addOverlay(_overlay);
     overlay.value = _overlay;
 
-    map.value.on('pointermove', (e) => {
+    mas.map.on('pointermove', (e) => {
       overlay.value?.setPosition(e.coordinate);
     });
   }

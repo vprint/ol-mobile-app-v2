@@ -68,7 +68,7 @@ watch(
 </script>
 
 <template>
-  <SidePanelComponent v-if="site">
+  <SidePanelComponent v-if="site" @close="sis.clearSite()">
     <template #title>
       {{ `${site?.englishName} - ${site?.siteId}` }}
     </template>

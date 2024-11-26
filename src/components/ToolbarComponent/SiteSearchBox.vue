@@ -33,14 +33,19 @@ const searchList = computed<ISearchItem[]>(() =>
   res.siteList.map((site) => ({
     label: site.siteName
       ? `${site.siteName} - ${site.siteId}`
-      : site.siteId.toString(),
+      : `${site.siteId}`,
     value: site.siteId,
   }))
 );
 
 const model = computed({
   get: () =>
-    site.value ? `${site.value.englishName} - ${site.value.siteId}` : '',
+    site.value
+      ? {
+          label: `${site.value.englishName} - ${site.value.siteId}`,
+          value: site.value.siteId,
+        }
+      : null,
   set: () => {
     return;
   },
@@ -99,7 +104,14 @@ onMounted(() => {
 watch(
   () => site.value,
   (newSite) => {
-    model.value = newSite ? `${newSite.englishName} - ${newSite.siteId}` : '';
+    if (newSite) {
+      model.value = {
+        label: `${newSite.englishName} - ${newSite.siteId}`,
+        value: newSite.siteId,
+      };
+    } else {
+      model.value = null;
+    }
   }
 );
 </script>
@@ -108,13 +120,14 @@ watch(
   <q-select
     ref="searchbox"
     v-model="model"
+    :menu-offset="[0, 10]"
     hide-selected
     use-input
     fill-input
     label-color="grey-8"
     color="primary"
     bg-color="white"
-    popup-content-class="text-grey-8 asm-select-list"
+    popup-content-class="text-grey-8 test asm-select-list"
     class="searchbox-select merriweather"
     input-debounce="0"
     outlined

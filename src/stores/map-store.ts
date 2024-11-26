@@ -9,33 +9,46 @@ import { defineStore } from 'pinia';
 // Store imports
 
 // Others imports
-import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
+import {
+  BACKGROUND_LAYERS_SETTINGS,
+  LAYER_PROPERTIES,
+  RASTER_LAYERS_SETTINGS,
+  VECTOR_TILE_LAYERS_SETTINGS,
+} from 'src/utils/params/layersParams';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 import { easeOut } from 'ol/easing';
-import { Feature } from 'ol';
+import { Feature, View } from 'ol';
+import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
+import { fromLonLat } from 'ol/proj';
+import {
+  addVectorBackgroundLayers,
+  addRasterBackgroundLayers,
+  addVectorTileLayers,
+  addOGCLayer,
+} from 'src/plugins/LayerImporter';
+import { MAPSETTINGS } from 'src/utils/params/mapParams';
 
 /**
  * This store manage map and provide related functionnalities.
  */
 export const useMapStore = defineStore('map', () => {
-  const map = ref(new Map());
   const isMapInitialized = ref(false);
-
-  /**
-   * Set the store map
-   * @param map OpenLayers map
-   */
-  function setMap(newMap: Map): void {
-    map.value = newMap;
-    isMapInitialized.value = true;
-  }
+  const map = new Map({
+    controls: [],
+    view: new View({
+      center: fromLonLat([MAPSETTINGS.long, MAPSETTINGS.lat]),
+      zoom: MAPSETTINGS.zoom,
+      maxZoom: MAPSETTINGS.maxzoom,
+      minZoom: MAPSETTINGS.minzoom,
+    }),
+  });
 
   /**
    * Get a layer by it's id
    * @param id : layer id
    */
   function getLayerById(id: string): Layer | undefined {
-    return map.value.getAllLayers().find((layer) => {
+    return map.getAllLayers().find((layer) => {
       const layerProperties = layer.get(LAYER_PROPERTIES) as
         | ILayerProperties
         | undefined;
@@ -50,24 +63,78 @@ export const useMapStore = defineStore('map', () => {
    */
   function fitMapToFeature(feature: Feature, callback?: () => void): void {
     const extent = feature.getGeometry()?.getExtent();
-    const zoom = map.value.getView().getZoom();
+    const zoom = map.getView().getZoom();
 
     if (extent && zoom) {
-      map.value.getView().fit(extent, {
+      map.getView().fit(extent, {
         maxZoom: zoom < 15 ? 15 : zoom,
         duration: 500,
-        padding: [0, 400, 0, 0],
+        padding: [0, 0, 0, 400],
         easing: easeOut,
         callback: callback ? callback : undefined,
       });
     }
   }
 
+  /**
+   * Get layers with a given properties
+   * @param property The layer properties to inspect
+   * @param value The value of the properties
+   * @returns List of layers that match the filter
+   */
+  function getLayersByProperties<K extends keyof ILayerProperties>(
+    property: K,
+    value: ILayerProperties[K]
+  ): Layer[] {
+    const layersOfInterest: Layer[] = [];
+    const mapLayers = map.getAllLayers();
+
+    mapLayers.forEach((layer) => {
+      const layerProperties = layer.get(LAYER_PROPERTIES) as
+        | ILayerProperties
+        | undefined;
+
+      if (layerProperties?.[property] === value) {
+        layersOfInterest.push(layer);
+      }
+    });
+
+    return layersOfInterest;
+  }
+
+  function initializeMap(): void {
+    // An empty mapLibre layer is added to the map
+    const mapLibreLayer = new MapLibreLayer({
+      mapLibreOptions: {},
+      zIndex: 0,
+      properties: {
+        layerProperties: {
+          id: 'maplibre-layer',
+          title: 'maplibre-layer',
+          tunable: false,
+        } as ILayerProperties,
+      },
+    });
+    map.addLayer(mapLibreLayer);
+
+    /**
+     * Add the application layers.
+     */
+    addVectorBackgroundLayers(mapLibreLayer, BACKGROUND_LAYERS_SETTINGS);
+    addRasterBackgroundLayers(map, BACKGROUND_LAYERS_SETTINGS);
+    addVectorTileLayers(map, VECTOR_TILE_LAYERS_SETTINGS);
+    addOGCLayer(map, RASTER_LAYERS_SETTINGS);
+
+    map.setTarget('map');
+    isMapInitialized.value = true;
+  }
+
   return {
     map,
     isMapInitialized,
-    setMap,
     getLayerById,
     fitMapToFeature,
+    getLayersByProperties,
+    initializeMap,
   };
 });

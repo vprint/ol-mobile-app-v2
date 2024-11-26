@@ -16,6 +16,7 @@
   border: 1px solid black;
 
   .q-item {
+    transition: box-shadow 0.3s ease;
     .q-focus-helper {
       visibility: hidden;
     }

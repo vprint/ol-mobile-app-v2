@@ -27,12 +27,11 @@ const model = defineModel<unknown>();
 const computedModel = computed({
   get: () => {
     if (props.optionLabel && props.optionValue && !props.multiple) {
-      // @ts-expect-error Unknown element
-      const properties = props.options.find(
-        // @ts-expect-error Element is any and ts says props.optionValue can be undefined for unknown reason.
-        (element) => element[props.optionValue] === model.value
+      // @ts-expect-error unknown type error
+      return props.options.find(
+        // @ts-expect-error unknown type error
+        (element: unknown) => element[props.optionValue] === model.value
       );
-      return properties?.[props.optionLabel];
     } else {
       return model.value;
     }
@@ -64,6 +63,7 @@ const computedModel = computed({
     outlined
     dense
     color="accent"
+    :menu-offset="[0, 5]"
   >
     <template v-if="multiple && optionLabel" #selected-item="scope">
       <q-chip
@@ -98,7 +98,7 @@ const computedModel = computed({
 
   &.q-field--outlined {
     .q-field__control {
-      background: rgba(128, 128, 128, 0.1);
+      background: rgba(128, 128, 128, 0.05);
     }
   }
 }
