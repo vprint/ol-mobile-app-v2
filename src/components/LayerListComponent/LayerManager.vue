@@ -18,6 +18,7 @@ import { VueDraggable } from 'vue-draggable-plus';
 // Type & interface
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
+import { useLayerManagerStore } from 'src/stores/layer-manager-store';
 
 // script
 interface ILayerIndex {
@@ -26,6 +27,7 @@ interface ILayerIndex {
 }
 
 const mas = useMapStore();
+const lms = useLayerManagerStore();
 
 const layers: Ref<ILayerIndex[]> = ref([]);
 
@@ -58,7 +60,7 @@ function getTunableLayers(): void {
 }
 
 /**
- * This function sort layers by index
+ * This function sort layers by index after user reordering.
  * @param layerlist list of layers to sort
  */
 function sortLayersByIndex(layerlist: ILayerIndex[]): ILayerIndex[] {
@@ -93,7 +95,9 @@ watch(
 </script>
 
 <template>
-  <SidePanelComponent>
+  <SidePanelComponent
+    @close="lms.isActive ? lms.closeLayerManager() : lms.openLayerManager()"
+  >
     <template #title> Layer Manager </template>
     <template #component>
       <VueDraggable

@@ -1,73 +1,20 @@
 <script setup lang="ts">
 // Vue/Quasar imports
-import { onMounted, ref, Ref } from 'vue';
+import { onMounted } from 'vue';
 
 // Component imports
 import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.vue';
 
 // Store imports
-import { useMapStore } from '../../stores/map-store';
+import { useMapStore } from 'src/stores/map-store';
 
 // Map imports
-import Map from 'ol/Map';
-import { MAPSETTINGS } from '../../utils/params/mapParams';
-import { View } from 'ol';
-import { fromLonLat } from 'ol/proj';
-import {
-  addOGCLayer,
-  addRasterBackgroundLayers,
-  addVectorBackgroundLayers,
-  addVectorTileLayers,
-} from '../../plugins/LayerImporter';
-import {
-  BACKGROUND_LAYERS_SETTINGS,
-  VECTOR_TILE_LAYERS_SETTINGS,
-  RASTER_LAYERS_SETTINGS,
-} from '../../utils/params/layersParams';
-import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
-import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 // Others imports
 
 // Script
-const mas = useMapStore();
-const map: Ref<Map | undefined> = ref(undefined);
-
 onMounted(() => {
-  map.value = new Map({
-    controls: [],
-    target: 'map',
-    view: new View({
-      center: fromLonLat([MAPSETTINGS.long, MAPSETTINGS.lat]),
-      zoom: MAPSETTINGS.zoom,
-      maxZoom: MAPSETTINGS.maxzoom,
-      minZoom: MAPSETTINGS.minzoom,
-    }),
-  });
-
-  // An empty mapLibre layer is added to the map
-  const mapLibreLayer = new MapLibreLayer({
-    mapLibreOptions: {},
-    zIndex: 0,
-    properties: {
-      layerProperties: {
-        id: 'maplibre-layer',
-        title: 'maplibre-layer',
-        tunable: false,
-      } as ILayerProperties,
-    },
-  });
-  map.value.addLayer(mapLibreLayer);
-
-  /**
-   * Add the application layers.
-   */
-  addVectorBackgroundLayers(mapLibreLayer, BACKGROUND_LAYERS_SETTINGS);
-  addRasterBackgroundLayers(map.value, BACKGROUND_LAYERS_SETTINGS);
-  addVectorTileLayers(map.value, VECTOR_TILE_LAYERS_SETTINGS);
-  addOGCLayer(map.value, RASTER_LAYERS_SETTINGS);
-
-  mas.setMap(map.value);
+  useMapStore().initializeMap();
 });
 </script>
 
@@ -77,8 +24,8 @@ onMounted(() => {
   </div>
   <transition
     appear
-    enter-active-class="animated fadeInRightBig"
-    leave-active-class="animated fadeOutRightBig"
+    enter-active-class="animated fadeInLeftBig"
+    leave-active-class="animated fadeOutLeftBig"
   >
     <router-view />
   </transition>
@@ -94,4 +41,3 @@ onMounted(() => {
   background-color: lightgrey;
 }
 </style>
-src/plugins/ControllersCreator

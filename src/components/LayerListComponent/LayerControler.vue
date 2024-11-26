@@ -69,9 +69,9 @@ function stopDragging(): void {
 
 <template>
   <div v-if="layer" class="layer-div">
+    <!-- Title -->
+    <p class="merriweather layer-title">{{ layerProperties.title }}</p>
     <div class="layer-control">
-      <!-- Title -->
-      <p class="merriweather layer-title">{{ layerProperties.title }}</p>
       <!-- Visibility checkbox -->
       <q-checkbox
         v-model="visible"

@@ -10,7 +10,6 @@ import { useMapStore } from 'src/stores/map-store';
 // Others imports
 import Location, { LocationEventsType } from 'src/plugins/Location';
 import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
-import { storeToRefs } from 'pinia';
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';
 
@@ -21,7 +20,7 @@ enum TOOLTIP_MESSAGE {
   DEACTIVATE_LOCATION = 'Deactivate location',
 }
 
-const { map } = storeToRefs(useMapStore());
+const mas = useMapStore();
 const isLocationEnabled = ref(false);
 const islocationFound = ref(false);
 const isViewCentered = ref(false);
@@ -35,7 +34,7 @@ let viewModificationListener: (EventsKey & EventsKey[]) | undefined;
 let locationErrorListener: (EventsKey & EventsKey[]) | undefined;
 
 const location = new Location(INTERACTIONS_PARAMS.location);
-map.value.addInteraction(location);
+mas.map.addInteraction(location);
 
 /**
  * Manage the location process

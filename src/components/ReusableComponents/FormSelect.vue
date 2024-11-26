@@ -4,11 +4,10 @@ import { computed } from 'vue';
 const props = withDefaults(
   defineProps<{
     label: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    options: any;
-    optionValue?: string | undefined;
-    optionLabel?: string | undefined;
+    options: unknown;
     editionMode: boolean;
+    optionValue?: string;
+    optionLabel?: string;
     multiple?: boolean;
     noPadding?: boolean;
   }>(),
@@ -20,26 +19,30 @@ const props = withDefaults(
   }
 );
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const model = defineModel<any>();
+const model = defineModel<unknown>();
 
 /**
- * This computed value allows to read properties of sub-objets
+ * Read properties of objets
  */
 const computedModel = computed({
   get: () => {
-    // sub-object case (such as locatedBy in SiteComponent)
-    if (props.optionLabel && !props.multiple) {
-      return model.value[props.optionLabel];
-    }
-    // other case
-    else {
+    if (props.optionLabel && props.optionValue && !props.multiple) {
+      // @ts-expect-error unknown type error
+      return props.options.find(
+        // @ts-expect-error unknown type error
+        (element: unknown) => element[props.optionValue] === model.value
+      );
+    } else {
       return model.value;
     }
   },
 
   set: (newValue) => {
-    model.value = newValue;
+    if (props.optionValue) {
+      model.value = newValue[props.optionValue];
+    } else {
+      model.value = newValue;
+    }
   },
 });
 </script>
@@ -47,7 +50,7 @@ const computedModel = computed({
 <template>
   <q-select
     v-model="computedModel"
-    :options="options"
+    :options="(options as any)"
     :label="label"
     :readonly="!editionMode"
     :hide-dropdown-icon="!editionMode"
@@ -56,11 +59,11 @@ const computedModel = computed({
     :multiple="multiple"
     :use-chips="multiple"
     :class="noPadding ? undefined : 'form-select-element'"
-    popup-content-class="merriweather"
+    popup-content-class="asm-select-list"
     outlined
-    square
     dense
-    :color="multiple ? 'primary' : 'accent'"
+    color="accent"
+    :menu-offset="[0, 5]"
   >
     <template v-if="multiple && optionLabel" #selected-item="scope">
       <q-chip
@@ -77,12 +80,12 @@ const computedModel = computed({
   </q-select>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .form-select-element {
   margin-bottom: 10px;
 }
 
-.q-field {
+:deep.q-field {
   &.q-field--readonly {
     &.q-field--outlined {
       .q-field__control {
@@ -90,6 +93,12 @@ const computedModel = computed({
           border: transparent;
         }
       }
+    }
+  }
+
+  &.q-field--outlined {
+    .q-field__control {
+      background: rgba(128, 128, 128, 0.05);
     }
   }
 }

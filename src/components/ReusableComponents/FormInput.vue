@@ -1,10 +1,16 @@
 <script setup lang="ts">
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import {
+  DateValidationOptions,
+  DateValidator,
+  ValidationResult,
+} from 'src/utils/dateValidationUtils';
+
 const props = withDefaults(
   defineProps<{
     label: string;
     editionMode: boolean;
     date?: boolean;
+    dateOptions?: DateValidationOptions;
     autogrow?: boolean;
     noPadding?: boolean;
   }>(),
@@ -12,8 +18,27 @@ const props = withDefaults(
     date: false,
     autogrow: false,
     noPadding: false,
+    dateOptions: () => ({
+      minDate: new Date(1900, 0, 0),
+      maxDate: new Date(2099, 0, 0),
+      allowFutureDates: false,
+    }),
   }
 );
+
+const dateValidator = new DateValidator({
+  maxDate: props.dateOptions.maxDate,
+  minDate: props.dateOptions.minDate,
+  allowFutureDates: props.dateOptions.allowFutureDates,
+});
+
+/**
+ * Validate the date using dateValidatorUtil
+ * @param val The input date in string format or undefined.
+ */
+function validateDate(val: string | undefined): ValidationResult {
+  return dateValidator.validateDate(val);
+}
 
 const model = defineModel<string | number>();
 </script>
@@ -24,13 +49,12 @@ const model = defineModel<string | number>();
     :readonly="!editionMode"
     :autogrow="autogrow"
     outlined
-    square
     color="accent"
     stack-label
     dense
     :class="noPadding ? undefined : 'form-input-element'"
     :mask="date ? 'date' : undefined"
-    :rules="date ? ['date'] : undefined"
+    :rules="date ? [validateDate] : undefined"
     :label="label"
     hide-bottom-space
   >
@@ -48,12 +72,12 @@ const model = defineModel<string | number>();
   </q-input>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .form-input-element {
   margin-bottom: 10px;
 }
 
-.q-field {
+:deep.q-field {
   &.q-field--readonly {
     &.q-field--outlined {
       .q-field__control {
@@ -61,6 +85,12 @@ const model = defineModel<string | number>();
           border: transparent;
         }
       }
+    }
+  }
+
+  &.q-field--outlined {
+    .q-field__control {
+      background: rgba(128, 128, 128, 0.05);
     }
   }
 }

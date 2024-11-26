@@ -68,7 +68,7 @@ watch(
 </script>
 
 <template>
-  <SidePanelComponent v-if="site">
+  <SidePanelComponent v-if="site" @close="sis.clearSite()">
     <template #title>
       {{ `${site?.englishName} - ${site?.siteId}` }}
     </template>
@@ -119,6 +119,7 @@ watch(
             v-model="site!.description"
             :label="SITE_TYPE_REFS_PARAMS.description"
             :edition-mode="editionMode"
+            autogrow
           />
 
           <!-- Feature type -->
@@ -126,6 +127,8 @@ watch(
             v-model="site!.featureType"
             :label="SITE_TYPE_REFS_PARAMS.featureType"
             :options="res.siteTypeList"
+            option-value="siteTypeId"
+            option-label="siteTypeName"
             :edition-mode="editionMode"
           />
 
@@ -287,16 +290,22 @@ watch(
           />
 
           <!-- user creation -->
-          <FormInput
+          <FormSelect
             v-model="site!.userCreation"
             :label="SITE_TYPE_REFS_PARAMS.userCreation"
+            :options="res.individuals"
+            option-value="individualId"
+            option-label="individualName"
             :edition-mode="editionMode"
           />
 
           <!-- user modification -->
-          <FormInput
+          <FormSelect
             v-model="site!.userModification"
             :label="SITE_TYPE_REFS_PARAMS.userModification"
+            :options="res.individuals"
+            option-value="individualId"
+            option-label="individualName"
             :edition-mode="editionMode"
             no-padding
           />
