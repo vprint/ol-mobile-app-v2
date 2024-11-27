@@ -1,7 +1,7 @@
 // Map imports
 
 // Vue/Quasar imports
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, Ref, ref, watch } from 'vue';
 import { defineStore } from 'pinia';
 import { RouteRecordName, useRoute, useRouter } from 'vue-router';
 
@@ -26,15 +26,15 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   const route = useRoute();
 
   const isActive = ref(false);
-  let panelParameters: ISidePanelParameters = {
+  const panelParameters: Ref<ISidePanelParameters> = ref({
     location: 'home',
-  };
+  });
 
   /**
    * Read panel parameters from the url at startup
    */
   onMounted(() => {
-    panelParameters = getSidePanelParametersFromRoute();
+    panelParameters.value = getSidePanelParametersFromRoute();
   });
 
   /**
@@ -60,7 +60,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
     if (!active) {
       router.push({ name: 'home' });
 
-      panelParameters = {
+      panelParameters.value = {
         location: 'home',
       };
     }
@@ -78,7 +78,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
         const url = router.resolve(route).href;
         window.history.replaceState(history.state, '', url);
 
-        panelParameters = parameters;
+        panelParameters.value = parameters;
       }
     }
   }
@@ -90,7 +90,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
     () => route.path,
     () => {
       const newPanelParameters = getSidePanelParametersFromRoute();
-      if (!_.isEqual(newPanelParameters, panelParameters)) {
+      if (!_.isEqual(newPanelParameters, panelParameters.value)) {
         Object.assign(panelParameters, newPanelParameters);
       }
     }
