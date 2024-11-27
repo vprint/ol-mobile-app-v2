@@ -16,13 +16,14 @@ import { ILayerProperties } from 'src/interface/ILayerParameters';
 // Others imports
 
 // script
-interface ILayerIndex {
+
+interface ILayerEntryIndex {
   layerId: string;
   zIndex: number;
 }
 
 /**
- * This store manage the right side panel and provide related functionnalities.
+ * This store manage the side panel and provide related functionnalities.
  */
 export const useLayerManagerStore = defineStore('layerManager', () => {
   const sps = useSidePanelStore();
@@ -35,7 +36,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   /**
    * The list of layer available in the layer manager
    */
-  const layers: Ref<ILayerIndex[]> = ref([]);
+  const layersEntry: Ref<ILayerEntryIndex[]> = ref([]);
 
   onMounted(() => {
     getTunableLayers();
@@ -59,8 +60,8 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
           zIndex: zIndex ? zIndex : 0,
         };
 
-        layers.value.push(layerInformation);
-        sortLayersByIndex(layers.value);
+        layersEntry.value.push(layerInformation);
+        sortLayersEntryByIndex(layersEntry.value);
       }
     });
   }
@@ -69,17 +70,31 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
    * This function sort layers by index (usefull after a user reordering).
    * @param layerlist list of layers to sort
    */
-  function sortLayersByIndex(layerlist: ILayerIndex[]): ILayerIndex[] {
+  function sortLayersEntryByIndex(
+    layerlist: ILayerEntryIndex[]
+  ): ILayerEntryIndex[] {
     layerlist.sort((a, b) => b.zIndex - a.zIndex);
     return layerlist;
   }
 
   /**
-   * private store method
-   * Activate / deactivate layer tree
-   * @param mode Should the layer tree be opened or closed ?
+   * Update all the layer entry index
    */
-  function setActive(mode: boolean): void {
+  function updateLayersEntryIndex(): void {
+    const layersCount = layersEntry.value.length;
+    layersEntry.value.forEach((layerEntry, index) => {
+      const newZIndex = layersCount - index;
+      layerEntry.zIndex = newZIndex;
+      mas.getLayerById(layerEntry.layerId)?.setZIndex(newZIndex);
+    });
+  }
+
+  /**
+   * private store method
+   * Activate / deactivate the layer manager
+   * @param mode Should the layer manager be opened or closed ?
+   */
+  function setPanelActive(mode: boolean): void {
     const params = mode
       ? {
           location: SIDE_PANEL_PARAM.LAYER_LIST,
@@ -91,11 +106,11 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   }
 
   function openLayerManager(): void {
-    setActive(true);
+    setPanelActive(true);
   }
 
   function closeLayerManager(): void {
-    setActive(false);
+    setPanelActive(false);
   }
 
   /**
@@ -111,6 +126,8 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
 
   return {
     isActive,
+    layersEntry,
+    updateLayersEntryIndex,
     openLayerManager,
     closeLayerManager,
   };

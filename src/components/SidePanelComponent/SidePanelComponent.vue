@@ -1,5 +1,9 @@
 <script setup lang="ts">
 const emit = defineEmits(['close']);
+
+const thumbStyle: Partial<CSSStyleDeclaration> = {
+  borderRadius: '5px',
+};
 </script>
 
 <template>
@@ -22,7 +26,7 @@ const emit = defineEmits(['close']);
       </div>
     </q-bar>
     <q-card-section class="scroll-section">
-      <q-scroll-area class="fit">
+      <q-scroll-area class="fit" :thumb-style="thumbStyle">
         <slot name="component"></slot>
       </q-scroll-area>
     </q-card-section>
@@ -33,11 +37,13 @@ const emit = defineEmits(['close']);
 </template>
 
 <style lang="scss" scoped>
+$side-panel-height: calc(100% - 50px);
+
 .application-card {
   position: absolute;
   left: 0;
   width: 400px;
-  height: calc(100% - 50px);
+  height: $side-panel-height;
   overflow: auto;
   background-color: $secondary;
   margin: 10px;
@@ -62,7 +68,7 @@ const emit = defineEmits(['close']);
 }
 
 .scroll-section {
-  height: calc(100% - 60px);
+  height: $side-panel-height;
   padding: 0px;
   margin: 0px;
 }

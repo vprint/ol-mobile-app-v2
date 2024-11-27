@@ -29,9 +29,8 @@ import { ISite } from 'src/interface/ISite';
  */
 export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   const site: Ref<Site | undefined> = ref();
-  const { selector, isMapInteractionsInitialized } = storeToRefs(
-    useMapInteractionStore()
-  );
+  const mis = useMapInteractionStore();
+  const { isMapInteractionsInitialized } = storeToRefs(mis);
   const sps = useSidePanelStore();
   const mas = useMapStore();
   const { isActive, panelParameters } = storeToRefs(sps);
@@ -54,7 +53,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    selector.value?.clearFeatures();
+    mis.selectorPlugin.clearFeatures();
     updateMap();
   }
 
@@ -88,7 +87,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
       updateMap(feature);
       site.value = newSite;
-      selector.value?.setFeaturesById([siteId.toString()]);
+      mis.selectorPlugin.setFeaturesById([siteId.toString()]);
       return newSite;
     }
   }
@@ -114,7 +113,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    selector.value?.on(
+    mis.selectorPlugin.on(
       // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
@@ -122,7 +121,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
 
         if (features && features.length > 0) {
           setSite(features[0].getId() as number);
-          selector.value?.setFeaturesById([features[0].getId()?.toString()]);
+          mis.selectorPlugin.setFeaturesById([features[0].getId()?.toString()]);
         }
       }
     );

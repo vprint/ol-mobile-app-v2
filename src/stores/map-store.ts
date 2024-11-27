@@ -29,10 +29,12 @@ import {
 import { MAPSETTINGS } from 'src/utils/params/mapParams';
 
 /**
- * This store manage map and provide related functionnalities.
+ * This store provide the application map and functionnalities related to the map
  */
 export const useMapStore = defineStore('map', () => {
-  const isMapInitialized = ref(false);
+  /**
+   * Application map
+   */
   const map = new Map({
     controls: [],
     view: new View({
@@ -42,6 +44,11 @@ export const useMapStore = defineStore('map', () => {
       minZoom: MAPSETTINGS.minzoom,
     }),
   });
+
+  /**
+   * Is the map initialized
+   */
+  const isMapInitialized = ref(false);
 
   /**
    * Get a layer by it's id
@@ -102,6 +109,10 @@ export const useMapStore = defineStore('map', () => {
     return layersOfInterest;
   }
 
+  /**
+   * Initialize the map. This function create the layers and set the map target.
+   * Set the isMapInitialized to true after that.
+   */
   function initializeMap(): void {
     // An empty mapLibre layer is added to the map
     const mapLibreLayer = new MapLibreLayer({

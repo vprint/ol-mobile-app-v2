@@ -1,5 +1,5 @@
 // Vue/Quasar imports
-import { onMounted, Ref, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // Store imports
 import { defineStore } from 'pinia';
@@ -9,7 +9,6 @@ import ApiRequestor from 'src/services/ApiRequestor';
 
 // Interface imports
 import { ISiteList } from 'src/interface/ISite';
-import { IDocument } from 'src/interface/IDocument';
 import { IIndividual } from 'src/interface/IIndividual';
 import { ISiteType } from 'src/interface/ISiteType';
 import { IProject } from 'src/interface/IProject';
@@ -18,13 +17,12 @@ import { IProject } from 'src/interface/IProject';
  * This store provide application type references.
  */
 export const useReferencesStore = defineStore('references', () => {
-  const individuals: Ref<IIndividual[]> = ref([]);
-  const siteList: Ref<ISiteList[]> = ref([]);
-  const siteTypeList: Ref<ISiteType[]> = ref([]);
-  const projectList: Ref<IProject[]> = ref([]);
-
-  // TODO: Implémenter la recherche de document.
-  const documentList: Ref<IDocument[]> = ref([]);
+  let individuals: IIndividual[] = [];
+  let siteList: ISiteList[] = [];
+  let siteTypeList: ISiteType[] = [];
+  let projectList: IProject[] = [];
+  // TODO: Implémenter les documents.
+  //let documentList: IDocument[] = [];
 
   const isReferencesInitialized = ref(false);
 
@@ -32,10 +30,10 @@ export const useReferencesStore = defineStore('references', () => {
    * Initialize values
    */
   onMounted(async () => {
-    individuals.value = (await ApiRequestor.getIndividualList()) ?? [];
-    siteList.value = (await ApiRequestor.getSiteList()) ?? [];
-    siteTypeList.value = (await ApiRequestor.getSiteTypeList()) ?? [];
-    projectList.value = (await ApiRequestor.getProjectList()) ?? [];
+    individuals = (await ApiRequestor.getIndividualList()) ?? [];
+    siteList = (await ApiRequestor.getSiteList()) ?? [];
+    siteTypeList = (await ApiRequestor.getSiteTypeList()) ?? [];
+    projectList = (await ApiRequestor.getProjectList()) ?? [];
 
     isReferencesInitialized.value = true;
   });
@@ -45,7 +43,6 @@ export const useReferencesStore = defineStore('references', () => {
     siteList,
     siteTypeList,
     projectList,
-    documentList,
     isReferencesInitialized,
   };
 });

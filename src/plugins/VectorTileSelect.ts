@@ -41,18 +41,18 @@ export class VectorTileSelectEvent extends Event {
  */
 class VectorTileSelect extends Interaction {
   public selectedFeatures = new Set<string>();
-  private selectableLayer: VectorTileLayer;
+  private selectableLayer: VectorTileLayer | undefined;
   private selectionStyle: Style;
   private selectionLayer: VectorTileLayer;
 
   constructor({
     name,
-    selectableLayer,
     selectionStyle,
+    selectableLayer,
   }: {
     name: string;
-    selectableLayer: VectorTileLayer;
     selectionStyle?: Style;
+    selectableLayer?: VectorTileLayer;
   }) {
     super({
       handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean =>
@@ -74,7 +74,7 @@ class VectorTileSelect extends Interaction {
     this.selectionLayer = new VectorTileLayer({
       renderMode: 'vector',
       zIndex: 999,
-      source: this.selectableLayer.getSource() ?? undefined,
+      source: this.selectableLayer?.getSource() ?? undefined,
       style: (feature: FeatureLike): Style | undefined => {
         const featureId = feature.getId()?.toString();
         if (featureId && this.selectedFeatures.has(featureId)) {
@@ -92,6 +92,15 @@ class VectorTileSelect extends Interaction {
   public setMap(map: Map | null): void {
     super.setMap(map);
     this.getMap()?.addLayer(this.selectionLayer);
+  }
+
+  /**
+   * Set the selection layer
+   * @param layer The layer where the feature should be selected
+   */
+  public setSelectableLayer(layer: VectorTileLayer): void {
+    this.selectableLayer = layer;
+    this.selectionLayer.setSource(layer.getSource());
   }
 
   /**
@@ -133,7 +142,7 @@ class VectorTileSelect extends Interaction {
   }
 
   /**
-   * Show the given feature as selected
+   * Set features as selected given a list of id.
    * @param featuresId a list of ids
    */
   public setFeaturesById(featuresId: (string | undefined)[] | undefined): void {
