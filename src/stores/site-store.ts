@@ -159,7 +159,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
           setSiteById(siteId);
         }
       } else {
-        if (site.value !== undefined) clearSite();
+        clearSite();
       }
     }
   );

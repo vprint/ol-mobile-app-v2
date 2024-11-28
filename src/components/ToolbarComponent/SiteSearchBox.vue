@@ -25,6 +25,7 @@ const res = useReferencesStore();
 const { site } = storeToRefs(sis);
 const options: Ref<ISearchItem[]> = ref([]);
 const searchbox: Ref<QSelect | null> = ref(null);
+const isFocused = ref(false);
 
 const searchList = computed<ISearchItem[]>(() =>
   res.siteList.map((site) => ({
@@ -106,9 +107,15 @@ onMounted(() => {
     @update:model-value="selectSite"
     @clear="sis.closeSitePanel()"
     @keyup.enter="selectSite(options[0])"
+    @focus="isFocused = true"
+    @blur="isFocused = false"
   >
     <template #append>
-      <q-icon name="sym_s_search" class="cursor-pointer icon-weight-thin">
+      <q-icon
+        v-show="model === undefined && !isFocused"
+        name="sym_s_search"
+        class="cursor-pointer icon-weight-thin"
+      >
       </q-icon>
     </template>
   </q-select>
