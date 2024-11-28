@@ -101,7 +101,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
         }
       : undefined;
 
-    useSidePanelStore().setActive(mode, params);
+    sps.setActive(mode, params);
     isActive.value = mode;
   }
 

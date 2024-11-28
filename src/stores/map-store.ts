@@ -64,21 +64,32 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Fit the map to a given extent and execute a callback if necessary
-   * @param extent
-   * @param callback
+   * Adjusts the map view by applying padding and optionally zooming to a feature.
+   * If no feature is provided, only applies padding to the current extent.
+   * @param padding - The padding to apply to the map
+   * @param feature - Optional feature to center and zoom the view on. If not provided, maintains the current map extent
    */
-  function fitMapToFeature(feature: Feature, callback?: () => void): void {
-    const extent = feature.getGeometry()?.getExtent();
-    const zoom = map.getView().getZoom();
+  function setPaddingAndExtent(padding: number[], feature?: Feature): void {
+    let newZoom: number | undefined;
+    const view = map.getView();
 
-    if (extent && zoom) {
-      map.getView().fit(extent, {
-        maxZoom: zoom < 15 ? 15 : zoom,
-        duration: 500,
-        padding: [0, 0, 0, 400],
+    if (feature) {
+      const zoom = view.getZoom();
+      if (zoom) {
+        newZoom = zoom < 15 ? 15 : view.getZoom();
+      }
+    }
+
+    const extent = feature
+      ? feature.getGeometry()?.getExtent()
+      : view.calculateExtent(map.getSize());
+
+    if (extent) {
+      view.fit(extent, {
+        maxZoom: newZoom,
+        padding: padding,
+        duration: 250,
         easing: easeOut,
-        callback: callback ? callback : undefined,
       });
     }
   }
@@ -144,7 +155,7 @@ export const useMapStore = defineStore('map', () => {
     map,
     isMapInitialized,
     getLayerById,
-    fitMapToFeature,
+    setPaddingAndExtent,
     getLayersByProperties,
     initializeMap,
   };

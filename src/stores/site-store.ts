@@ -40,7 +40,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * Main site-store function that allow to set the working site by it's id.
    * @param newSiteId
    */
-  async function setSite(newSiteId: number): Promise<void> {
+  async function openSitePanel(newSiteId: number): Promise<void> {
     sps.setActive(true, {
       location: SIDE_PANEL_PARAM.SITE,
       parameterName: 'siteId',
@@ -49,7 +49,15 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   }
 
   /**
-   * Clear site in store and close widget
+   * Close site panel and clear informations
+   */
+  function closeSitePanel(): void {
+    clearSite();
+    sps.setActive(false);
+  }
+
+  /**
+   * Clear site values
    */
   function clearSite(): void {
     site.value = undefined;
@@ -70,7 +78,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param siteId SiteId
    * @returns
    */
-  async function setSiteById(siteId: number): Promise<Site | undefined> {
+  async function setSiteById(siteId: number): Promise<void> {
     const rawSite = await ApiRequestor.getSiteById(siteId);
     const feature = rawSite?.features[0];
 
@@ -78,17 +86,12 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
       const newSite = new Site(feature.properties as ISite);
 
       if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
-        sps.setActive(true, {
-          location: SIDE_PANEL_PARAM.SITE,
-          parameterName: 'siteId',
-          parameterValue: newSite.siteId.toString(),
-        });
+        openSitePanel(newSite.siteId);
       }
 
       updateMap(feature);
       site.value = newSite;
       mis.selectorPlugin.setFeaturesById([siteId.toString()]);
-      return newSite;
     }
   }
 
@@ -102,7 +105,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
-      mas.fitMapToFeature(feature);
+      sps.setPanelPadding(true, feature);
     }
 
     const archLayer = mas.getLayerById(SITE_LAYER);
@@ -120,7 +123,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
         const features = e.selected;
 
         if (features && features.length > 0) {
-          setSite(features[0].getId() as number);
+          openSitePanel(features[0].getId() as number);
           mis.selectorPlugin.setFeaturesById([features[0].getId()?.toString()]);
         }
       }
@@ -133,7 +136,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   function handleEscape(event: KeyboardEvent): void {
     if (event.key === 'Escape' && isActive.value && site.value) {
-      clearSite();
+      closeSitePanel();
     }
   }
 
@@ -156,7 +159,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
           setSiteById(siteId);
         }
       } else {
-        clearSite();
+        if (site.value !== undefined) clearSite();
       }
     }
   );
@@ -181,9 +184,9 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
     window.addEventListener('keydown', handleEscape);
 
     if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {
-      setSite(parseInt(panelParameters.value.parameterValue as string));
+      openSitePanel(parseInt(panelParameters.value.parameterValue as string));
     }
   });
 
-  return { site, setSite, updateSite, clearSite };
+  return { site, openSitePanel, updateSite, closeSitePanel };
 });
