@@ -13,7 +13,6 @@ import LayerManagerButton from '../LayerListComponent/LayerManagerButton.vue';
 import LocatorComponent from '../LocatorComponent/LocatorComponent.vue';
 
 // Others
-import { APP_PARAMS } from '../../utils/params/appParams';
 
 // Script
 const { isMapInitialized } = storeToRefs(useMapStore());
@@ -21,31 +20,31 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 </script>
 
 <template>
-  <q-toolbar v-if="isMapInitialized" class="bg-secondary text-primary shadow-2">
-    <!-- Logo -->
-    <q-avatar square>
-      <q-img :src="'icons/efeo_logo.png'"></q-img>
-    </q-avatar>
-
-    <!-- Title (desktop display only) -->
-    <q-toolbar-title v-if="$q.platform.is.desktop" class="merriweather">
-      {{ APP_PARAMS.applicationName }}
-    </q-toolbar-title>
-
-    <!-- Space -->
-    <q-space></q-space>
-
-    <!-- Enable location -->
-    <LocatorComponent></LocatorComponent>
-
+  <div v-if="isMapInitialized" class="text-primary search-toolbar shadow-2 row">
     <!-- Layer list button -->
     <LayerManagerButton></LayerManagerButton>
+
+    <q-separator vertical></q-separator>
+    <!-- Enable location -->
+    <LocatorComponent></LocatorComponent>
 
     <!-- Measure button -->
     <MeasureComponent v-if="$q.platform.is.desktop"></MeasureComponent>
 
     <SiteSearchBox v-if="isReferencesInitialized"></SiteSearchBox>
-  </q-toolbar>
+  </div>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.search-toolbar {
+  position: absolute;
+  right: 0;
+  background: linear-gradient(0.25turn, #e66465, #9198e5);
+  margin: 10px;
+  padding: 0px 5px 0px 0px;
+  border: 1px solid black;
+  border-radius: 10px;
+  z-index: 999;
+  overflow: hidden;
+}
+</style>

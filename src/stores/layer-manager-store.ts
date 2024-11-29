@@ -1,7 +1,7 @@
 // Map imports
 
 // Vue/Quasar imports
-import { onMounted, Ref, ref, watch } from 'vue';
+import { Ref, ref, watch } from 'vue';
 
 // Store imports
 import { defineStore } from 'pinia';
@@ -11,7 +11,10 @@ import { useMapStore } from './map-store';
 // Interface, type and enum imports
 import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
-import { ILayerProperties } from 'src/interface/ILayerParameters';
+import {
+  ILayerProperties,
+  LayerProperties,
+} from 'src/interface/ILayerParameters';
 
 // Others imports
 
@@ -38,22 +41,19 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
    */
   const layersEntry: Ref<ILayerEntryIndex[]> = ref([]);
 
-  onMounted(() => {
-    getTunableLayers();
-  });
-
   /**
    * Get all tunable layers.
    */
   function getTunableLayers(): void {
-    const mapLayers = mas.map.getAllLayers();
+    if (layersEntry.value.length === 0) {
+      const tunableLayers = mas.getLayersByProperties(
+        LayerProperties.TUNABLE,
+        true
+      );
 
-    mapLayers.forEach((layer) => {
-      const layerProperties = layer.get(LAYER_PROPERTIES) as
-        | ILayerProperties
-        | undefined;
+      tunableLayers.forEach((layer) => {
+        const layerProperties = layer.get(LAYER_PROPERTIES) as ILayerProperties;
 
-      if (layerProperties?.tunable) {
         const zIndex = layer.getZIndex();
         const layerInformation = {
           layerId: layerProperties.id,
@@ -62,12 +62,12 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
 
         layersEntry.value.push(layerInformation);
         sortLayersEntryByIndex(layersEntry.value);
-      }
-    });
+      });
+    }
   }
 
   /**
-   * This function sort layers by index (usefull after a user reordering).
+   * This function sort layers by index (usefull to initialize the layer manager panel).
    * @param layerlist list of layers to sort
    */
   function sortLayersEntryByIndex(
@@ -78,7 +78,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   }
 
   /**
-   * Update all the layer entry index
+   * Update all the layer entry index (usefull after a user reordering)
    */
   function updateLayersEntryIndex(): void {
     const layersCount = layersEntry.value.length;
@@ -121,6 +121,17 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
     () => {
       isActive.value =
         sps.panelParameters.location === SIDE_PANEL_PARAM.LAYER_LIST;
+      if (isActive.value) getTunableLayers();
+    }
+  );
+
+  /**
+   * Watch for map initialization and then initialize the layer manager parameters
+   */
+  watch(
+    () => mas.isMapInitialized,
+    (newValue) => {
+      if (newValue) getTunableLayers();
     }
   );
 
