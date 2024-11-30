@@ -18,9 +18,8 @@ const mes = useMeasureStore();
     :fab="$q.platform.is.desktop"
     :round="$q.platform.is.mobile"
     :square="$q.platform.is.desktop"
-    :color="$q.platform.is.mobile ? 'secondary' : undefined"
+    color="white"
     icon="sym_s_straighten"
-    class="icon-weight-thin"
     :text-color="$q.platform.is.mobile ? 'primary' : undefined"
     @click="mes.removeMeasure"
   >
@@ -31,12 +30,7 @@ const mes = useMeasureStore();
       class="bg-secondary text-primary"
     >
       <q-list>
-        <q-item
-          v-close-popup
-          clickable
-          class="icon-weight-thin"
-          @click="mes.addMeasure('LineString')"
-        >
+        <q-item v-close-popup clickable @click="mes.addMeasure('LineString')">
           <q-item-section>
             <q-icon name="straighten" />
           </q-item-section>
@@ -68,12 +62,7 @@ const mes = useMeasureStore();
           </q-tooltip>
         </q-item>
 
-        <q-item
-          v-close-popup
-          clickable
-          class="icon-weight-thin"
-          @click="mes.removeAllMeasure()"
-        >
+        <q-item v-close-popup clickable @click="mes.removeAllMeasure()">
           <q-item-section>
             <q-icon name="delete" />
           </q-item-section>

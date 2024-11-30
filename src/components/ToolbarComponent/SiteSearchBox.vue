@@ -114,7 +114,7 @@ onMounted(() => {
       <q-icon
         v-show="model === undefined && !isFocused"
         name="sym_s_search"
-        class="cursor-pointer icon-weight-thin"
+        class="cursor-pointer"
       >
       </q-icon>
     </template>

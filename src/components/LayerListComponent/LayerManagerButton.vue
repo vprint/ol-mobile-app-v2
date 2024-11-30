@@ -17,12 +17,9 @@ const lms = useLayerManagerStore();
     flat
     fab
     square
-    :text-color="lms.isActive ? 'secondary' : 'primary'"
+    :text-color="lms.isActive ? 'primary' : 'secondary'"
     unelevated
-    :class="[
-      'layer-manager-button icon-weight-thin',
-      { 'bg-primary': lms.isActive, 'bg-transparent': !lms.isActive },
-    ]"
+    :class="['layer-manager-button', { 'bg-transparent': !lms.isActive }]"
     icon="sym_s_stacks"
     @click="lms.isActive ? lms.closeLayerManager() : lms.openLayerManager()"
   >

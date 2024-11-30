@@ -24,7 +24,6 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
     <!-- Layer list button -->
     <LayerManagerButton></LayerManagerButton>
 
-    <q-separator vertical></q-separator>
     <!-- Enable location -->
     <LocatorComponent></LocatorComponent>
 
@@ -42,7 +41,6 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
   background: linear-gradient(0.25turn, #e66465, #9198e5);
   margin: 10px;
   padding: 0px 5px 0px 0px;
-  border: 1px solid black;
   border-radius: 10px;
   z-index: 999;
   overflow: hidden;

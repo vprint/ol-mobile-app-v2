@@ -26,7 +26,7 @@ const islocationFound = ref(false);
 const isViewCentered = ref(false);
 const hasError = ref(false);
 const tooltipMessage = ref(TOOLTIP_MESSAGE.ACTIVATE_LOCATION);
-const color = ref('primary');
+const color = ref('white');
 const icon = ref('sym_s_location_on');
 
 let locationFoundListener: (EventsKey & EventsKey[]) | undefined;
@@ -79,7 +79,7 @@ function enableTracking(): void {
       isViewCentered.value = false;
       tooltipMessage.value = TOOLTIP_MESSAGE.FIT_VIEW_TO_LOCATION;
       icon.value = 'location_on';
-      color.value = 'primary';
+      color.value = 'white';
     }
   );
 
@@ -89,7 +89,7 @@ function enableTracking(): void {
     () => {
       hasError.value = true;
       icon.value = 'sym_s_location_off';
-      color.value = 'primary';
+      color.value = 'white';
     }
   );
 }
@@ -109,7 +109,7 @@ function disableTracking(): void {
 
   tooltipMessage.value = TOOLTIP_MESSAGE.ACTIVATE_LOCATION;
   icon.value = 'sym_s_location_on';
-  color.value = 'primary';
+  color.value = 'white';
 }
 
 /**

@@ -6,7 +6,7 @@
 // Store imports
 
 // Component import
-import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
+import AltSidePanelComponent from '../SidePanelComponent/AltSidePanelComponent.vue';
 import BackgroundSelector from './BackgroundSelector/BackgroundSelector.vue';
 import LayerControler from './LayerControler.vue';
 
@@ -21,11 +21,11 @@ const lms = useLayerManagerStore();
 </script>
 
 <template>
-  <SidePanelComponent
+  <AltSidePanelComponent
     @close="lms.isActive ? lms.closeLayerManager() : lms.openLayerManager()"
   >
     <template #title> Layer Manager </template>
-    <template #component>
+    <template #content>
       <VueDraggable
         v-model="lms.layersEntry"
         :animation="250"
@@ -39,10 +39,10 @@ const lms = useLayerManagerStore();
         </div>
       </VueDraggable>
     </template>
-    <template #footer>
+    <template #fixedFooter>
       <BackgroundSelector></BackgroundSelector>
     </template>
-  </SidePanelComponent>
+  </AltSidePanelComponent>
 </template>
 
 <style lang="scss"></style>
