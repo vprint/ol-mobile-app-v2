@@ -17,11 +17,10 @@ const lms = useLayerManagerStore();
     flat
     fab
     square
-    :text-color="lms.isActive ? 'primary' : 'secondary'"
+    text-color="secondary"
     unelevated
-    :class="['layer-manager-button', { 'bg-transparent': !lms.isActive }]"
     icon="sym_s_stacks"
-    @click="lms.isActive ? lms.closeLayerManager() : lms.openLayerManager()"
+    @click="lms.isOpen ? lms.closeLayerManager() : lms.openLayerManager()"
   >
     <q-tooltip
       anchor="bottom middle"

@@ -38,7 +38,7 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 .search-toolbar {
   position: absolute;
   right: 0;
-  background: linear-gradient(0.25turn, #e66465, #9198e5);
+  background: $gradient;
   margin: 10px;
   padding: 0px 5px 0px 0px;
   border-radius: 10px;

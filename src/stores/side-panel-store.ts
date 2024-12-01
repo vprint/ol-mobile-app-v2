@@ -29,7 +29,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   const router = useRouter();
   const route = useRoute();
 
-  const isActive = ref(false);
+  const isOpen = ref(false);
   const panelParameters: Ref<ISidePanelParameters> = ref({
     location: 'home',
   });
@@ -65,7 +65,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
       panelParameters.value = {
         location: 'home',
       };
-      if (isActive.value) {
+      if (isOpen.value) {
         setPanelPadding(false);
       }
     }
@@ -87,14 +87,14 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
         panelParameters.value = parameters;
         // If the the site panel is opened a custom panel padding is applied (see siteStore().updateMap())
         if (
-          !isActive.value &&
+          !isOpen.value &&
           panelParameters.value.location !== SIDE_PANEL_PARAM.SITE
         ) {
           setPanelPadding(true);
         }
       }
     }
-    isActive.value = active;
+    isOpen.value = active;
   }
 
   /**
@@ -123,7 +123,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   );
 
   return {
-    isActive,
+    isOpen,
     panelParameters,
     setActive,
     setPanelPadding,

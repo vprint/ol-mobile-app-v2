@@ -8,145 +8,73 @@ const thumbStyle: Partial<CSSStyleDeclaration> = {
 
 <template>
   <div class="side-panel">
-    <div class="text-white row header-bar justify-between merriweather">
-      <div>
+    <!-- Header -->
+    <div class="row text-white items-center header merriweather shadow-4">
+      <div class="header-title">
         <slot name="title"></slot>
       </div>
-      <q-btn
-        flat
-        dense
-        round
-        icon="close"
-        class="close-button"
-        @click="emit('close')"
-      />
+      <q-btn flat dense round icon="close" @click="emit('close')" />
     </div>
 
-    <q-card class="application-card">
-      <q-card-section class="scroll-section">
-        <q-scroll-area class="fit" :thumb-style="thumbStyle">
-          <div>
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book. It has survived not
-            only five centuries, but also the leap into electronic typesetting,
-            remaining essentially unchanged. It was popularised in the 1960s
-            with the release of Letraset sheets containing Lorem Ipsum passages,
-            and more recently with desktop publishing software like Aldus
-            PageMaker including versions of Lorem Ipsum. Lorem Ipsum is simply
-            dummy text of the printing and typesetting industry. Lorem Ipsum has
-            been the industry's standard dummy text ever since the 1500s, when
-            an unknown printer took a galley of type and scrambled it to make a
-            type specimen book. It has survived not only five centuries, but
-            also the leap into electronic typesetting, remaining essentially
-            unchanged. It was popularised in the 1960s with the release of
-            Letraset sheets containing Lorem Ipsum passages, and more recently
-            with desktop publishing software like Aldus PageMaker including
-            versions of Lorem Ipsum. Lorem Ipsum is simply dummy text of the
-            printing and typesetting industry. Lorem Ipsum has been the
-            industry's standard dummy text ever since the 1500s, when an unknown
-            printer took a galley of type and scrambled it to make a type
-            specimen book. It has survived not only five centuries, but also the
-            leap into electronic typesetting, remaining essentially unchanged.
-            It was popularised in the 1960s with the release of Letraset sheets
-            containing Lorem Ipsum passages, and more recently with desktop
-            publishing software like Aldus PageMaker including versions of Lorem
-            Ipsum. Lorem Ipsum is simply dummy text of the printing and
-            typesetting industry. Lorem Ipsum has been the industry's standard
-            dummy text ever since the 1500s, when an unknown printer took a
-            galley of type and scrambled it to make a type specimen book. It has
-            survived not only five centuries, but also the leap into electronic
-            typesetting, remaining essentially unchanged. It was popularised in
-            the 1960s with the release of Letraset sheets containing Lorem Ipsum
-            passages, and more recently with desktop publishing software like
-            Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is
-            simply dummy text of the printing and typesetting industry. Lorem
-            Ipsum has been the industry's standard dummy text ever since the
-            1500s, when an unknown printer took a galley of type and scrambled
-            it to make a type specimen book. It has survived not only five
-            centuries, but also the leap into electronic typesetting, remaining
-            essentially unchanged. It was popularised in the 1960s with the
-            release of Letraset sheets containing Lorem Ipsum passages, and more
-            recently with desktop publishing software like Aldus PageMaker
-            including versions of Lorem Ipsum. Lorem Ipsum is simply dummy text
-            of the printing and typesetting industry. Lorem Ipsum has been the
-            industry's standard dummy text ever since the 1500s, when an unknown
-            printer took a galley of type and scrambled it to make a type
-            specimen book. It has survived not only five centuries, but also the
-            leap into electronic typesetting, remaining essentially unchanged.
-            It was popularised in the 1960s with the release of Letraset sheets
-            containing Lorem Ipsum passages, and more recently with desktop
-            publishing software like Aldus PageMaker including versions of Lorem
-            Ipsum. Lorem Ipsum is simply dummy text of the printing and
-            typesetting industry. Lorem Ipsum has been the industry's standard
-            dummy text ever since the 1500s, when an unknown printer took a
-            galley of type and scrambled it to make a type specimen book. It has
-            survived not only five centuries, but also the leap into electronic
-            typesetting, remaining essentially unchanged. It was popularised in
-            the 1960s with the release of Letraset sheets containing Lorem Ipsum
-            passages, and more recently with desktop publishing software like
-            Aldus PageMaker including versions of Lorem Ipsum. Lorem Ipsum is
-            simply dummy text of the printing and typesetting industry. Lorem
-            Ipsum has been the industry's standard dummy text ever since the
-            1500s, when an unknown printer took a galley of type and scrambled
-            it to make a type specimen book. It has survived not only five
-            centuries, but also the leap into electronic typesetting, remaining
-            essentially unchanged. It was popularised in the 1960s with the
-            release of Letraset sheets containing Lorem Ipsum passages, and more
-            recently with desktop publishing software like Aldus PageMaker
-            including versions of Lorem Ipsum.
-          </div>
-          <slot name="component"></slot>
-        </q-scroll-area>
-      </q-card-section>
-      <div v-if="$slots.footer" class="fixed-footer">
-        <slot name="footer"></slot>
-      </div>
-    </q-card>
+    <!-- Main section -->
+    <div class="content shadow-4">
+      <q-scroll-area class="fit" :thumb-style="thumbStyle">
+        <slot name="content"></slot>
+      </q-scroll-area>
+    </div>
+
+    <!-- Footer -->
+    <div v-if="$slots.fixedFooter" class="fixed-footer shadow-4">
+      <slot name="fixedFooter"></slot>
+    </div>
+
+    <!-- Floating footer -->
+    <div v-if="$slots.floatingFooter" class="floating-footer shadow-4">
+      <slot name="floatingFooter"></slot>
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-$header-height: 60px;
-$margin: 10px;
 $side-panel-height: calc(100% - 50px);
+$content-width: 400px;
 
 .side-panel {
   position: absolute;
   left: 0;
   height: $side-panel-height;
-  width: 400px;
+  width: 430px;
   margin: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
-  .close-button {
-    margin-right: -15px;
-  }
-
-  .header-bar {
-    background: linear-gradient(0.25turn, #e66465, #9198e5);
-    padding: 20px;
-    z-index: 999;
-    position: relative;
-  }
-
-  .application-card {
-    overflow: auto;
-    background-color: $secondary;
+  .header {
+    width: 100%;
+    height: 64px;
+    background: $gradient;
+    border-radius: 10px;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px 16px;
+    font-size: 1.1rem;
+    z-index: 2;
   }
 
-  .scroll-section {
+  .content {
+    width: $content-width;
     height: $side-panel-height;
-    padding: 0px;
-    margin: 0px;
+    background-color: $secondary;
+    justify-content: center;
+    border-radius: 0px 0px 10px 10px;
   }
 
-  .fixed-footer {
-    position: sticky;
-    bottom: 0;
+  .floating-footer {
     background-color: $secondary;
+    width: $content-width;
+    margin-top: 10px;
+    justify-content: center;
+    border-radius: 10px;
   }
 }
 </style>

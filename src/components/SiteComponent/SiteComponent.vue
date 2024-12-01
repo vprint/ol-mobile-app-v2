@@ -73,7 +73,7 @@ watch(
       {{ `${site?.englishName} - ${site?.siteId}` }}
     </template>
 
-    <template #component>
+    <template #content>
       <q-form
         class="site-form merriweather"
         @submit="openDialog"
@@ -317,35 +317,38 @@ watch(
           v-model="site!.documents as AssociatedDocument[]"
         ></DocumentsComponent>
       </fieldset> -->
-
-        <div class="q-pa-md q-gutter-sm row justify-end">
-          <q-btn
-            v-if="!editionMode"
-            class="site-button"
-            square
-            color="primary"
-            label="Edit"
-            @click="editionMode = !editionMode"
-          />
-          <q-btn
-            v-if="editionMode"
-            type="reset"
-            class="site-button"
-            outline
-            square
-            color="primary"
-            label="Cancel"
-          />
-          <q-btn
-            v-if="editionMode"
-            type="submit"
-            class="site-button"
-            square
-            color="primary"
-            label="Save"
-          />
-        </div>
       </q-form>
+    </template>
+    <template #floatingFooter>
+      <div class="site-buttons">
+        <q-btn
+          v-if="!editionMode"
+          rounded
+          color="primary"
+          label="Edit"
+          class="buttons"
+          @click="editionMode = !editionMode"
+        />
+        <q-btn
+          v-if="editionMode"
+          type="reset"
+          outline
+          rounded
+          color="primary"
+          label="Cancel"
+          class="buttons"
+          @click="editionMode = !editionMode"
+        />
+        <q-btn
+          v-if="editionMode"
+          type="submit"
+          rounded
+          color="primary"
+          label="Save"
+          class="buttons"
+          @click="editionMode = !editionMode"
+        />
+      </div>
     </template>
   </SidePanelComponent>
 </template>
@@ -363,7 +366,18 @@ legend {
   color: $primary;
 }
 
+.site-buttons {
+  margin: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  .buttons {
+    min-width: 100px;
+  }
+}
+
 .site-form {
-  padding: 0px 16px 0px 16px;
+  padding: 0px 16px 16px;
 }
 </style>

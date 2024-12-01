@@ -94,7 +94,7 @@ const model = defineModel<string | number>();
 
   &.q-field--outlined {
     .q-field__control {
-      background: rgba(128, 128, 128, 0.05);
+      background: $light-highlight;
     }
   }
 }

@@ -6,9 +6,9 @@
 // Store imports
 
 // Component import
-import AltSidePanelComponent from '../SidePanelComponent/AltSidePanelComponent.vue';
+import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 import BackgroundSelector from './BackgroundSelector/BackgroundSelector.vue';
-import LayerControler from './LayerControler.vue';
+import AltLayerControler from './AltLayerControler.vue';
 
 // Others imports
 import { VueDraggable } from 'vue-draggable-plus';
@@ -21,8 +21,8 @@ const lms = useLayerManagerStore();
 </script>
 
 <template>
-  <AltSidePanelComponent
-    @close="lms.isActive ? lms.closeLayerManager() : lms.openLayerManager()"
+  <SidePanelComponent
+    @close="lms.isOpen ? lms.closeLayerManager() : lms.openLayerManager()"
   >
     <template #title> Layer Manager </template>
     <template #content>
@@ -30,19 +30,42 @@ const lms = useLayerManagerStore();
         v-model="lms.layersEntry"
         :animation="250"
         handle=".handle"
-        ghost-class="ghost"
+        ghost-class="layer-control-ghost"
         @end="lms.updateLayersEntryIndex()"
       >
         <div v-for="layer in lms.layersEntry" :key="layer.layerId">
-          <LayerControler :layer-id="layer.layerId"></LayerControler>
-          <q-separator></q-separator>
+          <AltLayerControler
+            :layer-id="layer.layerId"
+            class="layer-control"
+          ></AltLayerControler>
         </div>
       </VueDraggable>
     </template>
-    <template #fixedFooter>
+    <template #floatingFooter>
       <BackgroundSelector></BackgroundSelector>
     </template>
-  </AltSidePanelComponent>
+  </SidePanelComponent>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.layer-control {
+  width: calc(100% - 16px);
+  padding: 8px 16px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  transition: border-color 0.4s ease, background-color 0.4s ease;
+  background-color: $light-highlight;
+  border-radius: 10px;
+  margin: 8px;
+
+  &:hover {
+    background: color-mix(in srgb, $gradient-cold 10%, transparent);
+    border-color: rgba(0, 0, 0, 0.85);
+  }
+}
+
+.layer-control-ghost {
+  .layer-control {
+    background-color: red;
+  }
+}
+</style>

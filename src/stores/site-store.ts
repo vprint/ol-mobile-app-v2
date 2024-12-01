@@ -33,7 +33,6 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   const { isMapInteractionsInitialized } = storeToRefs(mis);
   const sps = useSidePanelStore();
   const mas = useMapStore();
-  const { isActive, panelParameters } = storeToRefs(sps);
   const SITE_LAYER = 'archsites';
 
   /**
@@ -85,7 +84,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
     if (feature) {
       const newSite = new Site(feature.properties as ISite);
 
-      if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
+      if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
         openSitePanel(newSite.siteId);
       }
 
@@ -135,7 +134,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param event the keyboard press envent
    */
   function handleEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && isActive.value && site.value) {
+    if (event.key === 'Escape' && sps.isOpen && site.value) {
       closeSitePanel();
     }
   }
@@ -144,7 +143,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * watch for site change in URL
    */
   watch(
-    () => panelParameters.value,
+    () => sps.panelParameters,
     (newPanelParameters) => {
       // Open site if URL contains site data
       if (
@@ -183,8 +182,8 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   onMounted(async () => {
     window.addEventListener('keydown', handleEscape);
 
-    if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {
-      openSitePanel(parseInt(panelParameters.value.parameterValue as string));
+    if (sps.panelParameters.location === SIDE_PANEL_PARAM.SITE) {
+      openSitePanel(parseInt(sps.panelParameters.parameterValue as string));
     }
   });
 

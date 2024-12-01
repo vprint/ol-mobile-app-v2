@@ -35,7 +35,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   /**
    * Is the layer manager opened ?
    */
-  const isActive = ref(false);
+  const isOpen = ref(false);
   /**
    * The list of layer available in the layer manager
    */
@@ -102,7 +102,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
       : undefined;
 
     sps.setActive(mode, params);
-    isActive.value = mode;
+    isOpen.value = mode;
   }
 
   function openLayerManager(): void {
@@ -119,9 +119,9 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   watch(
     () => sps.panelParameters.location,
     () => {
-      isActive.value =
+      isOpen.value =
         sps.panelParameters.location === SIDE_PANEL_PARAM.LAYER_LIST;
-      if (isActive.value) getTunableLayers();
+      if (isOpen.value) getTunableLayers();
     }
   );
 
@@ -136,7 +136,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   );
 
   return {
-    isActive,
+    isOpen,
     layersEntry,
     updateLayersEntryIndex,
     openLayerManager,
