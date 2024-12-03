@@ -39,9 +39,9 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
   position: absolute;
   right: 0;
   background: $gradient;
-  margin: 10px;
+  margin: 8px;
   padding: 0px 5px 0px 0px;
-  border-radius: 10px;
+  border-radius: 8px;
   z-index: 999;
   overflow: hidden;
 }

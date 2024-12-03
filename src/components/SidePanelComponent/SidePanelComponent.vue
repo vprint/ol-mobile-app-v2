@@ -44,16 +44,16 @@ $content-width: 400px;
   left: 0;
   height: $side-panel-height;
   width: 430px;
-  margin: 10px;
+  margin: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
 
   .header {
     width: 100%;
-    height: 64px;
+    min-height: 64px;
     background: $gradient;
-    border-radius: 10px;
+    border-radius: 8px;
     display: flex;
     justify-content: space-between;
     padding: 8px 16px;
@@ -66,15 +66,15 @@ $content-width: 400px;
     height: $side-panel-height;
     background-color: $secondary;
     justify-content: center;
-    border-radius: 0px 0px 10px 10px;
+    border-radius: 0px 0px 8px 8px;
   }
 
   .floating-footer {
     background-color: $secondary;
     width: $content-width;
-    margin-top: 10px;
+    margin-top: 8px;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 8px;
   }
 }
 </style>

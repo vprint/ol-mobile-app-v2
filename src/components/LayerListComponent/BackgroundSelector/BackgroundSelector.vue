@@ -103,7 +103,6 @@ onMounted(() => {
 
 .round-button {
   margin-bottom: 10px;
-  box-shadow: 0 0 0 2px transparent;
   transition: box-shadow 0.15s ease;
   &.active {
     box-shadow: 0 0 0 3px $primary;

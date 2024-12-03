@@ -29,4 +29,6 @@ $gradient-cold: #9198e5;
 
 $gradient: linear-gradient(0.25turn, $gradient-hot, $gradient-cold);
 
-$light-highlight: rgba(128, 128, 128, 0.05);
+$low-highlight: rgba(128, 128, 128, 0.05);
+$medium-highlight: rgba(128, 128, 128, 0.1);
+$heavy-highlight: rgba(128, 128, 128, 0.15);

@@ -82,7 +82,7 @@ const computedModel = computed({
 
 <style lang="scss" scoped>
 .form-select-element {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 :deep.q-field {
@@ -98,7 +98,7 @@ const computedModel = computed({
 
   &.q-field--outlined {
     .q-field__control {
-      background: $light-highlight;
+      background: $low-highlight;
     }
   }
 }

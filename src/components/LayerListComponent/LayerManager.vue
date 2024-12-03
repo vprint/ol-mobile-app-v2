@@ -8,16 +8,27 @@
 // Component import
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 import BackgroundSelector from './BackgroundSelector/BackgroundSelector.vue';
-import AltLayerControler from './AltLayerControler.vue';
+import LayerControler from './LayerControler.vue';
 
 // Others imports
 import { VueDraggable } from 'vue-draggable-plus';
 
 // Type & interface
 import { useLayerManagerStore } from 'src/stores/layer-manager-store';
+import { ref } from 'vue';
 
 // script
 const lms = useLayerManagerStore();
+const isDragging = ref(false);
+
+function manageDragEnd(): void {
+  isDragging.value = false;
+  lms.updateLayersEntryIndex();
+}
+
+function manageDragStart(): void {
+  isDragging.value = true;
+}
 </script>
 
 <template>
@@ -30,14 +41,16 @@ const lms = useLayerManagerStore();
         v-model="lms.layersEntry"
         :animation="250"
         handle=".handle"
-        ghost-class="layer-control-ghost"
-        @end="lms.updateLayersEntryIndex()"
+        ghost-class="selected"
+        drag-class="dragged"
+        @start="manageDragStart"
+        @end="manageDragEnd"
       >
         <div v-for="layer in lms.layersEntry" :key="layer.layerId">
-          <AltLayerControler
+          <LayerControler
             :layer-id="layer.layerId"
-            class="layer-control"
-          ></AltLayerControler>
+            :is-dragging="isDragging"
+          ></LayerControler>
         </div>
       </VueDraggable>
     </template>
@@ -48,24 +61,15 @@ const lms = useLayerManagerStore();
 </template>
 
 <style lang="scss" scoped>
-.layer-control {
-  width: calc(100% - 16px);
-  padding: 8px 16px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  transition: border-color 0.4s ease, background-color 0.4s ease;
-  background-color: $light-highlight;
-  border-radius: 10px;
-  margin: 8px;
-
-  &:hover {
-    background: color-mix(in srgb, $gradient-cold 10%, transparent);
-    border-color: rgba(0, 0, 0, 0.85);
+.selected {
+  .layer-element {
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px rgba(0, 0, 0, 0.14),
+      0 1px 14px rgba(0, 0, 0, 0.12);
   }
 }
 
-.layer-control-ghost {
-  .layer-control {
-    background-color: red;
-  }
+.dragged {
+  opacity: 0;
 }
 </style>

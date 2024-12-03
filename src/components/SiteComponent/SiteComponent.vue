@@ -357,20 +357,20 @@ watch(
 fieldset {
   border: 1px solid $primary;
   border-radius: 2px;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 legend {
   font-size: 15px;
-  padding: 0 10px;
+  padding: 0 8px;
   color: $primary;
 }
 
 .site-buttons {
-  margin: 10px;
+  margin: 8px;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 
   .buttons {
     min-width: 100px;

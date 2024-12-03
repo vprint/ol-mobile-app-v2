@@ -74,7 +74,7 @@ const model = defineModel<string | number>();
 
 <style lang="scss" scoped>
 .form-input-element {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .date-picker {
@@ -94,7 +94,7 @@ const model = defineModel<string | number>();
 
   &.q-field--outlined {
     .q-field__control {
-      background: $light-highlight;
+      background: $low-highlight;
     }
   }
 }
