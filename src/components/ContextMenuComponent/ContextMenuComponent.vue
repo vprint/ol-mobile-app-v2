@@ -3,6 +3,7 @@
 
 // Store imports
 import { useMeasureStore } from 'src/stores/measure-store';
+import { GeometryType } from '../../enums/geometry.enum';
 
 // Map imports
 
@@ -36,7 +37,7 @@ const mes = useMeasureStore();
               v-close-popup
               dense
               clickable
-              @click="mes.addMeasure('LineString')"
+              @click="mes.addMeasure(GeometryType.LINE_STRING)"
               ><q-item-section>Distance</q-item-section>
             </q-item>
 
@@ -45,7 +46,7 @@ const mes = useMeasureStore();
               v-close-popup
               dense
               clickable
-              @click="mes.addMeasure('Polygon')"
+              @click="mes.addMeasure(GeometryType.POLYGON)"
             >
               <q-item-section>Area</q-item-section>
             </q-item>

@@ -1,12 +1,9 @@
 <template>
   <q-layout>
-    <!-- Toolbar -->
-    <q-header elevated>
-      <ToolbarComponent></ToolbarComponent>
-    </q-header>
-
     <q-page-container style="overflow: hidden">
       <q-page>
+        <!-- Toolbar -->
+        <ToolbarComponent></ToolbarComponent>
         <!-- Map -->
         <MapComponent></MapComponent>
       </q-page>
@@ -18,5 +15,3 @@
 import ToolbarComponent from '../components/ToolbarComponent/ToolbarComponent.vue';
 import MapComponent from '../components/MapComponent/MapComponent.vue';
 </script>
-
-<style></style>

@@ -9,7 +9,7 @@ import { useMapStore } from 'src/stores/map-store';
 
 // Others imports
 import Location, { LocationEventsType } from 'src/plugins/Location';
-import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
+import { Interactions } from 'src/enums/interactions.enum';
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';
 
@@ -26,14 +26,14 @@ const islocationFound = ref(false);
 const isViewCentered = ref(false);
 const hasError = ref(false);
 const tooltipMessage = ref(TOOLTIP_MESSAGE.ACTIVATE_LOCATION);
-const color = ref('primary');
+const color = ref('white');
 const icon = ref('sym_s_location_on');
 
 let locationFoundListener: (EventsKey & EventsKey[]) | undefined;
 let viewModificationListener: (EventsKey & EventsKey[]) | undefined;
 let locationErrorListener: (EventsKey & EventsKey[]) | undefined;
 
-const location = new Location(INTERACTIONS_PARAMS.location);
+const location = new Location(Interactions.LOCATION);
 mas.map.addInteraction(location);
 
 /**
@@ -79,7 +79,7 @@ function enableTracking(): void {
       isViewCentered.value = false;
       tooltipMessage.value = TOOLTIP_MESSAGE.FIT_VIEW_TO_LOCATION;
       icon.value = 'location_on';
-      color.value = 'primary';
+      color.value = 'white';
     }
   );
 
@@ -89,7 +89,7 @@ function enableTracking(): void {
     () => {
       hasError.value = true;
       icon.value = 'sym_s_location_off';
-      color.value = 'primary';
+      color.value = 'white';
     }
   );
 }
@@ -109,7 +109,7 @@ function disableTracking(): void {
 
   tooltipMessage.value = TOOLTIP_MESSAGE.ACTIVATE_LOCATION;
   icon.value = 'sym_s_location_on';
-  color.value = 'primary';
+  color.value = 'white';
 }
 
 /**
@@ -126,13 +126,15 @@ function fitView(): void {
 
 <template>
   <q-btn
-    flat
-    fab
-    square
-    :color="color"
+    unelevated
     :loading="isLocationEnabled && !islocationFound && !hasError"
     :icon="icon"
     :disable="hasError"
+    :class="{
+      'app-button btn--no-hover': true,
+      'is-active': isLocationEnabled,
+      'is-found': isViewCentered,
+    }"
     @click="manageLocation()"
   >
     <q-tooltip
@@ -148,3 +150,11 @@ function fitView(): void {
     </q-tooltip>
   </q-btn>
 </template>
+
+<style lang="scss" scoped>
+.app-button {
+  &.is-found {
+    color: rgb(255, 165, 0);
+  }
+}
+</style>

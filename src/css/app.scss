@@ -1,9 +1,26 @@
 // app global css in SCSS form
-// app global css in SCSS form
-// app global css in SCSS form
+
 @font-face {
   font-family: merriweather;
   src: url(./fonts/Merriweather-Light.ttf);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  visibility: hidden;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cccccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #adadad;
 }
 
 .merriweather {
@@ -49,4 +66,46 @@
     background-color: rgba($primary, 0.15);
     box-shadow: inset 5px 0px 0px 0px $primary;
   }
+}
+
+.app-scale-line {
+  background: rgba($secondary, 0.8);
+  border-radius: 8px;
+  bottom: 8px;
+  left: 24px;
+  padding: 4px 8px;
+  position: absolute;
+  box-shadow: 0 3px 5px -1px rgba(0, 0, 0, 0.2), 0 5px 8px rgba(0, 0, 0, 0.14),
+    0 1px 14px rgba(0, 0, 0, 0.12);
+}
+
+.app-scale-line-inner {
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-top: none;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 0.7rem;
+  text-align: center;
+  font-family: 'merriweather';
+  margin: 1px;
+  will-change: contents, width;
+  transition: all 0.5s;
+  letter-spacing: 0.5px;
+}
+
+.app-button {
+  background-color: transparent;
+  color: rgba($secondary, 0.5);
+  transition: all 0.25s;
+
+  &:hover {
+    color: rgba($secondary, 0.9);
+  }
+
+  &.is-active {
+    color: rgba($secondary, 1);
+  }
+}
+
+.q-btn.btn--no-hover .q-focus-helper {
+  display: none;
 }

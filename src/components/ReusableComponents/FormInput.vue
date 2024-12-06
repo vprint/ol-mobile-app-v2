@@ -61,7 +61,7 @@ const model = defineModel<string | number>();
     <template #append>
       <q-icon v-if="editionMode && date" name="event" class="cursor-pointer">
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-date v-model="model" class="merriweather">
+          <q-date v-model="model" minimal class="date-picker merriweather">
             <div class="row items-center justify-end">
               <q-btn v-close-popup label="Close" color="primary" flat />
             </div>
@@ -74,7 +74,11 @@ const model = defineModel<string | number>();
 
 <style lang="scss" scoped>
 .form-input-element {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+}
+
+.date-picker {
+  border: 1px solid black;
 }
 
 :deep.q-field {
@@ -90,7 +94,7 @@ const model = defineModel<string | number>();
 
   &.q-field--outlined {
     .q-field__control {
-      background: rgba(128, 128, 128, 0.05);
+      background: $low-highlight;
     }
   }
 }

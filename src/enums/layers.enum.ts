@@ -1,45 +1,16 @@
 import { Fill, Style, Circle, Stroke } from 'ol/style';
-import { APP_PARAMS } from './appParams';
-import { TOKEN } from './tokenParams';
+import { AppVariables } from './app-variables.enum';
+import { Token } from './token.enums';
 import { StyleFunction } from 'ol/style/Style';
 import { FeatureLike } from 'ol/Feature';
+import {
+  IBackgroundLayer,
+  IRasterLayer,
+  IStyleCache,
+  IVectorTileLayer,
+} from 'src/interface/ILayers';
 
 export const LAYER_PROPERTIES = 'layerProperties';
-
-export interface IBaseLayer {
-  name: string;
-  layerId: string;
-  zIndex: number;
-  visible: boolean;
-}
-
-export interface IBackgroundLayer extends IBaseLayer {
-  img: string;
-  token?: string;
-  attribution: string[];
-  url: string;
-  vector: boolean;
-}
-
-export interface IRasterLayer extends IBaseLayer {
-  mode: 'wmts' | 'wms';
-  description: string;
-  editable: boolean;
-  dynamic: boolean;
-  attribution: string[];
-  url: string;
-}
-
-export interface IVectorTileLayer extends IBaseLayer {
-  featureId: string;
-  attribution: string[];
-  editable: boolean;
-  selectable: boolean;
-  url: string;
-  style: Style[] | Style | StyleFunction;
-}
-
-type IStyleCache = Record<string, Style>;
 
 /**
  * List of application background layers
@@ -53,7 +24,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
     ],
-    token: TOKEN.jawgs,
+    token: Token.JAWGS,
     zIndex: 0,
     visible: false,
     vector: true,
@@ -66,7 +37,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
     ],
-    token: TOKEN.jawgs,
+    token: Token.JAWGS,
     zIndex: 0,
     visible: false,
     vector: true,
@@ -79,7 +50,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayer[] = [
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
     ],
-    token: TOKEN.jawgs,
+    token: Token.JAWGS,
     zIndex: 0,
     visible: false,
     vector: true,
@@ -123,7 +94,7 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayer[] = [
     visible: true,
     editable: false,
     selectable: true,
-    url: `${APP_PARAMS.vectorTileServer}/maps/archaeological/{z}/{x}/{y}.pbf`,
+    url: `${AppVariables.VECTOR_TILE_SERVER}/maps/archaeological/{z}/{x}/{y}.pbf`,
     style: ((): StyleFunction => {
       // Style cache. Used to optimize display.
       const styleCache: IStyleCache = {};
@@ -173,7 +144,7 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     visible: true,
     editable: true,
     dynamic: true,
-    url: `${APP_PARAMS.qgisServer}/wms?`,
+    url: `${AppVariables.QGIS_SERVER}/wms?`,
   },
   {
     mode: 'wms',
@@ -186,7 +157,7 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     visible: false,
     editable: true,
     dynamic: false,
-    url: `${APP_PARAMS.qgisServer}/wms?`,
+    url: `${AppVariables.QGIS_SERVER}/wms?`,
   },
   {
     mode: 'wmts',
@@ -199,6 +170,6 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     visible: false,
     editable: true,
     dynamic: false,
-    url: `${APP_PARAMS.qgisServer}/wms?`,
+    url: `${AppVariables.QGIS_SERVER}/wms?`,
   },
 ];

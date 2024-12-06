@@ -9,7 +9,6 @@ import ApiRequestor from 'src/services/ApiRequestor';
 
 // Interface imports
 import { ISiteList } from 'src/interface/ISite';
-import { IDocument } from 'src/interface/IDocument';
 import { IIndividual } from 'src/interface/IIndividual';
 import { ISiteType } from 'src/interface/ISiteType';
 import { IProject } from 'src/interface/IProject';
@@ -22,9 +21,8 @@ export const useReferencesStore = defineStore('references', () => {
   const siteList: Ref<ISiteList[]> = ref([]);
   const siteTypeList: Ref<ISiteType[]> = ref([]);
   const projectList: Ref<IProject[]> = ref([]);
-
   // TODO: Implémenter la recherche de document.
-  const documentList: Ref<IDocument[]> = ref([]);
+  // const documentList: Ref<IDocument[]> = ref([]);
 
   const isReferencesInitialized = ref(false);
 
@@ -45,7 +43,6 @@ export const useReferencesStore = defineStore('references', () => {
     siteList,
     siteTypeList,
     projectList,
-    documentList,
     isReferencesInitialized,
   };
 });

@@ -13,13 +13,12 @@ import { useMapStore } from 'src/stores/map-store';
 // Others imports
 
 // Type & interface
+import { IBackgroundLayer } from 'src/interface/ILayers';
+
+// enums
+import { BACKGROUND_LAYERS_SETTINGS } from 'src/enums/layers.enum';
 
 // Script
-import {
-  BACKGROUND_LAYERS_SETTINGS,
-  IBackgroundLayer,
-} from 'src/utils/params/layersParams';
-
 const mas = useMapStore();
 const activeLayer = ref('');
 
@@ -92,7 +91,6 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .layer-column {
@@ -100,12 +98,10 @@ onMounted(() => {
   flex: 1 1 auto;
   flex-direction: column;
   align-items: center;
-  background-color: $secondary;
 }
 
 .round-button {
   margin-bottom: 10px;
-  box-shadow: 0 0 0 2px transparent;
   transition: box-shadow 0.15s ease;
   &.active {
     box-shadow: 0 0 0 3px $primary;

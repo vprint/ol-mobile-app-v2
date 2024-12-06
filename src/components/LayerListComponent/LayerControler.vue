@@ -3,205 +3,178 @@
 import BaseLayer from 'ol/layer/Base';
 
 // Vue/Quasar imports
-import { onMounted, Ref, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // Store imports
 import { useMapStore } from 'src/stores/map-store';
 
-// Component import
-
-// Others imports
-
-// Type & interface
-import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
+// Type & interface import
+import { LAYER_PROPERTIES } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
-
-// script
-const mas = useMapStore();
-
-const visible = ref(false);
-const opacity = ref(1);
-const layer: Ref<BaseLayer | undefined> = ref(undefined);
-const isDragging = ref(false);
-
-let layerProperties: ILayerProperties;
 
 const props = defineProps<{
   layerId: string;
+  /**
+   * Relative to the layer manager (ie. an element is dragged in the layer manager).
+   */
+  isDragging: boolean;
 }>();
 
-onMounted(() => {
-  layer.value = mas.getLayerById(props.layerId);
+const mas = useMapStore();
+const visible = ref(false);
+const isInitialized = ref(false);
+const opacity = ref(1);
 
-  if (layer.value) {
-    layerProperties = layer.value.get(LAYER_PROPERTIES);
-    visible.value = layer.value.getVisible();
-    opacity.value = layer.value.getOpacity();
+let layer: BaseLayer | undefined = undefined;
+let layerProperties: ILayerProperties;
+
+onMounted(() => {
+  layer = mas.getLayerById(props.layerId);
+
+  if (layer) {
+    layerProperties = layer.get(LAYER_PROPERTIES);
+    visible.value = layer.getVisible();
+    opacity.value = layer.getOpacity();
   }
+
+  isInitialized.value = true;
 });
 
 function updateOpacity(newOpacity: number | null): void {
   if (typeof newOpacity === 'number') {
     opacity.value = newOpacity;
-    layer.value?.setOpacity(newOpacity);
+    layer?.setOpacity(newOpacity);
   }
 }
 
 function updateVisibility(newVisibility: boolean): void {
   visible.value = newVisibility;
-  layer.value?.setVisible(newVisibility);
-}
-
-/**
- * Manage drag start
- */
-function startDragging(): void {
-  isDragging.value = true;
-}
-
-/**
- * Manage drag stop
- */
-function stopDragging(): void {
-  isDragging.value = false;
+  layer?.setVisible(newVisibility);
 }
 </script>
 
 <template>
-  <div v-if="layer" class="layer-div">
-    <!-- Title -->
-    <p class="merriweather layer-title">{{ layerProperties.title }}</p>
-    <div class="layer-control">
-      <!-- Visibility checkbox -->
-      <q-checkbox
-        v-model="visible"
-        checked-icon="sym_o_visibility"
-        unchecked-icon="sym_o_visibility_off"
-        size="xl"
-        @update:model-value="updateVisibility"
-      >
-        <q-tooltip
-          anchor="bottom middle"
-          self="bottom middle"
-          :offset="[0, 40]"
-          transition-show="scale"
-          transition-hide="scale"
-          :delay="1000"
-          style="border-radius: 0"
-          class="merriweather"
-        >
-          {{ !visible ? 'Show layer' : 'Hide layer' }}
-        </q-tooltip>
-      </q-checkbox>
-
-      <!-- Opacity slider -->
-      <q-slider
-        v-model="opacity"
-        :min="0"
-        :max="1"
-        :step="0.01"
-        :disable="!visible"
-        @update:model-value="updateOpacity"
-      />
-
-      <!-- zIndex modifier-->
-      <q-icon
-        name="sym_o_expand_all"
-        class="handle cursor-move expand-icon"
-        @mousedown="startDragging"
-        @mouseup="stopDragging"
-        @mouseleave="stopDragging"
-      >
-        <q-tooltip
-          v-if="!isDragging"
-          anchor="bottom middle"
-          self="bottom middle"
-          :offset="[0, 40]"
-          transition-show="scale"
-          transition-hide="scale"
-          :delay="1000"
-          style="border-radius: 0"
-          class="merriweather"
-        >
-          Drag to change layer order
-        </q-tooltip>
-      </q-icon>
+  <div
+    v-if="isInitialized"
+    class="layer-element merriweather"
+    :class="{ hover: !isDragging }"
+  >
+    <div class="layer-title">
+      {{ layerProperties.title }}
     </div>
 
-    <!-- Layer information expansion panel-->
-    <q-expansion-item
-      caption="Information and legend"
-      class="expansion-panel merriweather"
-    >
-      <q-expansion-item
-        expand-separator
-        switch-toggle-side
-        dense-toggle
-        label="Description"
-        class="secondary-text"
-        :content-inset-level="0.5"
-      >
-        <q-card>
-          <q-card-section class="description-card tertiary-text">
-            {{ layerProperties.description }}
-          </q-card-section>
-        </q-card>
-      </q-expansion-item>
+    <q-expansion-item expand-icon-toggle dense class="expansion-panel">
+      <template #header>
+        <div class="layer-parameters">
+          <!-- zIndex modifier-->
+          <q-icon
+            name="sym_o_swap_vert"
+            class="handle cursor-move index-modifier"
+          >
+            <q-tooltip
+              v-if="!isDragging"
+              anchor="bottom middle"
+              self="bottom middle"
+              :offset="[0, 40]"
+              transition-show="scale"
+              transition-hide="scale"
+              :delay="1000"
+              class="merriweather"
+            >
+              Drag to change layer order
+            </q-tooltip>
+          </q-icon>
+
+          <!-- Opacity slider -->
+          <q-slider
+            v-model="opacity"
+            :min="0"
+            :max="1"
+            :step="0.01"
+            :disable="!visible"
+            class="opacity-slider"
+            @update:model-value="updateOpacity"
+          />
+
+          <!-- Visibility checkbox -->
+          <q-checkbox
+            v-model="visible"
+            checked-icon="sym_o_visibility"
+            unchecked-icon="sym_o_visibility_off"
+            class="visibility-checkbox"
+            @update:model-value="updateVisibility"
+          >
+            <q-tooltip
+              anchor="bottom middle"
+              self="bottom middle"
+              :offset="[0, 40]"
+              transition-show="scale"
+              transition-hide="scale"
+              :delay="1000"
+              class="merriweather"
+            >
+              {{ !visible ? 'Show layer' : 'Hide layer' }}
+            </q-tooltip>
+          </q-checkbox>
+        </div>
+      </template>
+
+      <div class="layer-description">
+        {{ layerProperties.description }}
+      </div>
     </q-expansion-item>
   </div>
 </template>
 
-<style lang="scss">
-.layer-div {
-  margin: 0px 0px 0px 30px;
-  position: relative;
-  align-items: center;
-  left: -15px;
-  padding: 10px 0px 0px 10px;
-  border: 2px solid rgba(255, 255, 255, 0);
+<style lang="scss" scoped>
+.layer-element {
+  width: calc(100% - 16px);
+  padding: 8px 16px;
+  background-color: $low-highlight;
+  border: 1px solid transparent;
+  transition: border-color 0.4s ease, background-color 0.2s ease,
+    box-shadow 0.4s ease;
+  border-radius: 8px;
+  margin: 8px;
+
+  .layer-title {
+    font-size: 0.9rem;
+  }
+
+  .expansion-panel {
+    width: 100%;
+
+    :deep(.q-item) {
+      padding: 0;
+    }
+    :deep(.q-item__section--side) {
+      padding: 0;
+    }
+
+    .layer-parameters {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .opacity-slider {
+        flex: 1;
+      }
+
+      .index-modifier {
+        cursor: grab;
+      }
+    }
+
+    .layer-description {
+      padding: 8px 16px;
+    }
+  }
 }
 
-.layer-control {
-  position: relative;
-  display: flex;
-  align-items: center;
-  left: -15px;
-}
-
-.expand-icon {
-  margin-left: 30px;
-  cursor: grab;
-}
-
-.layer-title {
-  font-size: medium;
-  margin: 0px;
-}
-
-.expansion-panel {
-  position: relative;
-  top: -10px;
-}
-
-.description-card {
-  background-color: $secondary;
-}
-
-.secondary-text {
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1.25rem;
-  letter-spacing: 0.03333em;
-  color: rgba(0, 0, 0, 0.54);
-}
-
-.tertiary-text {
-  font-size: 0.75rem;
-  font-weight: 400;
-}
-
-.ghost {
-  box-shadow: inset 5px 0px 0px 0px rgb(52, 152, 219);
-  background-color: rgba(52, 152, 219, 0.125);
+.hover {
+  &:hover {
+    border-color: rgba(0, 0, 0, 0.4);
+  }
 }
 </style>

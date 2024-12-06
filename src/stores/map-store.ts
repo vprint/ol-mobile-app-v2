@@ -1,4 +1,8 @@
 // Map imports
+import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
+import { easeOut } from 'ol/easing';
+import { Feature, View } from 'ol';
+import { fromLonLat } from 'ol/proj';
 import Map from 'ol/Map';
 import Layer from 'ol/layer/Layer';
 
@@ -14,34 +18,37 @@ import {
   LAYER_PROPERTIES,
   RASTER_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
-} from 'src/utils/params/layersParams';
+} from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
-import { easeOut } from 'ol/easing';
-import { Feature, View } from 'ol';
-import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
-import { fromLonLat } from 'ol/proj';
 import {
   addVectorBackgroundLayers,
   addRasterBackgroundLayers,
   addVectorTileLayers,
   addOGCLayer,
 } from 'src/plugins/LayerImporter';
-import { MAPSETTINGS } from 'src/utils/params/mapParams';
+import { MapSettings } from 'src/enums/map.enum';
 
 /**
- * This store manage map and provide related functionnalities.
+ * This store provide the application map and functionnalities related to the map
  */
 export const useMapStore = defineStore('map', () => {
-  const isMapInitialized = ref(false);
+  /**
+   * Application map
+   */
   const map = new Map({
     controls: [],
     view: new View({
-      center: fromLonLat([MAPSETTINGS.long, MAPSETTINGS.lat]),
-      zoom: MAPSETTINGS.zoom,
-      maxZoom: MAPSETTINGS.maxzoom,
-      minZoom: MAPSETTINGS.minzoom,
+      center: fromLonLat([MapSettings.LONG, MapSettings.LAT]),
+      zoom: MapSettings.ZOOM,
+      maxZoom: MapSettings.MAX_ZOOM,
+      minZoom: MapSettings.MIN_ZOOM,
     }),
   });
+
+  /**
+   * Is the map initialized
+   */
+  const isMapInitialized = ref(false);
 
   /**
    * Get a layer by it's id
@@ -57,21 +64,32 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Fit the map to a given extent and execute a callback if necessary
-   * @param extent
-   * @param callback
+   * Adjusts the map view by applying padding and optionally zooming to a feature.
+   * If no feature is provided, only applies padding to the current extent.
+   * @param padding - The padding to apply to the map
+   * @param feature - Optional feature to center and zoom the view on. If not provided, maintains the current map extent
    */
-  function fitMapToFeature(feature: Feature, callback?: () => void): void {
-    const extent = feature.getGeometry()?.getExtent();
-    const zoom = map.getView().getZoom();
+  function setPaddingAndExtent(padding: number[], feature?: Feature): void {
+    let newZoom: number | undefined;
+    const view = map.getView();
 
-    if (extent && zoom) {
-      map.getView().fit(extent, {
-        maxZoom: zoom < 15 ? 15 : zoom,
-        duration: 500,
-        padding: [0, 0, 0, 400],
+    if (feature) {
+      const zoom = view.getZoom();
+      if (zoom) {
+        newZoom = zoom < 15 ? 15 : view.getZoom();
+      }
+    }
+
+    const extent = feature
+      ? feature.getGeometry()?.getExtent()
+      : view.calculateExtent(map.getSize());
+
+    if (extent) {
+      view.fit(extent, {
+        maxZoom: newZoom,
+        padding: padding,
+        duration: 250,
         easing: easeOut,
-        callback: callback ? callback : undefined,
       });
     }
   }
@@ -102,6 +120,10 @@ export const useMapStore = defineStore('map', () => {
     return layersOfInterest;
   }
 
+  /**
+   * Initialize the map. This function create the layers and set the map target.
+   * Set the isMapInitialized to true after that.
+   */
   function initializeMap(): void {
     // An empty mapLibre layer is added to the map
     const mapLibreLayer = new MapLibreLayer({
@@ -133,7 +155,7 @@ export const useMapStore = defineStore('map', () => {
     map,
     isMapInitialized,
     getLayerById,
-    fitMapToFeature,
+    setPaddingAndExtent,
     getLayersByProperties,
     initializeMap,
   };

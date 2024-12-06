@@ -4,6 +4,7 @@ import { onMounted } from 'vue';
 
 // Component imports
 import ContextMenuComponent from '../ContextMenuComponent/ContextMenuComponent.vue';
+import GeometryManager from '../GeometryManagerComponent/GeometryManager.vue';
 
 // Store imports
 import { useMapStore } from 'src/stores/map-store';
@@ -21,6 +22,7 @@ onMounted(() => {
 <template>
   <div id="map" class="map">
     <ContextMenuComponent></ContextMenuComponent>
+    <GeometryManager></GeometryManager>
   </div>
   <transition
     appear

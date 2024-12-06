@@ -13,7 +13,7 @@
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
 $primary: #8a1946;
-$secondary: #f9f6ed;
+$secondary: white;
 $accent: #2a2a2a;
 
 $dark: #1d1d1d;
@@ -23,3 +23,12 @@ $positive: #147e2c;
 $negative: #c10015;
 $info: #397a87;
 $warning: #ba9633;
+
+$gradient-hot: #e66465;
+$gradient-cold: #9198e5;
+
+$gradient: linear-gradient(0.25turn, $gradient-hot, $gradient-cold);
+
+$low-highlight: rgba(128, 128, 128, 0.05);
+$medium-highlight: rgba(128, 128, 128, 0.1);
+$heavy-highlight: rgba(128, 128, 128, 0.15);

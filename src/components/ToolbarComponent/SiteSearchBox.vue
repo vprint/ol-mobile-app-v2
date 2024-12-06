@@ -2,7 +2,7 @@
 // Map imports
 
 // Vue/Quasar imports
-import { computed, nextTick, onMounted, Ref, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, Ref, ref } from 'vue';
 
 // Store imports
 import { storeToRefs } from 'pinia';
@@ -11,8 +11,6 @@ import { useReferencesStore } from '../../stores/references-store';
 
 // Component imports
 import { QSelect } from 'quasar';
-import { useSidePanelStore } from 'src/stores/side-panel-store';
-import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
 
 // Others imports
 
@@ -23,11 +21,11 @@ interface ISearchItem {
 }
 
 const sis = useSiteStore();
-const sps = useSidePanelStore();
 const res = useReferencesStore();
 const { site } = storeToRefs(sis);
 const options: Ref<ISearchItem[]> = ref([]);
 const searchbox: Ref<QSelect | null> = ref(null);
+const isFocused = ref(false);
 
 const searchList = computed<ISearchItem[]>(() =>
   res.siteList.map((site) => ({
@@ -45,7 +43,7 @@ const model = computed({
           label: `${site.value.englishName} - ${site.value.siteId}`,
           value: site.value.siteId,
         }
-      : null,
+      : undefined,
   set: () => {
     return;
   },
@@ -74,21 +72,8 @@ function selectSite(site: ISearchItem | undefined): void {
     nextTick(() => {
       searchbox.value?.blur();
     });
-
-    sps.setActive(true, {
-      location: SIDE_PANEL_PARAM.SITE,
-      parameterName: 'siteId',
-      parameterValue: site.value.toString(),
-    });
+    sis.openSitePanel(site.value);
   }
-}
-
-/**
- * Close the opened site and the side panel.
- */
-function closeSite(): void {
-  sis.clearSite();
-  sps.setActive(false);
 }
 
 /**
@@ -97,23 +82,6 @@ function closeSite(): void {
 onMounted(() => {
   options.value = [...searchList.value];
 });
-
-/**
- * Watch for site change and update the text displayed in the searchbox.
- */
-watch(
-  () => site.value,
-  (newSite) => {
-    if (newSite) {
-      model.value = {
-        label: `${newSite.englishName} - ${newSite.siteId}`,
-        value: newSite.siteId,
-      };
-    } else {
-      model.value = null;
-    }
-  }
-);
 </script>
 
 <template>
@@ -130,18 +98,24 @@ watch(
     popup-content-class="text-grey-8 test asm-select-list"
     class="searchbox-select merriweather"
     input-debounce="0"
+    rounded
     outlined
-    square
     hide-dropdown-icon
     :options="options"
     clearable
     @filter="filterFn"
     @update:model-value="selectSite"
-    @clear="closeSite"
+    @clear="sis.closeSitePanel()"
     @keyup.enter="selectSite(options[0])"
+    @focus="isFocused = true"
+    @blur="isFocused = false"
   >
     <template #append>
-      <q-icon name="sym_s_search" class="cursor-pointer icon-weight-thin">
+      <q-icon
+        v-show="model === undefined && !isFocused"
+        name="sym_s_search"
+        class="cursor-pointer"
+      >
       </q-icon>
     </template>
   </q-select>

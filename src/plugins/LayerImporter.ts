@@ -4,7 +4,7 @@ import {
   IBackgroundLayer,
   IRasterLayer,
   IVectorTileLayer,
-} from '../utils/params/layersParams';
+} from '../interface/ILayers';
 import { ImageWMS } from 'ol/source';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
 import ImageTile from 'ol/source/ImageTile.js';

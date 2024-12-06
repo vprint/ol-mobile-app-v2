@@ -1,9 +1,15 @@
+import '../css/app.scss';
+
 // Map import
 import { Interaction, Link } from 'ol/interaction';
+import { Attribution, Control, ScaleLine } from 'ol/control';
+import { Style, Stroke, Fill } from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
+import VectorTileLayer from 'ol/layer/VectorTile';
 
 // Vue/Quasar imports
 import { defineStore } from 'pinia';
-import { Ref, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 // Store imports
 import { useMapStore } from './map-store';
@@ -13,22 +19,15 @@ import VectorTileSelect from 'src/plugins/VectorTileSelect';
 import Measure from 'src/plugins/measure/Measure';
 
 // Interface imports
-import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
-import VectorTileLayer from 'ol/layer/VectorTile';
-import { Style, Stroke, Fill } from 'ol/style';
-import CircleStyle from 'ol/style/Circle';
-import { Attribution, ScaleLine } from 'ol/control';
+import { Interactions } from 'src/enums/interactions.enum';
 
 /**
  * Store and manage mapInteraction.
  * Exemple : enable or disable the click interaction that allow to select site.
  */
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
-  const isMapInteractionsInitialized = ref(false);
   const ms = useMapStore();
-
-  const selector: Ref<null | VectorTileSelect> = ref(null);
-  const measurePlugin: Ref<null | Measure> = ref(null);
+  const isMapInteractionsInitialized = ref(false);
   const selectionStyle = new Style({
     image: new CircleStyle({
       radius: 15,
@@ -36,58 +35,82 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
       stroke: new Stroke({ color: '#e820c0', width: 2 }),
     }),
   });
+  const selectorPlugin = new VectorTileSelect({
+    name: Interactions.SELECTOR,
+    selectionStyle: selectionStyle,
+  });
+  const measurePlugin = new Measure(Interactions.MEASURE);
 
   /**
-   * Initialize all interactions
+   * Get the map interactions.
+   * @returns List of map interactions.
    */
-  function initializeInteractions(): void {
-    // Create select interaction
-    selector.value = new VectorTileSelect({
-      name: INTERACTIONS_PARAMS.selector,
-      selectableLayer: ms.getLayerById('archsites') as VectorTileLayer,
-      selectionStyle: selectionStyle,
-    });
+  function getInteractions(): Interaction[] {
+    // Initialization of the selector
+    const archsiteLayer = ms.getLayerById('archsites');
+    if (archsiteLayer) {
+      selectorPlugin.setSelectableLayer(archsiteLayer as VectorTileLayer);
+    }
 
-    // Create measure interaction
-    measurePlugin.value = new Measure(INTERACTIONS_PARAMS.measure);
-    measurePlugin.value.setActive(false);
+    // Initialization of the measure plugin
+    measurePlugin.setActive(false);
 
     // Create link
     const link = new Link({
       params: ['x', 'y', 'z', 'r'],
     });
-    link.set('name', INTERACTIONS_PARAMS.link);
+    link.set('name', Interactions.LINK);
 
+    return [selectorPlugin, measurePlugin, link];
+  }
+
+  /**
+   * Get the map controls.
+   * @returns List of map controls.
+   */
+  function getControls(): Control[] {
     // Create scaleline
     const scaleline = new ScaleLine({
       units: 'metric',
       text: true,
       minWidth: 140,
+      className: 'app-scale-line',
     });
-    scaleline.set('name', INTERACTIONS_PARAMS.scaleline);
+    scaleline.set('name', Interactions.SCALELINE);
 
     // Create attribution
     const attribution = new Attribution({
       collapsible: false,
     });
-    attribution.set('name', INTERACTIONS_PARAMS.attribution);
+    attribution.set('name', Interactions.ATTRIBUTION);
 
-    ms.map.addInteraction(measurePlugin.value as Measure);
-    ms.map.addInteraction(selector.value as VectorTileSelect);
-    ms.map.addInteraction(link);
-    ms.map.addControl(scaleline);
-    ms.map.addControl(attribution);
+    return [scaleline, attribution];
+  }
+
+  /**
+   * Initialize all map interactions and controls.
+   */
+  function initializeMapInteractions(): void {
+    // Add the interactions
+    getInteractions().forEach((interaction) => {
+      ms.map.addInteraction(interaction);
+    });
+
+    // add the contols
+    getControls().forEach((control) => {
+      ms.map.addControl(control);
+    });
 
     isMapInteractionsInitialized.value = true;
   }
 
   /**
-   * Activate or deactivate interaction by it's name
-   * @param interactionName Interaction name
+   * Activate or deactivate interaction by it's name.
+   * @param interactionName Interaction name.
    * @param active Activate or deactivate the interaction.
    */
   function enableInteraction(
-    interactionName: INTERACTIONS_PARAMS,
+    interactionName: Interactions,
     active: boolean
   ): void {
     const interaction = getInteractionByName(interactionName);
@@ -95,9 +118,9 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   }
 
   /**
-   * Get interaction by name
-   * @param name Interaction name
-   * @returns Return the interaction or undefined if not found
+   * Get interaction by name.
+   * @param name The interaction name.
+   * @returns Return the interaction or undefined if not found.
    */
   function getInteractionByName(name: string): Interaction | undefined {
     let findedElement: Interaction | undefined;
@@ -112,22 +135,21 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   }
 
   /**
-   * Watch for map initialization and then enable the interaction
+   * Watch for map initialization and then enable the interaction.
    */
   watch(
     () => ms.isMapInitialized,
     (isInitialized) => {
       if (isInitialized) {
-        initializeInteractions();
+        initializeMapInteractions();
       }
     }
   );
 
   return {
     isMapInteractionsInitialized,
-    selector,
+    selectorPlugin,
     measurePlugin,
-    initializeInteractions,
     enableInteraction,
     getInteractionByName,
   };

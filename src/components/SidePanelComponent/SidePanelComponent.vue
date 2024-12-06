@@ -1,75 +1,87 @@
 <script setup lang="ts">
 const emit = defineEmits(['close']);
+
+const thumbStyle: Partial<CSSStyleDeclaration> = {
+  borderRadius: '5px',
+};
 </script>
 
 <template>
-  <q-card class="application-card" square>
-    <q-bar
-      class="bg-accent text-white row items-center no-wrap header-bar merriweather"
-    >
-      <div class="row full-width items-center justify-between">
-        <div>
-          <slot name="title"></slot>
-        </div>
-        <q-btn
-          flat
-          dense
-          round
-          icon="close"
-          class="close-button"
-          @click="emit('close')"
-        />
+  <div class="side-panel">
+    <!-- Header -->
+    <div class="row text-white items-center header merriweather shadow-4">
+      <div class="header-title">
+        <slot name="title"></slot>
       </div>
-    </q-bar>
-    <q-card-section class="scroll-section">
-      <q-scroll-area class="fit">
-        <slot name="component"></slot>
-      </q-scroll-area>
-    </q-card-section>
-    <div v-if="$slots.footer" class="fixed-footer">
-      <slot name="footer"></slot>
+      <q-btn
+        flat
+        dense
+        round
+        icon="close"
+        class="app-button btn--no-hover"
+        @click="emit('close')"
+      />
     </div>
-  </q-card>
+
+    <!-- Main section -->
+    <div class="content shadow-4">
+      <q-scroll-area class="fit" :thumb-style="thumbStyle">
+        <slot name="content"></slot>
+      </q-scroll-area>
+    </div>
+
+    <!-- Footer -->
+    <div v-if="$slots.fixedFooter" class="fixed-footer shadow-4">
+      <slot name="fixedFooter"></slot>
+    </div>
+
+    <!-- Floating footer -->
+    <div v-if="$slots.floatingFooter" class="floating-footer shadow-4">
+      <slot name="floatingFooter"></slot>
+    </div>
+  </div>
 </template>
 
 <style lang="scss" scoped>
-.application-card {
+$side-panel-height: calc(100% - 50px);
+$content-width: 400px;
+
+.side-panel {
   position: absolute;
   left: 0;
-  width: 400px;
-  height: calc(100% - 50px);
-  overflow: auto;
-  background-color: $secondary;
-  margin: 10px;
+  height: $side-panel-height;
+  width: 430px;
+  margin: 8px;
   display: flex;
   flex-direction: column;
-}
+  align-items: center;
 
-.header-bar {
-  position: sticky;
-  top: 0px;
-  z-index: 1;
-  padding: 30px;
-}
+  .header {
+    width: 100%;
+    min-height: 64px;
+    background: $gradient;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 16px;
+    font-size: 1.1rem;
+    z-index: 2;
+  }
 
-.close-button-container {
-  margin-left: auto;
-  padding-right: 0;
-}
+  .content {
+    width: $content-width;
+    height: $side-panel-height;
+    background-color: $secondary;
+    justify-content: center;
+    border-radius: 0px 0px 8px 8px;
+  }
 
-.close-button {
-  margin-right: -15px;
-}
-
-.scroll-section {
-  height: calc(100% - 60px);
-  padding: 0px;
-  margin: 0px;
-}
-
-.fixed-footer {
-  position: sticky;
-  bottom: 0;
-  background-color: $secondary;
+  .floating-footer {
+    background-color: $secondary;
+    width: $content-width;
+    margin-top: 8px;
+    justify-content: center;
+    border-radius: 8px;
+  }
 }
 </style>

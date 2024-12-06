@@ -14,16 +14,27 @@ const lms = useLayerManagerStore();
 
 <template>
   <q-btn
-    :fab="$q.platform.is.desktop"
-    :round="$q.platform.is.mobile"
-    :square="$q.platform.is.desktop"
-    :color="lms.isActive ? 'primary' : 'secondary'"
-    :text-color="lms.isActive ? 'secondary' : 'primary'"
-    icon="sym_s_stacks"
-    class="icon-weight-thin"
+    flat
     unelevated
-    @click="lms.isActive ? lms.closeLayerManager() : lms.openLayerManager()"
-  />
+    icon="sym_s_stacks"
+    :class="{
+      'app-button btn--no-hover': true,
+      'is-active': lms.isOpen,
+    }"
+    @click="lms.isOpen ? lms.closeLayerManager() : lms.openLayerManager()"
+  >
+    <q-tooltip
+      anchor="bottom middle"
+      self="bottom middle"
+      transition-show="scale"
+      transition-hide="scale"
+      :offset="[0, 40]"
+      :delay="1000"
+      style="border-radius: 0"
+    >
+      Manage layers
+    </q-tooltip></q-btn
+  >
 </template>
 
-<style lang="scss"></style>
+<style lang="scss" scoped></style>

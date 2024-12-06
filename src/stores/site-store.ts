@@ -21,40 +21,46 @@ import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface imports
 import { Site } from 'src/model/site';
-import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
+import { SidePanelParameters } from 'src/enums/side-panel.enum';
 import { ISite } from 'src/interface/ISite';
 
 /**
  * Store sites and and related functionnalities
  */
-export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
+export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   const site: Ref<Site | undefined> = ref();
-  const { selector, isMapInteractionsInitialized } = storeToRefs(
-    useMapInteractionStore()
-  );
+  const mis = useMapInteractionStore();
+  const { isMapInteractionsInitialized } = storeToRefs(mis);
   const sps = useSidePanelStore();
   const mas = useMapStore();
-  const { isActive, panelParameters } = storeToRefs(sps);
   const SITE_LAYER = 'archsites';
 
   /**
    * Main site-store function that allow to set the working site by it's id.
    * @param newSiteId
    */
-  async function setSite(newSiteId: number): Promise<void> {
+  async function openSitePanel(newSiteId: number): Promise<void> {
     sps.setActive(true, {
-      location: SIDE_PANEL_PARAM.SITE,
+      location: SidePanelParameters.SITE,
       parameterName: 'siteId',
       parameterValue: newSiteId.toString(),
     });
   }
 
   /**
-   * Clear site in store and close widget
+   * Close site panel and clear informations
+   */
+  function closeSitePanel(): void {
+    clearSite();
+    sps.setActive(false);
+  }
+
+  /**
+   * Clear site values
    */
   function clearSite(): void {
     site.value = undefined;
-    selector.value?.clearFeatures();
+    mis.selectorPlugin.clearFeatures();
     updateMap();
   }
 
@@ -71,25 +77,20 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param siteId SiteId
    * @returns
    */
-  async function setSiteById(siteId: number): Promise<Site | undefined> {
+  async function setSiteById(siteId: number): Promise<void> {
     const rawSite = await ApiRequestor.getSiteById(siteId);
     const feature = rawSite?.features[0];
 
     if (feature) {
       const newSite = new Site(feature.properties as ISite);
 
-      if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
-        sps.setActive(true, {
-          location: SIDE_PANEL_PARAM.SITE,
-          parameterName: 'siteId',
-          parameterValue: newSite.siteId.toString(),
-        });
+      if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
+        openSitePanel(newSite.siteId);
       }
 
       updateMap(feature);
       site.value = newSite;
-      selector.value?.setFeaturesById([siteId.toString()]);
-      return newSite;
+      mis.selectorPlugin.setFeaturesById([siteId.toString()]);
     }
   }
 
@@ -103,7 +104,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
-      mas.fitMapToFeature(feature);
+      sps.setPanelPadding(true, feature);
     }
 
     const archLayer = mas.getLayerById(SITE_LAYER);
@@ -114,15 +115,15 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    selector.value?.on(
+    mis.selectorPlugin.on(
       // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
         const features = e.selected;
 
         if (features && features.length > 0) {
-          setSite(features[0].getId() as number);
-          selector.value?.setFeaturesById([features[0].getId()?.toString()]);
+          openSitePanel(features[0].getId() as number);
+          mis.selectorPlugin.setFeaturesById([features[0].getId()?.toString()]);
         }
       }
     );
@@ -133,8 +134,8 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * @param event the keyboard press envent
    */
   function handleEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && isActive.value && site.value) {
-      clearSite();
+    if (event.key === 'Escape' && sps.isOpen && site.value) {
+      closeSitePanel();
     }
   }
 
@@ -142,11 +143,11 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    * watch for site change in URL
    */
   watch(
-    () => panelParameters.value,
+    () => sps.panelParameters,
     (newPanelParameters) => {
       // Open site if URL contains site data
       if (
-        newPanelParameters.location === SIDE_PANEL_PARAM.SITE &&
+        newPanelParameters.location === SidePanelParameters.SITE &&
         newPanelParameters.parameterValue
       ) {
         const siteId = parseInt(
@@ -181,10 +182,10 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   onMounted(async () => {
     window.addEventListener('keydown', handleEscape);
 
-    if (panelParameters.value.location === SIDE_PANEL_PARAM.SITE) {
-      setSite(parseInt(panelParameters.value.parameterValue as string));
+    if (sps.panelParameters.location === SidePanelParameters.SITE) {
+      openSitePanel(parseInt(sps.panelParameters.parameterValue as string));
     }
   });
 
-  return { site, setSite, updateSite, clearSite };
+  return { site, openSitePanel, updateSite, closeSitePanel };
 });

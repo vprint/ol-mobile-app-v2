@@ -1,4 +1,4 @@
-export enum SIDE_PANEL_PARAM {
+export enum SidePanelParameters {
   LAYER_LIST = 'layermanager',
   SITE = 'site',
 }

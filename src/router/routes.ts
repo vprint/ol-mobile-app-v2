@@ -1,5 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
-import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
+import { SidePanelParameters } from 'src/enums/side-panel.enum';
 
 const routes: RouteRecordRaw[] = [
   {
@@ -9,14 +9,14 @@ const routes: RouteRecordRaw[] = [
     children: [
       {
         path: 'site=:siteId',
-        name: SIDE_PANEL_PARAM.SITE,
+        name: SidePanelParameters.SITE,
         component: () =>
           import('../components/SiteComponent/SiteComponent.vue'),
         props: true,
       },
       {
-        path: SIDE_PANEL_PARAM.LAYER_LIST,
-        name: SIDE_PANEL_PARAM.LAYER_LIST,
+        path: SidePanelParameters.LAYER_LIST,
+        name: SidePanelParameters.LAYER_LIST,
         component: () =>
           import('src/components/LayerListComponent/LayerManager.vue'),
       },
