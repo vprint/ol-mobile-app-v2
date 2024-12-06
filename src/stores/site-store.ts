@@ -21,13 +21,13 @@ import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface imports
 import { Site } from 'src/model/site';
-import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
+import { SidePanelParameters } from 'src/enums/side-panel.enum';
 import { ISite } from 'src/interface/ISite';
 
 /**
  * Store sites and and related functionnalities
  */
-export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
+export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   const site: Ref<Site | undefined> = ref();
   const mis = useMapInteractionStore();
   const { isMapInteractionsInitialized } = storeToRefs(mis);
@@ -41,7 +41,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
    */
   async function openSitePanel(newSiteId: number): Promise<void> {
     sps.setActive(true, {
-      location: SIDE_PANEL_PARAM.SITE,
+      location: SidePanelParameters.SITE,
       parameterName: 'siteId',
       parameterValue: newSiteId.toString(),
     });
@@ -147,7 +147,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
     (newPanelParameters) => {
       // Open site if URL contains site data
       if (
-        newPanelParameters.location === SIDE_PANEL_PARAM.SITE &&
+        newPanelParameters.location === SidePanelParameters.SITE &&
         newPanelParameters.parameterValue
       ) {
         const siteId = parseInt(
@@ -182,7 +182,7 @@ export const useSiteStore = defineStore(SIDE_PANEL_PARAM.SITE, () => {
   onMounted(async () => {
     window.addEventListener('keydown', handleEscape);
 
-    if (sps.panelParameters.location === SIDE_PANEL_PARAM.SITE) {
+    if (sps.panelParameters.location === SidePanelParameters.SITE) {
       openSitePanel(parseInt(sps.panelParameters.parameterValue as string));
     }
   });

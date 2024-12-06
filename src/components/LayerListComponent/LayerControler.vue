@@ -9,7 +9,7 @@ import { onMounted, ref } from 'vue';
 import { useMapStore } from 'src/stores/map-store';
 
 // Type & interface import
-import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
+import { LAYER_PROPERTIES } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 const props = defineProps<{

@@ -2,7 +2,7 @@ import { IIndividual } from 'src/interface/IIndividual';
 import { IProject } from 'src/interface/IProject';
 import { ISiteList } from 'src/interface/ISite';
 import { ISiteType } from 'src/interface/ISiteType';
-import { APP_PARAMS } from 'src/utils/params/appParams';
+import { AppVariables } from 'src/enums/app-variables.enum';
 import { FeatureCollection } from 'geojson';
 import wretch from 'wretch';
 
@@ -31,7 +31,7 @@ async function getSiteById(
   siteId: number
 ): Promise<FeatureCollection | undefined> {
   const result = await getJSON<FeatureCollection>(
-    `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_site_by_id/items.json?id=${siteId}`
+    `${AppVariables.FEATURE_SERVER}/functions/${AppVariables.DATABASE_SCHEMA}.get_site_by_id/items.json?id=${siteId}`
   );
 
   return result;
@@ -43,7 +43,7 @@ async function getSiteById(
  */
 async function getIndividualList(): Promise<IIndividual[] | undefined> {
   const result = await getJSON<IIndividual[]>(
-    `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_individual_list/items.json?`
+    `${AppVariables.FEATURE_SERVER}/functions/${AppVariables.DATABASE_SCHEMA}.get_individual_list/items.json?`
   );
   return result;
 }
@@ -54,7 +54,7 @@ async function getIndividualList(): Promise<IIndividual[] | undefined> {
  */
 async function getProjectList(): Promise<IProject[] | undefined> {
   const result = await getJSON<IProject[]>(
-    `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_project_list/items.json?`
+    `${AppVariables.FEATURE_SERVER}/functions/${AppVariables.DATABASE_SCHEMA}.get_project_list/items.json?`
   );
   return result;
 }
@@ -65,7 +65,7 @@ async function getProjectList(): Promise<IProject[] | undefined> {
  */
 async function getSiteList(): Promise<ISiteList[] | undefined> {
   const result = await getJSON<ISiteList[]>(
-    `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_site_list/items.json?limit=10000`
+    `${AppVariables.FEATURE_SERVER}/functions/${AppVariables.DATABASE_SCHEMA}.get_site_list/items.json?limit=10000`
   );
   return result;
 }
@@ -76,7 +76,7 @@ async function getSiteList(): Promise<ISiteList[] | undefined> {
  */
 async function getSiteTypeList(): Promise<ISiteType[] | undefined> {
   const result = await getJSON<ISiteType[]>(
-    `${APP_PARAMS.featureServer}/functions/${APP_PARAMS.databaseSchema}.get_sitetypes_list/items.json?`
+    `${AppVariables.FEATURE_SERVER}/functions/${AppVariables.DATABASE_SCHEMA}.get_sitetypes_list/items.json?`
   );
   return result;
 }

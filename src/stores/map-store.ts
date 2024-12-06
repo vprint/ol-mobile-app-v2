@@ -1,4 +1,8 @@
 // Map imports
+import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
+import { easeOut } from 'ol/easing';
+import { Feature, View } from 'ol';
+import { fromLonLat } from 'ol/proj';
 import Map from 'ol/Map';
 import Layer from 'ol/layer/Layer';
 
@@ -14,19 +18,15 @@ import {
   LAYER_PROPERTIES,
   RASTER_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
-} from 'src/utils/params/layersParams';
+} from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
-import { easeOut } from 'ol/easing';
-import { Feature, View } from 'ol';
-import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
-import { fromLonLat } from 'ol/proj';
 import {
   addVectorBackgroundLayers,
   addRasterBackgroundLayers,
   addVectorTileLayers,
   addOGCLayer,
 } from 'src/plugins/LayerImporter';
-import { MAPSETTINGS } from 'src/utils/params/mapParams';
+import { MapSettings } from 'src/enums/map.enum';
 
 /**
  * This store provide the application map and functionnalities related to the map
@@ -38,10 +38,10 @@ export const useMapStore = defineStore('map', () => {
   const map = new Map({
     controls: [],
     view: new View({
-      center: fromLonLat([MAPSETTINGS.long, MAPSETTINGS.lat]),
-      zoom: MAPSETTINGS.zoom,
-      maxZoom: MAPSETTINGS.maxzoom,
-      minZoom: MAPSETTINGS.minzoom,
+      center: fromLonLat([MapSettings.LONG, MapSettings.LAT]),
+      zoom: MapSettings.ZOOM,
+      maxZoom: MapSettings.MAX_ZOOM,
+      minZoom: MapSettings.MIN_ZOOM,
     }),
   });
 

@@ -21,7 +21,7 @@ export enum MeasureEventType {
   MEASURE_END = 'measure:end',
 }
 
-export type IMeasureType = 'Polygon' | 'LineString';
+type IMeasureType = 'Polygon' | 'LineString';
 
 /**
  * Measure start event. This event is emmited when a draw start. The measure feature is returned by the event.
@@ -172,6 +172,7 @@ class Measure extends Interaction {
       style: this.style,
       type: type,
     });
+
     this.getMap()?.addInteraction(this.drawInteraction);
 
     this.drawStartEvent = this.drawInteraction.on('drawstart', (evt) => {
@@ -195,21 +196,21 @@ class Measure extends Interaction {
 
   /**
    * Update the tooltip position and values according to the draw.
-   * @param sketch Draw geometry
+   * @param feature Drawed feature
    * @param tooltip Overlay
    */
-  private updateTooltip(sketch: Feature, tooltip: Overlay): void {
-    sketch.on('change', () => {
-      const geom = sketch.getGeometry();
+  private updateTooltip(feature: Feature, tooltip: Overlay): void {
+    feature.on('change', () => {
+      const geom = feature.getGeometry();
 
       if (geom instanceof Polygon) {
         tooltip.setPosition(geom.getInteriorPoint().getCoordinates());
         tooltip.setPositioning('center-center');
-        this.setTooltipText(tooltip.getElement(), sketch);
+        this.setTooltipText(tooltip.getElement(), feature);
       } else if (geom instanceof LineString) {
         tooltip.setPosition(geom.getLastCoordinate());
         tooltip.setOffset([15, 15]);
-        this.setTooltipText(tooltip.getElement(), sketch);
+        this.setTooltipText(tooltip.getElement(), feature);
       }
     });
   }

@@ -9,8 +9,8 @@ import { useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 
 // Interface, type and enum imports
-import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
-import { LAYER_PROPERTIES } from 'src/utils/params/layersParams';
+import { SidePanelParameters } from 'src/enums/side-panel.enum';
+import { LAYER_PROPERTIES } from 'src/enums/layers.enum';
 import {
   ILayerProperties,
   LayerProperties,
@@ -97,7 +97,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   function setPanelActive(mode: boolean): void {
     const params = mode
       ? {
-          location: SIDE_PANEL_PARAM.LAYER_LIST,
+          location: SidePanelParameters.LAYER_LIST,
         }
       : undefined;
 
@@ -120,7 +120,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
     () => sps.panelParameters.location,
     () => {
       isOpen.value =
-        sps.panelParameters.location === SIDE_PANEL_PARAM.LAYER_LIST;
+        sps.panelParameters.location === SidePanelParameters.LAYER_LIST;
       if (isOpen.value) getTunableLayers();
     }
   );

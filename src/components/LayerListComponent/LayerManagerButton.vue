@@ -15,11 +15,12 @@ const lms = useLayerManagerStore();
 <template>
   <q-btn
     flat
-    fab
-    square
-    text-color="secondary"
     unelevated
     icon="sym_s_stacks"
+    :class="{
+      'app-button btn--no-hover': true,
+      'is-active': lms.isOpen,
+    }"
     @click="lms.isOpen ? lms.closeLayerManager() : lms.openLayerManager()"
   >
     <q-tooltip

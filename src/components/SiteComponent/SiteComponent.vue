@@ -15,7 +15,7 @@ import FormSelect from '../ReusableComponents/FormSelect.vue';
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 
 // Others imports
-import { SITE_TYPE_REFS_PARAMS } from '../../utils/params/siteTypeRefsParams';
+import { SiteTypeRefs } from '../../enums/site-type-refs.enums';
 
 // Type & interface
 
@@ -85,28 +85,28 @@ watch(
           <!-- Alternative name -->
           <FormInput
             v-model="site!.alternativeName"
-            :label="SITE_TYPE_REFS_PARAMS.alternativeName"
+            :label="SiteTypeRefs.ALTERNATIVE_NAME"
             :edition-mode="editionMode"
           />
 
           <!-- French name -->
           <FormInput
             v-model="site!.frenchName"
-            :label="SITE_TYPE_REFS_PARAMS.frenchName"
+            :label="SiteTypeRefs.FRENCH_NAME"
             :edition-mode="editionMode"
           />
 
           <!-- Khmer name -->
           <FormInput
             v-model="site!.khmerName"
-            :label="SITE_TYPE_REFS_PARAMS.khmerName"
+            :label="SiteTypeRefs.KHMER_NAME"
             :edition-mode="editionMode"
           />
 
           <!-- alternative khmer name -->
           <FormInput
             v-model="site!.alternativeKhmerName"
-            :label="SITE_TYPE_REFS_PARAMS.alternativeKhmerName"
+            :label="SiteTypeRefs.ALTERNATIVE_KHMER_NAME"
             :edition-mode="editionMode"
             no-padding
           />
@@ -117,7 +117,7 @@ watch(
           <!-- description -->
           <FormInput
             v-model="site!.description"
-            :label="SITE_TYPE_REFS_PARAMS.description"
+            :label="SiteTypeRefs.DESCRIPTION"
             :edition-mode="editionMode"
             autogrow
           />
@@ -125,7 +125,7 @@ watch(
           <!-- Feature type -->
           <FormSelect
             v-model="site!.featureType"
-            :label="SITE_TYPE_REFS_PARAMS.featureType"
+            :label="SiteTypeRefs.FEATURE_TYPE"
             :options="res.siteTypeList"
             option-value="siteTypeId"
             option-label="siteTypeName"
@@ -135,21 +135,21 @@ watch(
           <!-- ikId -->
           <FormInput
             v-model="site!.ikId"
-            :label="SITE_TYPE_REFS_PARAMS.ikId"
+            :label="SiteTypeRefs.IK_ID"
             :edition-mode="editionMode"
           />
 
           <!-- mhId -->
           <FormInput
             v-model="site!.mhId"
-            :label="SITE_TYPE_REFS_PARAMS.mhId"
+            :label="SiteTypeRefs.MH_ID"
             :edition-mode="editionMode"
           />
 
           <!-- Located by -->
           <FormSelect
             v-model="site!.locatedBy"
-            :label="SITE_TYPE_REFS_PARAMS.locatedBy"
+            :label="SiteTypeRefs.LOCATED_BY"
             :options="res.individuals"
             option-value="individualId"
             option-label="individualName"
@@ -164,14 +164,14 @@ watch(
           <!-- verified -->
           <q-checkbox
             v-model="site!.verified"
-            :label="SITE_TYPE_REFS_PARAMS.verified"
+            :label="SiteTypeRefs.VERIFIED"
             :disable="editionMode ? false : true"
           />
 
           <!-- Verification date -->
           <FormInput
             v-model="site!.verificationDate"
-            :label="SITE_TYPE_REFS_PARAMS.verificationDate"
+            :label="SiteTypeRefs.VERIFICATION_DATE"
             :edition-mode="editionMode"
             date
             no-padding
@@ -184,14 +184,14 @@ watch(
           <!-- Ceramics -->
           <q-checkbox
             v-model="site!.ceramics"
-            :label="SITE_TYPE_REFS_PARAMS.ceramics"
+            :label="SiteTypeRefs.CERAMICS"
             :disable="editionMode ? false : true"
           />
 
           <!-- Ceramic details-->
           <FormInput
             v-model="site!.ceramicsDetails"
-            :label="SITE_TYPE_REFS_PARAMS.ceramicsDetails"
+            :label="SiteTypeRefs.CERAMICS_DETAILS"
             :edition-mode="editionMode"
             autogrow
             no-padding
@@ -204,7 +204,7 @@ watch(
           <!-- artefact comment -->
           <FormInput
             v-model="site!.artefactsComments"
-            :label="SITE_TYPE_REFS_PARAMS.artefactComments"
+            :label="SiteTypeRefs.ARTEFACT_COMMENTS"
             :edition-mode="editionMode"
             autogrow
             no-padding
@@ -217,7 +217,7 @@ watch(
           <!-- build material details-->
           <FormInput
             v-model="site!.buildMaterialComments"
-            :label="SITE_TYPE_REFS_PARAMS.buildMaterialComments"
+            :label="SiteTypeRefs.BUILD_MATERIAL_COMMENTS"
             :edition-mode="editionMode"
             autogrow
             no-padding
@@ -232,7 +232,7 @@ watch(
             <q-checkbox
               v-model="site!.looted"
               class="col"
-              :label="SITE_TYPE_REFS_PARAMS.looted"
+              :label="SiteTypeRefs.LOOTED"
               :disable="editionMode ? false : true"
             />
 
@@ -240,7 +240,7 @@ watch(
             <q-checkbox
               v-model="site!.cleared"
               class="col"
-              :label="SITE_TYPE_REFS_PARAMS.cleared"
+              :label="SiteTypeRefs.CLEARED"
               :disable="editionMode ? false : true"
             />
           </div>
@@ -250,14 +250,14 @@ watch(
             <q-checkbox
               v-model="site!.cultivated"
               class="col"
-              :label="SITE_TYPE_REFS_PARAMS.cultivated"
+              :label="SiteTypeRefs.CULTIVATED"
               :disable="editionMode ? false : true"
             />
             <!-- threatened -->
             <q-checkbox
               v-model="site!.threatened"
               class="col"
-              :label="SITE_TYPE_REFS_PARAMS.threatened"
+              :label="SiteTypeRefs.THREATENED"
               :disable="editionMode ? false : true"
             />
           </div>
@@ -268,7 +268,7 @@ watch(
           <!-- databasing comments -->
           <FormInput
             v-model="site!.databasingComments"
-            :label="SITE_TYPE_REFS_PARAMS.databasingComments"
+            :label="SiteTypeRefs.DATABASING_COMMENTS"
             :edition-mode="editionMode"
             autogrow
           />
@@ -276,7 +276,7 @@ watch(
           <!-- Creation date -->
           <FormInput
             v-model="site!.creationDate"
-            :label="SITE_TYPE_REFS_PARAMS.creationDate"
+            :label="SiteTypeRefs.CREATION_DATE"
             :edition-mode="editionMode"
             date
           />
@@ -284,7 +284,7 @@ watch(
           <!-- Modificiation date-->
           <FormInput
             v-model="site!.modificationDate"
-            :label="SITE_TYPE_REFS_PARAMS.modificationDate"
+            :label="SiteTypeRefs.MODIFICATION_DATE"
             :edition-mode="editionMode"
             date
           />
@@ -292,7 +292,7 @@ watch(
           <!-- user creation -->
           <FormSelect
             v-model="site!.userCreation"
-            :label="SITE_TYPE_REFS_PARAMS.userCreation"
+            :label="SiteTypeRefs.USER_CREATION"
             :options="res.individuals"
             option-value="individualId"
             option-label="individualName"
@@ -302,7 +302,7 @@ watch(
           <!-- user modification -->
           <FormSelect
             v-model="site!.userModification"
-            :label="SITE_TYPE_REFS_PARAMS.userModification"
+            :label="SiteTypeRefs.USER_MODIFICATION"
             :options="res.individuals"
             option-value="individualId"
             option-label="individualName"

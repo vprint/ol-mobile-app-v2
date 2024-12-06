@@ -13,7 +13,7 @@ import { RouteRecordName, useRoute, useRouter } from 'vue-router';
 import _ from 'lodash';
 import { useMapStore } from './map-store';
 import { Feature } from 'ol';
-import { SIDE_PANEL_PARAM } from 'src/utils/params/sidePanelParams';
+import { SidePanelParameters } from 'src/enums/side-panel.enum';
 
 export interface ISidePanelParameters {
   location: RouteRecordName | undefined;
@@ -88,7 +88,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
         // If the the site panel is opened a custom panel padding is applied (see siteStore().updateMap())
         if (
           !isOpen.value &&
-          panelParameters.value.location !== SIDE_PANEL_PARAM.SITE
+          panelParameters.value.location !== SidePanelParameters.SITE
         ) {
           setPanelPadding(true);
         }
@@ -104,8 +104,8 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * @param setZoom
    */
   function setPanelPadding(isOpen: boolean, feature?: Feature): void {
-    const openPadding = [0, -400, 0, 0];
-    const closePadding = [0, 0, 0, -400];
+    const openPadding = [0, -800, 0, 0];
+    const closePadding = [0, 0, 0, -800];
     mas.setPaddingAndExtent(isOpen ? openPadding : closePadding, feature);
   }
 

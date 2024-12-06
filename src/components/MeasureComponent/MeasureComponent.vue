@@ -7,6 +7,7 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Map imports
 
 // Others imports
+import { GeometryType } from '../../enums/geometry.enum';
 
 // Script
 const mes = useMeasureStore();
@@ -14,13 +15,10 @@ const mes = useMeasureStore();
 
 <template>
   <q-btn
-    :flat="$q.platform.is.desktop"
-    :fab="$q.platform.is.desktop"
-    :round="$q.platform.is.mobile"
-    :square="$q.platform.is.desktop"
-    color="white"
+    unelevated
     icon="sym_s_straighten"
     :text-color="$q.platform.is.mobile ? 'primary' : undefined"
+    class="app-button btn--no-hover"
     @click="mes.removeMeasure"
   >
     <q-menu
@@ -30,9 +28,13 @@ const mes = useMeasureStore();
       class="bg-secondary text-primary"
     >
       <q-list>
-        <q-item v-close-popup clickable @click="mes.addMeasure('LineString')">
+        <q-item
+          v-close-popup
+          clickable
+          @click="mes.addMeasure(GeometryType.LINE_STRING)"
+        >
           <q-item-section>
-            <q-icon name="straighten" />
+            <q-icon name="straighten" class="app-button btn--no-hover" />
           </q-item-section>
           <q-tooltip
             anchor="bottom middle"
@@ -46,9 +48,13 @@ const mes = useMeasureStore();
           </q-tooltip>
         </q-item>
 
-        <q-item v-close-popup clickable @click="mes.addMeasure('Polygon')">
+        <q-item
+          v-close-popup
+          clickable
+          @click="mes.addMeasure(GeometryType.POLYGON)"
+        >
           <q-item-section>
-            <q-icon name="square_foot" />
+            <q-icon name="square_foot" class="app-button btn--no-hover" />
           </q-item-section>
           <q-tooltip
             anchor="bottom middle"
@@ -64,7 +70,7 @@ const mes = useMeasureStore();
 
         <q-item v-close-popup clickable @click="mes.removeAllMeasure()">
           <q-item-section>
-            <q-icon name="delete" />
+            <q-icon name="delete" class="app-button btn--no-hover" />
           </q-item-section>
           <q-tooltip
             anchor="bottom middle"

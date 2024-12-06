@@ -1,5 +1,11 @@
+import '../css/app.scss';
+
 // Map import
 import { Interaction, Link } from 'ol/interaction';
+import { Attribution, Control, ScaleLine } from 'ol/control';
+import { Style, Stroke, Fill } from 'ol/style';
+import CircleStyle from 'ol/style/Circle';
+import VectorTileLayer from 'ol/layer/VectorTile';
 
 // Vue/Quasar imports
 import { defineStore } from 'pinia';
@@ -13,11 +19,7 @@ import VectorTileSelect from 'src/plugins/VectorTileSelect';
 import Measure from 'src/plugins/measure/Measure';
 
 // Interface imports
-import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
-import VectorTileLayer from 'ol/layer/VectorTile';
-import { Style, Stroke, Fill } from 'ol/style';
-import CircleStyle from 'ol/style/Circle';
-import { Attribution, Control, ScaleLine } from 'ol/control';
+import { Interactions } from 'src/enums/interactions.enum';
 
 /**
  * Store and manage mapInteraction.
@@ -34,10 +36,10 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     }),
   });
   const selectorPlugin = new VectorTileSelect({
-    name: INTERACTIONS_PARAMS.selector,
+    name: Interactions.SELECTOR,
     selectionStyle: selectionStyle,
   });
-  const measurePlugin = new Measure(INTERACTIONS_PARAMS.measure);
+  const measurePlugin = new Measure(Interactions.MEASURE);
 
   /**
    * Get the map interactions.
@@ -57,7 +59,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     const link = new Link({
       params: ['x', 'y', 'z', 'r'],
     });
-    link.set('name', INTERACTIONS_PARAMS.link);
+    link.set('name', Interactions.LINK);
 
     return [selectorPlugin, measurePlugin, link];
   }
@@ -72,14 +74,15 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
       units: 'metric',
       text: true,
       minWidth: 140,
+      className: 'app-scale-line',
     });
-    scaleline.set('name', INTERACTIONS_PARAMS.scaleline);
+    scaleline.set('name', Interactions.SCALELINE);
 
     // Create attribution
     const attribution = new Attribution({
       collapsible: false,
     });
-    attribution.set('name', INTERACTIONS_PARAMS.attribution);
+    attribution.set('name', Interactions.ATTRIBUTION);
 
     return [scaleline, attribution];
   }
@@ -107,7 +110,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * @param active Activate or deactivate the interaction.
    */
   function enableInteraction(
-    interactionName: INTERACTIONS_PARAMS,
+    interactionName: Interactions,
     active: boolean
   ): void {
     const interaction = getInteractionByName(interactionName);

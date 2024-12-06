@@ -13,13 +13,12 @@ import { useMapStore } from 'src/stores/map-store';
 // Others imports
 
 // Type & interface
+import { IBackgroundLayer } from 'src/interface/ILayers';
+
+// enums
+import { BACKGROUND_LAYERS_SETTINGS } from 'src/enums/layers.enum';
 
 // Script
-import {
-  BACKGROUND_LAYERS_SETTINGS,
-  IBackgroundLayer,
-} from 'src/utils/params/layersParams';
-
 const mas = useMapStore();
 const activeLayer = ref('');
 

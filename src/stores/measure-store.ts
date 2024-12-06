@@ -10,10 +10,11 @@ import { useMapInteractionStore } from './map-interaction-store';
 // Others imports
 
 // Interface imports
-import { IMeasureType, MeasureEventType } from 'src/plugins/measure/Measure';
+import { MeasureEventType } from 'src/plugins/measure/Measure';
 
 // Enum imports
-import { INTERACTIONS_PARAMS } from 'src/utils/params/interactionsParams';
+import { Interactions } from 'src/enums/interactions.enum';
+import { GeometryType } from 'src/enums/geometry.enum';
 
 //script
 
@@ -29,10 +30,12 @@ export const useMeasureStore = defineStore('measure', () => {
    * Activate measure
    * @param mode Measure mode - can be either Polygon or LineString
    */
-  function addMeasure(mode: IMeasureType): void {
+  function addMeasure(
+    mode: GeometryType.LINE_STRING | GeometryType.POLYGON
+  ): void {
     mis.measurePlugin.setActive(true);
     mis.measurePlugin.addMeasureFeature(mode);
-    mis.enableInteraction(INTERACTIONS_PARAMS.selector, false);
+    mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   /**
@@ -40,7 +43,7 @@ export const useMeasureStore = defineStore('measure', () => {
    */
   function removeMeasure(): void {
     mis.measurePlugin.deactivateMeasure();
-    mis.enableInteraction(INTERACTIONS_PARAMS.selector, true);
+    mis.enableInteraction(Interactions.SELECTOR, true);
   }
 
   /**
@@ -48,13 +51,13 @@ export const useMeasureStore = defineStore('measure', () => {
    */
   function removeAllMeasure(): void {
     mis.measurePlugin.clearMeasureFeatures();
-    mis.enableInteraction(INTERACTIONS_PARAMS.selector, true);
+    mis.enableInteraction(Interactions.SELECTOR, true);
   }
 
   onMounted(() => {
     // @ts-expect-error - Type problems due to typescript / ol
     mis.measurePlugin.on(MeasureEventType.MEASURE_END, () => {
-      mis.enableInteraction(INTERACTIONS_PARAMS.selector, true);
+      mis.enableInteraction(Interactions.SELECTOR, true);
     });
   });
 

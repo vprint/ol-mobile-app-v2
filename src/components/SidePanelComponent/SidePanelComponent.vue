@@ -13,7 +13,14 @@ const thumbStyle: Partial<CSSStyleDeclaration> = {
       <div class="header-title">
         <slot name="title"></slot>
       </div>
-      <q-btn flat dense round icon="close" @click="emit('close')" />
+      <q-btn
+        flat
+        dense
+        round
+        icon="close"
+        class="app-button btn--no-hover"
+        @click="emit('close')"
+      />
     </div>
 
     <!-- Main section -->
