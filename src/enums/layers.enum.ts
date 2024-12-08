@@ -10,7 +10,7 @@ import {
   IVectorTileLayer,
 } from 'src/interface/ILayers';
 
-export const LAYER_PROPERTIES = 'layerProperties';
+export const LAYER_PROPERTIES_FIELD = 'layerProperties';
 
 /**
  * List of application background layers
@@ -173,3 +173,13 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     url: `${AppVariables.QGIS_SERVER}/wms?`,
   },
 ];
+
+export enum LayerProperties {
+  ID = 'id',
+  TITLE = 'title',
+  TUNABLE = 'tunable',
+  EDITABLE = 'editable',
+  SELECTABLE = 'selectable',
+  DYNAMIC = 'dynamic',
+  DESCRIPTION = 'description',
+}

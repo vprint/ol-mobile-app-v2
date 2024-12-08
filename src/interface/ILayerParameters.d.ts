@@ -28,13 +28,3 @@ export interface ILayerProperties {
    */
   description?: string;
 }
-
-export enum LayerProperties {
-  ID = 'id',
-  TITLE = 'title',
-  TUNABLE = 'tunable',
-  EDITABLE = 'editable',
-  SELECTABLE = 'selectable',
-  DYNAMIC = 'dynamic',
-  DESCRIPTION = 'description',
-}

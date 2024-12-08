@@ -12,9 +12,10 @@ import Event from 'ol/events/Event.js';
 import { getUid } from 'ol/util';
 import { Coordinate } from 'ol/coordinate';
 import './Measure.css';
+import Drawer from '../drawer';
 
 /**
- * Measure end event definition
+ * Measure event definition
  */
 export enum MeasureEventType {
   MEASURE_START = 'measure:start',
@@ -41,24 +42,16 @@ export class MeasureStartEvent extends Event {
 export class MeasureEndEvent extends Event {}
 
 /**
- * This class provides measurement functionality and allows measuring
- * distances (LineString) and areas (Polygon) by drawing over the map.
- *
- * A tooltip is generated to show measurements in appropriate units (m, km, m², km²).
+ * This class provides measurement functionality for distances (LineString) and areas (Polygon).
+ * A tooltip is generated to show measurements in appropriate units (m, km for linestrings and m², km² for polygons).
  * These tooltips can be managed by removeAllMeasureOverlays() and removeOverlayById() functions.
  *
  * @extends Interaction
  */
-class Measure extends Interaction {
-  private drawInteraction: Draw | undefined;
-  private modifyInteraction: Modify | undefined;
-  private selectInteraction: Select | undefined;
+class Measure extends Drawer {
   private measureLayer: VectorLayer | undefined;
-  private drawEndEvent!: EventsKey;
-  private drawAbortEvent!: EventsKey;
-  private drawStartEvent!: EventsKey;
 
-  private style = new Style({
+  private measureStyle = new Style({
     fill: new Fill({
       color: 'rgba(255, 180, 25, 0.2)',
     }),
@@ -80,7 +73,7 @@ class Measure extends Interaction {
     }),
   });
 
-  private selectedStyle = [
+  private selectedMeasureStyle = [
     new Style({
       stroke: new Stroke({
         color: 'rgba(255, 180, 25, 1)',
@@ -125,23 +118,6 @@ class Measure extends Interaction {
       },
     }),
   ];
-
-  constructor(interactionName: string) {
-    super();
-    this.set('name', interactionName);
-
-    document.addEventListener('keydown', this.clearSelection);
-    document.addEventListener('keydown', this.deleteSelectedMeasure);
-  }
-
-  /**
-   * Initialize the component
-   * @param map OpenLayers map
-   */
-  public setMap(map: Map | null): void {
-    super.setMap(map);
-    if (map) this.addMeasureLayer(map);
-  }
 
   /**
    * Add the measure layer to the map

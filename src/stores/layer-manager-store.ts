@@ -9,12 +9,9 @@ import { useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 
 // Interface, type and enum imports
+import type { ILayerProperties } from 'src/interface/ILayerParameters';
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { LAYER_PROPERTIES } from 'src/enums/layers.enum';
-import {
-  ILayerProperties,
-  LayerProperties,
-} from 'src/interface/ILayerParameters';
+import { LAYER_PROPERTIES_FIELD, LayerProperties } from 'src/enums/layers.enum';
 
 // Others imports
 
@@ -52,7 +49,9 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
       );
 
       tunableLayers.forEach((layer) => {
-        const layerProperties = layer.get(LAYER_PROPERTIES) as ILayerProperties;
+        const layerProperties = layer.get(
+          LAYER_PROPERTIES_FIELD
+        ) as ILayerProperties;
 
         const zIndex = layer.getZIndex();
         const layerInformation = {

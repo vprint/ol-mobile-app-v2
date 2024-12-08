@@ -9,7 +9,7 @@ import { onMounted, ref } from 'vue';
 import { useMapStore } from 'src/stores/map-store';
 
 // Type & interface import
-import { LAYER_PROPERTIES } from 'src/enums/layers.enum';
+import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 const props = defineProps<{
@@ -32,7 +32,7 @@ onMounted(() => {
   layer = mas.getLayerById(props.layerId);
 
   if (layer) {
-    layerProperties = layer.get(LAYER_PROPERTIES);
+    layerProperties = layer.get(LAYER_PROPERTIES_FIELD);
     visible.value = layer.getVisible();
     opacity.value = layer.getOpacity();
   }

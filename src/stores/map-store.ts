@@ -15,7 +15,7 @@ import { defineStore } from 'pinia';
 // Others imports
 import {
   BACKGROUND_LAYERS_SETTINGS,
-  LAYER_PROPERTIES,
+  LAYER_PROPERTIES_FIELD,
   RASTER_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
 } from 'src/enums/layers.enum';
@@ -52,11 +52,11 @@ export const useMapStore = defineStore('map', () => {
 
   /**
    * Get a layer by it's id
-   * @param id : layer id
+   * @param id - layer id
    */
   function getLayerById(id: string): Layer | undefined {
     return map.getAllLayers().find((layer) => {
-      const layerProperties = layer.get(LAYER_PROPERTIES) as
+      const layerProperties = layer.get(LAYER_PROPERTIES_FIELD) as
         | ILayerProperties
         | undefined;
       return layerProperties?.id === id;
@@ -96,9 +96,9 @@ export const useMapStore = defineStore('map', () => {
 
   /**
    * Get layers with a given properties
-   * @param property The layer properties to inspect
-   * @param value The value of the properties
-   * @returns List of layers that match the filter
+   * @param property - The layer properties to inspect
+   * @param value - The value of the properties
+   * @returns - List of layers that match the filter
    */
   function getLayersByProperties<K extends keyof ILayerProperties>(
     property: K,
@@ -108,7 +108,7 @@ export const useMapStore = defineStore('map', () => {
     const mapLayers = map.getAllLayers();
 
     mapLayers.forEach((layer) => {
-      const layerProperties = layer.get(LAYER_PROPERTIES) as
+      const layerProperties = layer.get(LAYER_PROPERTIES_FIELD) as
         | ILayerProperties
         | undefined;
 
