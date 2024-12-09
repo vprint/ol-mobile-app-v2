@@ -48,7 +48,7 @@ export class MeasureEndEvent extends Event {}
  *
  * @extends Interaction
  */
-class Measure extends Drawer {
+class Measure {
   private measureLayer: VectorLayer | undefined;
 
   private measureStyle = new Style({

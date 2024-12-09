@@ -4,13 +4,11 @@ import { Draw, Interaction, Modify, Select } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
 import { Feature, Map } from 'ol';
 import { click } from 'ol/events/condition';
-import { Geometry, LineString, MultiPoint, Polygon } from 'ol/geom';
-import { Style, Fill, Stroke, Circle } from 'ol/style';
 import { getUid } from 'ol/util';
-import { Coordinate } from 'ol/coordinate';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Event from 'ol/events/Event.js';
+import StyleManager, { IStyleOptions } from './StyleManager';
 
 /**
  * Draw event definition
@@ -46,81 +44,16 @@ class Drawer extends Interaction {
   private modifyInteraction: Modify | undefined;
   private selectInteraction: Select | undefined;
   private drawLayer: VectorLayer | undefined;
+  private style: StyleManager;
+
   private drawEndEvent!: EventsKey;
   private drawAbortEvent!: EventsKey;
   private drawStartEvent!: EventsKey;
 
-  private style = new Style({
-    fill: new Fill({
-      color: 'rgba(128,0,128, 0.2)',
-    }),
-    stroke: new Stroke({
-      color: 'rgba(128,0,128, 1)',
-      lineCap: 'round',
-      lineDash: [2, 6],
-      width: 2,
-    }),
-    image: new Circle({
-      radius: 5,
-      stroke: new Stroke({
-        color: 'rgba(255, 255, 255, 1)',
-        width: 2,
-      }),
-      fill: new Fill({
-        color: 'rgba(128,0,128, 1)',
-      }),
-    }),
-  });
-
-  private selectedStyle = [
-    new Style({
-      stroke: new Stroke({
-        color: 'rgba(128,0,128, 1)',
-        lineCap: 'round',
-        lineDash: [2, 6],
-        width: 3,
-      }),
-    }),
-    new Style({
-      fill: new Fill({
-        color: 'rgba(128,0,128, 0.2)',
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255, 255, 255, 0.2)',
-        lineCap: 'round',
-        width: 6,
-      }),
-    }),
-    new Style({
-      image: new Circle({
-        radius: 5,
-        stroke: new Stroke({
-          color: 'rgba(255, 255, 255, 1)',
-          width: 2,
-        }),
-        fill: new Fill({
-          color: 'rgba(128,0,128, 1)',
-        }),
-      }),
-      geometry: (feature): Geometry | undefined => {
-        const geom = feature.getGeometry();
-        let coordinates: Coordinate[] | undefined;
-
-        if (geom instanceof Polygon) {
-          coordinates = geom.getCoordinates()[0];
-        }
-        if (geom instanceof LineString) {
-          coordinates = geom.getCoordinates();
-        }
-
-        return coordinates ? new MultiPoint(coordinates) : undefined;
-      },
-    }),
-  ];
-
-  constructor(interactionName: string) {
+  constructor(interactionName: string, style: IStyleOptions) {
     super();
     this.set('name', interactionName);
+    this.style = new StyleManager(style);
 
     document.addEventListener('keydown', this.unselectDraw);
     document.addEventListener('keydown', this.deleteSelectedDraw);
@@ -147,7 +80,7 @@ class Drawer extends Interaction {
     });
 
     map.addLayer(drawLayer);
-    drawLayer.setStyle(this.style);
+    drawLayer.setStyle(this.style.getStyle());
     this.drawLayer = drawLayer;
   }
 
@@ -161,7 +94,7 @@ class Drawer extends Interaction {
     // Create draw interaction.
     this.drawInteraction = new Draw({
       source: drawSource ? drawSource : new VectorSource(),
-      style: this.style,
+      style: this.style.getEditionStyle(),
       type: type,
     });
 
@@ -240,12 +173,12 @@ class Drawer extends Interaction {
           return getUid(layer) === getUid(this.drawLayer);
         },
         condition: click,
-        style: this.selectedStyle,
+        style: this.style.getSelectionStyle(),
         hitTolerance: 15,
       });
 
       this.modifyInteraction = new Modify({
-        style: this.style,
+        style: this.style.getEditionStyle(),
         features: this.selectInteraction.getFeatures(),
       });
 
