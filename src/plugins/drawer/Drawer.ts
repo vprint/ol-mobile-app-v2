@@ -1,5 +1,6 @@
 import type { Type } from 'ol/geom/Geometry';
 import type { EventsKey } from 'ol/events';
+import { KeyEventType } from 'src/enums/key-event.enum';
 import { DrawEventType } from 'src/enums/draw-types.enum';
 import { DrawStartEvent } from './drawStartEvent';
 import { DrawEndEvent } from './DrawEndEvent';
@@ -184,34 +185,20 @@ class Drawer extends Interaction {
   }
 
   private handleKeyPress = (evt: KeyboardEvent): void => {
-    const actions = {
-      /**
-       * Clear selection if the user press escape key.
-       * @param evt a keyboard event
-       */
-      manageEscape: (): void => {
+    switch (evt.key) {
+      case KeyEventType.ESCAPE:
         this.abortDrawing();
         this.drawModifier?.unselectFeature();
-      },
+        break;
 
-      /**
-       * Delete the selected draw if the user click on delete key.
-       * @param evt a keyboard event
-       */
-      manageDelete: (): void => {
+      case KeyEventType.DELETE:
         const feature = this.drawModifier?.getFeature();
         if (!feature) return;
-
         const featureId = getUid(feature);
         this.dispatchEvent(
           new DrawRemoveEvent(DrawEventType.DRAW_REMOVE, featureId)
         );
         this.drawModifier?.removeFeature();
-      },
-    };
-
-    if (evt.key === 'Escape' || evt.key === 'Delete') {
-      actions[`manage${evt.key}`]();
     }
   };
 }
