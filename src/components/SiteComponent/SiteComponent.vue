@@ -8,6 +8,7 @@ import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useSiteStore } from 'src/stores/site-store';
 import { useReferencesStore } from 'src/stores/references-store';
+import { useDrawStore } from 'src/stores/draw-store';
 
 // Component import
 import FormInput from '../ReusableComponents/FormInput.vue';
@@ -21,6 +22,7 @@ import { SiteTypeRefs } from '../../enums/site-type-refs.enums';
 
 // script
 const sis = useSiteStore();
+const drs = useDrawStore();
 const { site } = storeToRefs(sis);
 const res = useReferencesStore();
 const editionMode = ref(false);
@@ -53,6 +55,15 @@ function cancel(): void {
     sis.updateSite(originalSite.clone());
   }
   editionMode.value = false;
+}
+
+/**
+ * Enable form modification and drawing.
+ * @param active - Should the edition mode be opened ?
+ */
+function setEditionMode(active: boolean): void {
+  editionMode.value = active;
+  drs.setVisible(active);
 }
 
 // watch for site change and update component
@@ -327,7 +338,7 @@ watch(
           color="primary"
           label="Edit"
           class="buttons"
-          @click="editionMode = !editionMode"
+          @click="setEditionMode(true)"
         />
         <q-btn
           v-if="editionMode"
@@ -337,7 +348,7 @@ watch(
           color="primary"
           label="Cancel"
           class="buttons"
-          @click="editionMode = !editionMode"
+          @click="setEditionMode(false)"
         />
         <q-btn
           v-if="editionMode"
@@ -346,7 +357,7 @@ watch(
           color="primary"
           label="Save"
           class="buttons"
-          @click="editionMode = !editionMode"
+          @click="setEditionMode(false)"
         />
       </div>
     </template>

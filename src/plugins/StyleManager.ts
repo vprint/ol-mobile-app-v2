@@ -2,7 +2,7 @@ import { Color } from 'ol/color';
 import { ColorLike, PatternDescriptor } from 'ol/colorlike';
 import { Coordinate } from 'ol/coordinate';
 import { FeatureLike } from 'ol/Feature';
-import { Polygon, LineString, MultiPoint } from 'ol/geom';
+import { Polygon, LineString, MultiPoint, Point } from 'ol/geom';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 
 const WHITE = '255, 255, 255';
@@ -39,6 +39,7 @@ class StyleManager {
         this.options.strokeWidth,
         this.options.lineDash
       ),
+      image: this.getVertexPointStyle(this.options.strokeColor, false),
     });
 
     return style;
@@ -49,18 +50,13 @@ class StyleManager {
    * @param options
    * @returns
    */
-  public getEditionStyle(): Style {
-    const style = new Style({
-      fill: new Fill({
-        color: this.options.fillColor,
+  public getEditionStyle(): Style[] {
+    const style = [
+      this.getStyle(),
+      new Style({
+        image: this.getVertexPointStyle(this.options.strokeColor, true),
       }),
-      stroke: this.getStroke(
-        this.options.strokeColor,
-        this.options.strokeWidth,
-        this.options.lineDash
-      ),
-      image: this.getVertexPointStyle(this.options.strokeColor),
-    });
+    ];
 
     return style;
   }
@@ -72,20 +68,10 @@ class StyleManager {
    */
   public getSelectionStyle(): Style[] {
     const selectedStyle = [
-      // The user stroke color
-      new Style({
-        stroke: this.getStroke(
-          this.options.strokeColor,
-          this.options.strokeWidth ? this.options.strokeWidth + 1 : undefined,
-          this.options.lineDash
-        ),
-      }),
+      this.getStyle(),
 
       // A translucid white stroke to highlight the feature.
       new Style({
-        fill: new Fill({
-          color: this.options.fillColor,
-        }),
         stroke: this.getStroke(
           `rgba(${WHITE}, 0.2)`,
           this.options.strokeWidth ? this.options.strokeWidth + 4 : undefined
@@ -94,7 +80,7 @@ class StyleManager {
 
       // Point over the vertex
       new Style({
-        image: this.getVertexPointStyle(this.options.strokeColor),
+        image: this.getVertexPointStyle(this.options.strokeColor, true),
         geometry: (feature) => this.getFeatureVertex(feature),
       }),
     ];
@@ -104,7 +90,6 @@ class StyleManager {
 
   /**
    * Return the vertex of a feature as MultiPoint geometry.
-   * This function works for line and polygons.
    * @param feature - An OpenLayers feature
    * @returns
    */
@@ -117,8 +102,9 @@ class StyleManager {
     }
     if (geom instanceof LineString) {
       coordinates = geom.getCoordinates();
-    } else {
-      coordinates = undefined;
+    }
+    if (geom instanceof Point) {
+      coordinates = [geom.getCoordinates()];
     }
 
     return coordinates ? new MultiPoint(coordinates) : undefined;
@@ -129,16 +115,25 @@ class StyleManager {
    * @param pointColor
    * @returns
    */
-  private getVertexPointStyle(pointColor: Color | ColorLike): Circle {
-    return new Circle({
-      radius: 5,
-      stroke: new Stroke({
+  private getVertexPointStyle(
+    pointColor: Color | ColorLike,
+    selected?: boolean
+  ): Circle {
+    let strokeStyle: Stroke | undefined;
+
+    if (selected) {
+      strokeStyle = new Stroke({
         color: `rgba(${WHITE}, 1)`,
         width: 2,
-      }),
+      });
+    }
+
+    return new Circle({
+      radius: 5,
       fill: new Fill({
         color: pointColor,
       }),
+      stroke: strokeStyle,
     });
   }
 

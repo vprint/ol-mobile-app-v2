@@ -1,32 +1,60 @@
 <script setup lang="ts">
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+
+interface SidePanelComponentProps {
+  width?: number;
+  height?: number;
+}
+
+const props = withDefaults(defineProps<SidePanelComponentProps>(), {
+  width: 400,
+  height: window.innerHeight - 50,
+});
+
+const windowHeight = ref(`${props.height}px`);
+const computedWidth = computed(() => `${props.width}px`);
+
 const emit = defineEmits(['close']);
 
 const thumbStyle: Partial<CSSStyleDeclaration> = {
   borderRadius: '5px',
 };
+
+const handleResize = (): void => {
+  windowHeight.value = `${window.innerHeight - 50}px`;
+};
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 
 <template>
   <div class="side-panel">
-    <!-- Header -->
-    <div class="row text-white items-center header merriweather shadow-4">
-      <div class="header-title">
-        <slot name="title"></slot>
-      </div>
-      <q-btn
-        flat
-        dense
-        round
-        icon="close"
-        class="app-button btn--no-hover"
-        @click="emit('close')"
-      />
-    </div>
-
     <!-- Main section -->
     <div class="content shadow-4">
-      <q-scroll-area class="fit" :thumb-style="thumbStyle">
-        <slot name="content"></slot>
+      <!-- Header -->
+      <div class="row text-white items-center header merriweather shadow-4">
+        <div class="title-center">
+          <slot name="title"></slot>
+        </div>
+        <q-btn
+          flat
+          dense
+          round
+          icon="close"
+          class="app-button btn--no-hover"
+          @click="emit('close')"
+        />
+      </div>
+      <q-scroll-area class="scroll-area" :thumb-style="thumbStyle">
+        <div class="pa-4">
+          <slot name="content"></slot>
+        </div>
       </q-scroll-area>
     </div>
 
@@ -43,42 +71,54 @@ const thumbStyle: Partial<CSSStyleDeclaration> = {
 </template>
 
 <style lang="scss" scoped>
-$side-panel-height: calc(100% - 50px);
-$content-width: 400px;
-
 .side-panel {
   position: absolute;
   left: 0;
-  height: $side-panel-height;
-  width: 430px;
+  height: v-bind('windowHeight');
+  width: v-bind('computedWidth');
   margin: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
 
   .header {
-    width: 100%;
+    width: calc(100% - 8px);
     min-height: 64px;
     background: $gradient;
     border-radius: 8px;
     display: flex;
     justify-content: space-between;
     padding: 8px 16px;
+    margin: 4px;
     font-size: 1.1rem;
     z-index: 2;
+
+    .title-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   }
 
   .content {
-    width: $content-width;
-    height: $side-panel-height;
+    width: v-bind('computedWidth');
+    flex: 1;
+    min-height: 0;
     background-color: $secondary;
-    justify-content: center;
-    border-radius: 0px 0px 8px 8px;
+    border-radius: 8px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    .scroll-area {
+      flex: 1;
+      min-height: 0;
+    }
   }
 
   .floating-footer {
     background-color: $secondary;
-    width: $content-width;
+    width: v-bind('computedWidth');
     margin-top: 8px;
     justify-content: center;
     border-radius: 8px;

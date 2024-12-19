@@ -1,37 +1,38 @@
 // Map imports
 
 // Vue/Quasar imports
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 
 // Store imports
 import { defineStore } from 'pinia';
-import { useMapStore } from './map-store';
+import { useMapInteractionStore } from './map-interaction-store';
 
 // Interface, type and enum imports
 
 // Others imports
-import Drawer from 'src/plugins/drawer';
+import { GeometryType } from 'src/enums/geometry.enum';
+import { MeasureEventType } from 'src/plugins/measure/Measure';
+import { Interactions } from 'src/enums/interactions.enum';
+
 // script
+const mis = useMapInteractionStore();
 
 export const useDrawStore = defineStore('draw', () => {
-  const isActive = ref(false);
-
-  const drawTest = new Drawer('test', {
-    strokeColor: 'rgba(232,32,192,1)',
-    fillColor: 'rgba(232,32,192,0.2)',
-  });
+  const isVisible = ref(false);
 
   function createNewPolygon(): void {
-    useMapStore().map.addInteraction(drawTest);
-    drawTest.addDrawFeature('Polygon');
+    mis.drawPlugin.addFeature(GeometryType.POLYGON);
+    mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function createNewLine(): void {
-    console.log('create new line');
+    mis.drawPlugin.addFeature(GeometryType.LINE_STRING);
+    mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function createNewPoint(): void {
-    console.log('create new point');
+    mis.drawPlugin.addFeature(GeometryType.POINT);
+    mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function undoModification(): void {
@@ -43,15 +44,29 @@ export const useDrawStore = defineStore('draw', () => {
   }
 
   function deleteDraw(): void {
-    console.log('delete');
+    mis.drawPlugin.getDrawModifier()?.removeFeature();
   }
+
+  function setVisible(active: boolean): void {
+    isVisible.value = active;
+  }
+
+  onMounted(() => {
+    mis.measurePlugin.on(
+      // @ts-expect-error OL Event type error
+      MeasureEventType.MEASURE_END,
+      mis.enableInteraction(Interactions.SELECTOR, true)
+    );
+  });
+
   return {
-    isActive,
+    isVisible,
     createNewPolygon,
     createNewLine,
     createNewPoint,
     undoModification,
     RedoModification,
     deleteDraw,
+    setVisible,
   };
 });

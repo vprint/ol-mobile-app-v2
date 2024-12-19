@@ -154,7 +154,7 @@ function fitView(): void {
 <style lang="scss" scoped>
 .app-button {
   &.is-found {
-    color: rgb(255, 165, 0);
+    color: $orange;
   }
 }
 </style>

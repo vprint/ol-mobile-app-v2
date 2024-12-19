@@ -104,8 +104,8 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * @param setZoom
    */
   function setPanelPadding(isOpen: boolean, feature?: Feature): void {
-    const openPadding = [0, -800, 0, 0];
-    const closePadding = [0, 0, 0, -800];
+    const openPadding = [0, -400, 0, 0];
+    const closePadding = [0, 0, 0, -400];
     mas.setPaddingAndExtent(isOpen ? openPadding : closePadding, feature);
   }
 

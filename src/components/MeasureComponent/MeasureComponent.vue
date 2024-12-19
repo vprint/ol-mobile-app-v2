@@ -11,6 +11,24 @@ import { GeometryType } from '../../enums/geometry.enum';
 
 // Script
 const mes = useMeasureStore();
+
+const measureButtonList = [
+  {
+    icon: 'straighten',
+    action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
+    tooltip: 'Distance measurement',
+  },
+  {
+    icon: 'square_foot',
+    action: (): void => mes.addMeasure(GeometryType.POLYGON),
+    tooltip: 'Area measurement',
+  },
+  {
+    icon: 'delete',
+    action: (): void => mes.removeAllMeasure(),
+    tooltip: 'Remove all measurement',
+  },
+];
 </script>
 
 <template>
@@ -19,73 +37,71 @@ const mes = useMeasureStore();
     icon="sym_s_straighten"
     :text-color="$q.platform.is.mobile ? 'primary' : undefined"
     class="app-button btn--no-hover"
-    @click="mes.removeMeasure"
+    @click="mes.abortCurrentMeasure()"
   >
-    <q-menu
-      v-model="mes.measureMenu"
-      square
-      :offset="[-5, 10]"
-      class="bg-secondary text-primary"
-    >
+    <q-menu v-model="mes.measureMenu" :offset="[0, 10]" class="menu-measure">
       <q-list>
         <q-item
+          v-for="(item, index) in measureButtonList"
+          :key="index"
           v-close-popup
           clickable
-          @click="mes.addMeasure(GeometryType.LINE_STRING)"
+          class="item no-focus no-border"
+          @click="item.action"
         >
-          <q-item-section>
-            <q-icon name="straighten" class="app-button btn--no-hover" />
+          <q-item-section avatar>
+            <q-avatar class="avatar" :icon="item.icon">
+              <q-tooltip
+                anchor="bottom middle"
+                self="bottom middle"
+                transition-show="scale"
+                transition-hide="scale"
+                :delay="1000"
+                style="border-radius: 0"
+              >
+                {{ item.tooltip }}
+              </q-tooltip>
+            </q-avatar>
           </q-item-section>
-          <q-tooltip
-            anchor="bottom middle"
-            self="bottom middle"
-            transition-show="scale"
-            transition-hide="scale"
-            :delay="1000"
-            style="border-radius: 0"
-          >
-            Distance measurement
-          </q-tooltip>
-        </q-item>
-
-        <q-item
-          v-close-popup
-          clickable
-          @click="mes.addMeasure(GeometryType.POLYGON)"
-        >
-          <q-item-section>
-            <q-icon name="square_foot" class="app-button btn--no-hover" />
-          </q-item-section>
-          <q-tooltip
-            anchor="bottom middle"
-            self="bottom middle"
-            transition-show="scale"
-            transition-hide="scale"
-            :delay="1000"
-            style="border-radius: 0"
-          >
-            Area measurement
-          </q-tooltip>
-        </q-item>
-
-        <q-item v-close-popup clickable @click="mes.removeAllMeasure()">
-          <q-item-section>
-            <q-icon name="delete" class="app-button btn--no-hover" />
-          </q-item-section>
-          <q-tooltip
-            anchor="bottom middle"
-            self="bottom middle"
-            transition-show="scale"
-            transition-hide="scale"
-            :delay="1000"
-            style="border-radius: 0"
-          >
-            Remove all measurement
-          </q-tooltip>
         </q-item>
       </q-list>
     </q-menu>
   </q-btn>
 </template>
 
-<style lang="scss"></style>
+<style lang="scss">
+.no-focus {
+  .q-focus-helper {
+    display: none !important;
+  }
+}
+
+.menu-measure {
+  background: $secondary;
+  padding: 0px !important;
+
+  .item {
+    padding: 0px !important;
+    transition: all 0.25s;
+
+    .avatar {
+      background-color: rgba($orange, 1);
+      color: rgba($secondary, 0.75);
+      transition: all 0.25s;
+
+      &:hover {
+        background-color: rgba($orange-hover, 1);
+        color: rgba($secondary, 1);
+      }
+    }
+  }
+
+  .q-item__section--avatar {
+    min-width: 0 !important;
+  }
+
+  .q-item__section--side {
+    padding: 8px;
+  }
+}
+</style>
