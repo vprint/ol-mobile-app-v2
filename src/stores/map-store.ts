@@ -25,7 +25,7 @@ import {
   addRasterBackgroundLayers,
   addVectorTileLayers,
   addOGCLayer,
-} from 'src/plugins/LayerImporter';
+} from 'src/services/LayerImporter';
 import { MapSettings } from 'src/enums/map.enum';
 
 /**

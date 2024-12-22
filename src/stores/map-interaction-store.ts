@@ -15,12 +15,12 @@ import { ref, watch } from 'vue';
 import { useMapStore } from './map-store';
 
 // Others imports
-import VectorTileSelect from 'src/plugins/VectorTileSelect';
-import Measure from 'src/plugins/measure/Measure';
+import VectorTileSelect from 'src/services/VectorTileSelect';
+import Measure from 'src/services/measure/Measure';
+import Drawer from 'src/services/drawer/Drawer';
 
 // Interface imports
 import { Interactions } from 'src/enums/interactions.enum';
-import Drawer from 'src/plugins/drawer/Drawer';
 
 /**
  * Store and manage mapInteraction.

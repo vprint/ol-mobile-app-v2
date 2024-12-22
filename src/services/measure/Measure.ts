@@ -7,12 +7,12 @@ import { Interaction } from 'ol/interaction';
 import { Feature, Overlay } from 'ol';
 import { getArea, getLength } from 'ol/sphere';
 import { LineString, Polygon } from 'ol/geom';
-import { DrawStartEvent } from '../drawer/drawStartEvent';
-import { DrawRemoveEvent } from '../drawer/DrawRemoveEvent';
+import { DrawStartEvent } from '../../services/drawer/drawStartEvent';
+import { DrawRemoveEvent } from '../../services/drawer/DrawRemoveEvent';
 import { DrawEventType } from 'src/enums/draw-types.enum';
 import Event from 'ol/events/Event.js';
 import Map from 'ol/Map';
-import Drawer from '../drawer/Drawer';
+import Drawer from '../../services/drawer/Drawer';
 
 /**
  * Measure event definition

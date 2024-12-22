@@ -39,7 +39,7 @@ class Drawer extends Interaction {
 
   /**
    * Initialize the component
-   * @param map OpenLayers map
+   * @param map - OpenLayers map
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
@@ -48,7 +48,7 @@ class Drawer extends Interaction {
 
   /**
    * Add the draw layer to the map
-   * @param map OpenLayers map
+   * @param map - OpenLayers map
    */
   private addDrawLayer(map: Map): void {
     const drawLayer = new VectorLayer({
@@ -106,7 +106,7 @@ class Drawer extends Interaction {
 
   /**
    * Manage draw-end and draw-abort event.
-   * @param drawInteraction Draw plugin
+   * @param drawInteraction - Draw plugin
    */
   private manageEvent(drawInteraction: Draw): void {
     this.endEvent = drawInteraction.on(DrawEventType.DRAW_END, () => {
@@ -184,6 +184,11 @@ class Drawer extends Interaction {
     return this.drawModifier;
   }
 
+  /**
+   * Manage keypress events.
+   * @param evt - The keyboard event.
+   * @returns
+   */
   private handleKeyPress = (evt: KeyboardEvent): void => {
     switch (evt.key) {
       case KeyEventType.ESCAPE:

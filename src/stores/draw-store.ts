@@ -11,7 +11,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 
 // Others imports
 import { GeometryType } from 'src/enums/geometry.enum';
-import { MeasureEventType } from 'src/plugins/measure/Measure';
+import { MeasureEventType } from 'src/services/measure/Measure';
 import { Interactions } from 'src/enums/interactions.enum';
 
 // script
@@ -53,7 +53,7 @@ export const useDrawStore = defineStore('draw', () => {
 
   onMounted(() => {
     mis.measurePlugin.on(
-      // @ts-expect-error OL Event type error
+      // @ts-expect-error - Type problems due to typescript / ol
       MeasureEventType.MEASURE_END,
       mis.enableInteraction(Interactions.SELECTOR, true)
     );

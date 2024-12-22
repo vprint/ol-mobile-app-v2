@@ -8,7 +8,7 @@ import { useMapStore } from 'src/stores/map-store';
 // Map imports
 
 // Others imports
-import Location, { LocationEventsType } from 'src/plugins/Location';
+import Location, { LocationEventsType } from 'src/services/Location';
 import { Interactions } from 'src/enums/interactions.enum';
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';

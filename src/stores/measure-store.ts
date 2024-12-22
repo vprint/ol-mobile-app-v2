@@ -10,7 +10,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 // Others imports
 
 // Interface imports
-import { MeasureEventType } from 'src/plugins/measure/Measure';
+import { MeasureEventType } from 'src/services/measure/Measure';
 
 // Enum imports
 import { Interactions } from 'src/enums/interactions.enum';

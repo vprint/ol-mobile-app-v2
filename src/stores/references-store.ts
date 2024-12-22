@@ -3,15 +3,17 @@ import { onMounted, Ref, ref } from 'vue';
 
 // Store imports
 import { defineStore } from 'pinia';
+import { useApiClientStore } from './api-client';
 
 // Others imports
-import ApiRequestor from 'src/services/ApiRequestor';
 
 // Interface imports
 import { ISiteList } from 'src/interface/ISite';
 import { IIndividual } from 'src/interface/IIndividual';
 import { ISiteType } from 'src/interface/ISiteType';
 import { IProject } from 'src/interface/IProject';
+
+const acs = useApiClientStore();
 
 /**
  * This store provide application type references.
@@ -30,10 +32,10 @@ export const useReferencesStore = defineStore('references', () => {
    * Initialize values
    */
   onMounted(async () => {
-    individuals.value = (await ApiRequestor.getIndividualList()) ?? [];
-    siteList.value = (await ApiRequestor.getSiteList()) ?? [];
-    siteTypeList.value = (await ApiRequestor.getSiteTypeList()) ?? [];
-    projectList.value = (await ApiRequestor.getProjectList()) ?? [];
+    individuals.value = (await acs.getIndividualList()) ?? [];
+    siteList.value = (await acs.getSiteList()) ?? [];
+    siteTypeList.value = (await acs.getSiteTypeList()) ?? [];
+    projectList.value = (await acs.getProjectList()) ?? [];
 
     isReferencesInitialized.value = true;
   });

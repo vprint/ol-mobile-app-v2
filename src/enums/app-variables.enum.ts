@@ -1,8 +1,11 @@
-export enum AppVariables {
-  APPLICATION_NAME = 'Archaeo-Web',
-  FEATURE_SERVER = 'http://localhost:9010/FeatureServer',
-  DATABASE_SCHEMA = 'data',
-  VECTOR_TILE_SERVER = 'http://localhost:8083',
-  QGIS_SERVER = 'http://localhost:8081/cgi-bin/qgis_mapserv.fcgi.exe?',
-  MAPPROXY_SERVER = 'http://localhost:8082',
-}
+export const AppVariables = {
+  APPLICATION_NAME: 'Archaeo-Web',
+
+  VECTOR_TILE_SERVER: `${import.meta.env.VITE_API_URL}:${
+    import.meta.env.VITE_VECTOR_TILE_SERVER_PORT
+  }`,
+
+  QGIS_SERVER: `${import.meta.env.VITE_API_URL}:${
+    import.meta.env.VITE_QGIS_SERVER_PORT
+  }`,
+} as const;
