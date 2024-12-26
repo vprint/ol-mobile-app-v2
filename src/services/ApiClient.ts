@@ -1,15 +1,14 @@
-import NotificationService from 'src/services/Notifier';
+import NotificationService from 'src/services/notifier/Notifier';
 import wretch from 'wretch';
 
 /**
  * API Client for handling HTTP requests.
  */
 class ApiClient {
-  private baseUrl: string;
+  private notificationService: NotificationService;
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  constructor(baseUrl: string = import.meta.env.VITE_API_URL!) {
-    this.baseUrl = baseUrl;
+  constructor() {
+    this.notificationService = new NotificationService();
   }
 
   /**
@@ -17,14 +16,15 @@ class ApiClient {
    * @param endpoint - The endpoint to request.
    * @returns The fetched data.
    */
-  public async getJSON<T>(endpoint: string): Promise<T | undefined> {
-    console.log('appel :', `${this.baseUrl}:${endpoint}`);
-    const response = wretch(`${this.baseUrl}:${endpoint}`)
+  public async getJSON<ObjectType>(
+    endpoint: string
+  ): Promise<ObjectType | undefined> {
+    const response = wretch(endpoint)
       .get()
-      .json<T>()
+      .json<ObjectType>()
       .catch((error) => {
         console.error(`${error.status}: ${error.message}`);
-        new NotificationService().pushError(error.status, error.message);
+        this.notificationService.pushError(error.status, error.message);
         return undefined;
       });
 

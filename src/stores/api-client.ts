@@ -5,6 +5,7 @@ import { ISiteType } from 'src/interface/ISiteType';
 import { FeatureCollection } from 'geojson';
 import { defineStore } from 'pinia';
 import { Reactive } from 'vue';
+import { AppVariables } from 'src/enums/app-variables.enum';
 import ApiClient from '../services/ApiClient';
 
 export enum cacheEntry {
@@ -24,6 +25,8 @@ interface ApiRequestorCache {
 }
 
 export const useApiClientStore = defineStore('apiClient', () => {
+  const apiClient = new ApiClient();
+
   const cache: Reactive<ApiRequestorCache> = {
     site: undefined,
     individualList: undefined,
@@ -60,10 +63,8 @@ export const useApiClientStore = defineStore('apiClient', () => {
     siteId: number
   ): Promise<FeatureCollection | undefined> {
     clearCacheByReference(cacheEntry.SITE);
-    cache.site = await new ApiClient().getJSON<FeatureCollection>(
-      `${
-        import.meta.env.VITE_FUNCTION_SERVER
-      }.get_site_by_id/items.json?id=${siteId}`
+    cache.site = await apiClient.getJSON<FeatureCollection>(
+      `${AppVariables.FUNCTION_SERVER}.get_site_by_id/items.json?id=${siteId}`
     );
     return cache.site;
   }
@@ -74,10 +75,8 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getIndividualList(): Promise<IIndividual[] | undefined> {
     if (!cache.individualList) {
-      cache.individualList = await new ApiClient().getJSON<IIndividual[]>(
-        `${
-          import.meta.env.VITE_FUNCTION_SERVER
-        }.get_individual_list/items.json?`
+      cache.individualList = await apiClient.getJSON<IIndividual[]>(
+        `${AppVariables.FUNCTION_SERVER}.get_individual_list/items.json?`
       );
     }
     return cache.individualList;
@@ -89,8 +88,8 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getProjectList(): Promise<IProject[] | undefined> {
     if (!cache.projectList) {
-      cache.projectList = await new ApiClient().getJSON<IProject[]>(
-        `${import.meta.env.VITE_FUNCTION_SERVER}.get_project_list/items.json?`
+      cache.projectList = await apiClient.getJSON<IProject[]>(
+        `${AppVariables.FUNCTION_SERVER}.get_project_list/items.json?`
       );
     }
     return cache.projectList;
@@ -103,10 +102,8 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getSiteList(limit = 1000): Promise<ISiteList[] | undefined> {
     if (!cache.siteList) {
-      cache.siteList = await new ApiClient().getJSON<ISiteList[]>(
-        `${
-          import.meta.env.VITE_FUNCTION_SERVER
-        }.get_site_list/items.json?limit=${limit}`
+      cache.siteList = await apiClient.getJSON<ISiteList[]>(
+        `${AppVariables.FUNCTION_SERVER}.get_site_list/items.json?limit=${limit}`
       );
     }
     return cache.siteList;
@@ -118,8 +115,8 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getSiteTypeList(): Promise<ISiteType[] | undefined> {
     if (!cache.siteTypeList) {
-      cache.siteTypeList = await new ApiClient().getJSON<ISiteType[]>(
-        `${import.meta.env.VITE_FUNCTION_SERVER}.get_sitetypes_list/items.json?`
+      cache.siteTypeList = await apiClient.getJSON<ISiteType[]>(
+        `${AppVariables.FUNCTION_SERVER}.get_sitetypes_list/items.json?`
       );
     }
     return cache.siteTypeList;

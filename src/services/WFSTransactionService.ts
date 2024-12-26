@@ -4,7 +4,7 @@ import { Circle } from 'ol/geom';
 import { fromCircle } from 'ol/geom/Polygon';
 import { TransactionMode } from 'src/enums/transaction.enum';
 import WFS from 'ol/format/WFS';
-import NotificationService from './Notifier';
+import NotificationService from './notifier/Notifier';
 
 interface ICheckingMessage {
   title: string;

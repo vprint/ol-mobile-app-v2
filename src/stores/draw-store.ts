@@ -13,6 +13,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 import { GeometryType } from 'src/enums/geometry.enum';
 import { MeasureEventType } from 'src/services/measure/Measure';
 import { Interactions } from 'src/enums/interactions.enum';
+import NotificationService from 'src/services/notifier/Notifier';
 
 // script
 const mis = useMapInteractionStore();
@@ -40,6 +41,10 @@ export const useDrawStore = defineStore('draw', () => {
   }
 
   function RedoModification(): void {
+    new NotificationService().pushSuccess('Super !', 'Ca marche !');
+    new NotificationService().pushWarning('Super !', 'Ca marche !');
+    new NotificationService().pushError('Super !', 'Ca marche !');
+    new NotificationService().pushInfo('Super !', 'Ca marche !');
     console.log('redo');
   }
 
