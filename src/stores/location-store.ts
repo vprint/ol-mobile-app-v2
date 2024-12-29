@@ -15,10 +15,21 @@ import Location, { LocationEventsType } from 'src/services/Location';
 // Others imports
 
 // script
-enum TOOLTIP_MESSAGE {
+enum TooltipMessage {
   ACTIVATE_LOCATION = 'Activate location',
   FIT_VIEW_TO_LOCATION = 'Fit the view to location',
   DEACTIVATE_LOCATION = 'Deactivate location',
+}
+
+enum LocationIcons {
+  INACTIVE = 'sym_s_location_on',
+  ACTIVE = 'location_on',
+  LOCATION_ERROR = 'sym_s_location_off',
+}
+
+enum LocationColors {
+  WHITE = 'rgba(222,255,255, 1)',
+  ORANGE = 'rgba(255, 165, 0, 1)',
 }
 
 export const useLocationStore = defineStore('location', () => {
@@ -27,9 +38,10 @@ export const useLocationStore = defineStore('location', () => {
   const islocationFound = ref(false);
   const isViewCentered = ref(false);
   const hasError = ref(false);
-  const tooltipMessage = ref(TOOLTIP_MESSAGE.ACTIVATE_LOCATION);
-  const color = ref('white');
-  const icon = ref('sym_s_location_on');
+
+  const tooltipMessage = ref(TooltipMessage.ACTIVATE_LOCATION);
+  const color = ref(LocationColors.WHITE);
+  const icon = ref(LocationIcons.INACTIVE);
 
   const location = new Location(Interactions.LOCATION);
   mas.map.addInteraction(location);
@@ -40,8 +52,8 @@ export const useLocationStore = defineStore('location', () => {
     () => {
       islocationFound.value = true;
       isViewCentered.value = true;
-      icon.value = 'location_on';
-      color.value = 'orange';
+      icon.value = LocationIcons.ACTIVE;
+      color.value = LocationColors.ORANGE;
     }
   );
 
@@ -50,9 +62,9 @@ export const useLocationStore = defineStore('location', () => {
     LocationEventsType.VIEW_MODIFICATION,
     () => {
       isViewCentered.value = false;
-      tooltipMessage.value = TOOLTIP_MESSAGE.FIT_VIEW_TO_LOCATION;
-      icon.value = 'location_on';
-      color.value = 'white';
+      tooltipMessage.value = TooltipMessage.FIT_VIEW_TO_LOCATION;
+      icon.value = LocationIcons.ACTIVE;
+      color.value = LocationColors.WHITE;
     }
   );
 
@@ -61,8 +73,8 @@ export const useLocationStore = defineStore('location', () => {
     LocationEventsType.LOCATION_ERROR,
     () => {
       hasError.value = true;
-      icon.value = 'sym_s_location_off';
-      color.value = 'white';
+      icon.value = LocationIcons.LOCATION_ERROR;
+      color.value = LocationColors.WHITE;
     }
   );
 
