@@ -8,7 +8,7 @@ import { defineStore, storeToRefs } from 'pinia';
 
 // Store imports
 import { useMapInteractionStore } from './map-interaction-store';
-import { useApiClientStore } from './api-client';
+import { useApiClientStore } from './api-client-store';
 import { useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 

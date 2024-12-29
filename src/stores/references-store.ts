@@ -3,7 +3,7 @@ import { onMounted, Ref, ref } from 'vue';
 
 // Store imports
 import { defineStore } from 'pinia';
-import { useApiClientStore } from './api-client';
+import { useApiClientStore } from './api-client-store';
 
 // Others imports
 

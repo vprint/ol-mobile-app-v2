@@ -108,14 +108,6 @@ class Location extends Interaction {
   }
 
   /**
-   * Get theaccuracy feature
-   * @returns Accuracy feature (polygone).
-   */
-  public getAccuracyFeature(): Feature | undefined {
-    return this.accuracyFeature;
-  }
-
-  /**
    * Get information about view centering
    * @returns true if the view is centered on the accuracy feature, false otherwise.
    */
@@ -203,28 +195,22 @@ class Location extends Interaction {
   }
 
   /**
-   * Enable / disable tracking
-   * @param enable Should the tracking be enabled ?
+   * Set the tracking active
+   * @param enable - enable / disable the tracking.
    */
-  public enableTracking(enable: boolean): void {
+  public setActive(enable: boolean): void {
+    super.setActive(enable);
     this.geolocation.setTracking(enable);
 
     this.locationLayer.getSource()?.clear();
     this.isLocationFound = false;
 
-    unByKey(this.featureAddTracker);
-    unByKey(this.accuracyTracker);
-    unByKey(this.positionTracker);
-    unByKey(this.errorTracker);
+    this.removeEventsListeners();
 
     if (enable) {
       this.positionFeature = new Feature();
-      this.positionFeature.setStyle(this.positionStyle);
 
-      this.accuracyFeature = new Feature();
-      this.accuracyFeature.setStyle(this.accuracyStyle);
-
-      this.locationLayer
+      this.accuracyFeature = this.locationLayer
         .getSource()
         ?.addFeatures([this.positionFeature, this.accuracyFeature]);
 
@@ -232,6 +218,30 @@ class Location extends Interaction {
       this.trackPosition();
       this.handleError();
     }
+  }
+
+  private getLocationPoint(): Feature {
+    const feature = new Feature();
+    feature.setStyle(this.positionStyle);
+
+    return feature;
+  }
+
+  private getAccuracyFeature(): Feature {
+    const feature = new Feature();
+    feature.setStyle(this.accuracyStyle);
+
+    return feature;
+  }
+
+  /**
+   * Remove all the events listeners.
+   */
+  private removeEventsListeners(): void {
+    unByKey(this.featureAddTracker);
+    unByKey(this.accuracyTracker);
+    unByKey(this.positionTracker);
+    unByKey(this.errorTracker);
   }
 }
 
