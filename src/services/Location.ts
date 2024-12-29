@@ -20,22 +20,38 @@ export enum LocationEventsType {
   VIEW_MODIFICATION = 'location:view-modification',
 }
 
-enum LocationParameters {
-  ANIMATION_DURATION = 500,
-  MAX_ZOOM = 15,
-}
-
-enum LocationStyle {
-  POSITION_COLOR = 'rgb(51, 153, 204)',
-  POSITION_HIGHLIGHT = 'rgba(255,255,255,1)',
-  ACCURACY_STYLE = 'rgba(51, 153, 204, 0.2)',
-}
-
 enum GeolocationEvents {
   ERROR = 'error',
   POSITION_CHANGE = 'change:position',
   ACCURACY_CHANGE = 'change:accuracyGeometry',
   VIEW_CHANGE = 'change',
+}
+
+enum LocationParameters {
+  ANIMATION_DURATION = 500,
+  MAX_ZOOM = 15,
+}
+
+enum LocationColors {
+  POSITION_COLOR = 'rgb(51, 153, 204)',
+  POSITION_HIGHLIGHT = 'rgba(255,255,255,1)',
+  ACCURACY_STYLE = 'rgba(51, 153, 204, 0.2)',
+}
+
+interface LocationStyle {
+  position: Style;
+  accuracy: Style;
+}
+
+interface LocationFeatures {
+  position: Feature;
+  accuracy: Feature;
+}
+
+interface LocationOptions {
+  interactionName: string;
+  positionStyle?: Style;
+  accuracyStyle?: Style;
 }
 
 /**
@@ -50,29 +66,38 @@ export class LocationEvents extends Event {}
  * @extends Interaction
  */
 class Location extends Interaction {
-  private positionFeature: Feature | undefined;
-  private accuracyFeature: Feature | undefined;
-  private locationLayer: VectorLayer;
-  private positionStyle: Style;
-  private accuracyStyle: Style;
-  private isViewCentered = false;
-  private isLocationFound = false;
-  private geolocation: Geolocation;
-  private viewChangeListener!: EventsKey;
-  private accuracyTracker!: EventsKey;
-  private positionTracker!: EventsKey;
-  private errorTracker!: EventsKey;
+  private readonly features: LocationFeatures;
+  private readonly locationLayer: VectorLayer;
+  private readonly geolocation: Geolocation;
+  private readonly style: LocationStyle;
 
-  constructor(
-    interactionName: string,
-    newPositionStyle?: Style,
-    newAccuracyStyle?: Style
-  ) {
+  private eventListeners: {
+    view?: EventsKey | EventsKey[];
+    accuracy?: EventsKey | EventsKey[];
+    position?: EventsKey | EventsKey[];
+    error?: EventsKey | EventsKey[];
+  } = {};
+
+  private state = {
+    isViewCentered: false,
+    isLocationFound: false,
+  };
+
+  constructor(options: LocationOptions) {
     super();
-    this.set('name', interactionName);
+    this.set('name', options.interactionName);
+
+    this.style = {
+      position: options.positionStyle ?? this.getPositionStyle(),
+      accuracy: options.accuracyStyle ?? this.getAccuracyStyle(),
+    };
+
+    this.features = {
+      position: this.getLocationPoint(),
+      accuracy: this.getAccuracyFeature(),
+    };
+
     this.locationLayer = this.getLocationLayer();
-    this.positionStyle = newPositionStyle ?? this.getPositionStyle();
-    this.accuracyStyle = newAccuracyStyle ?? this.getAccuracyStyle();
     this.geolocation = this.getGeolocation();
   }
 
@@ -89,62 +114,50 @@ class Location extends Interaction {
   /**
    * Throw an error event an log the error.
    */
-  private addErrorHandler(): void {
-    this.errorTracker = this.geolocation.on(
-      GeolocationEvents.ERROR,
-      (error) => {
-        console.error(error);
-        this.dispatchEvent(
-          new LocationEvents(LocationEventsType.LOCATION_ERROR)
-        );
-      }
-    );
+  private getErrorHandler(): EventsKey | EventsKey[] {
+    return this.geolocation.on(GeolocationEvents.ERROR, (error) => {
+      console.error(error);
+      this.dispatchEvent(new LocationEvents(LocationEventsType.LOCATION_ERROR));
+    });
   }
 
   /**
    * Track accuracy change and update the accuracy geometry.
    */
-  private addAccuracyTracker(): void {
-    this.accuracyTracker = this.geolocation.on(
-      GeolocationEvents.ACCURACY_CHANGE,
-      () => {
-        const accuracy = this.geolocation.getAccuracyGeometry();
-        this.accuracyFeature?.setGeometry(accuracy ? accuracy : undefined);
-      }
-    );
+  private getAccuracyTracker(): EventsKey | EventsKey[] {
+    return this.geolocation.on(GeolocationEvents.ACCURACY_CHANGE, () => {
+      const accuracy = this.geolocation.getAccuracyGeometry();
+      this.features.accuracy.setGeometry(accuracy ?? undefined);
+    });
   }
 
   /**
    * Track position change and update position geometry.
    */
-  private addPositionTracker(): void {
-    this.positionTracker = this.geolocation.on(
-      GeolocationEvents.POSITION_CHANGE,
-      () => {
-        const coordinates = this.geolocation.getPosition();
-        if (coordinates) {
-          const point = new Point(coordinates);
-          this.positionFeature?.setGeometry(point);
+  private getPositionTracker(): EventsKey | EventsKey[] {
+    return this.geolocation.on(GeolocationEvents.POSITION_CHANGE, () => {
+      const coordinates = this.geolocation.getPosition();
 
-          if (!this.isLocationFound) {
-            this.fitViewToLocation(this.onLocationFound());
-          }
+      if (coordinates) {
+        const point = new Point(coordinates);
+        this.features.position.setGeometry(point);
+        if (!this.state.isLocationFound) {
+          this.handleFirstLocation();
         }
       }
-    );
+    });
   }
 
   /**
-   * Get the location found callback.
-   * @returns - The callback.
+   * Handle the user location found event.
    */
-  private onLocationFound(): () => void {
-    return (): void => {
-      this.isLocationFound = true;
+  private handleFirstLocation(): void {
+    this.fitViewToLocation(() => {
+      this.state.isLocationFound = true;
       this.dispatchEvent(new LocationEvents(LocationEventsType.LOCATION_FOUND));
       this.addViewChangeListener();
-      this.isViewCentered = true;
-    };
+      this.state.isViewCentered = true;
+    });
   }
 
   /**
@@ -152,12 +165,11 @@ class Location extends Interaction {
    */
   public addViewChangeListener = (): void => {
     const map = this.getMap();
-
     if (map) {
-      this.viewChangeListener = map
+      this.eventListeners.view = map
         .getView()
         .once(GeolocationEvents.VIEW_CHANGE, (): void => {
-          this.isViewCentered = false;
+          this.state.isViewCentered = false;
           this.dispatchEvent(
             new LocationEvents(LocationEventsType.VIEW_MODIFICATION)
           );
@@ -170,7 +182,7 @@ class Location extends Interaction {
    * @param callback Function to execute after the map fit.
    */
   public fitViewToLocation(callback?: () => void): void {
-    const extent = this.accuracyFeature?.getGeometry()?.getExtent();
+    const extent = this.features.accuracy.getGeometry()?.getExtent();
 
     if (extent) {
       this.getMap()
@@ -188,12 +200,9 @@ class Location extends Interaction {
    * Set the tracking active.
    * @param enable - enable / disable the tracking.
    */
-  public setActive(enable: boolean): void {
-    super.setActive(enable);
+  public enableTracking(enable: boolean): void {
     this.reset();
-
     this.geolocation.setTracking(enable);
-
     if (enable) {
       this.addLocationFeatures();
       this.addEventsListeners();
@@ -205,12 +214,12 @@ class Location extends Interaction {
    * feature and add it to the location layer.
    */
   private addLocationFeatures(): void {
-    this.positionFeature = this.getLocationPoint();
-    this.accuracyFeature = this.getAccuracyFeature();
+    this.features.position = this.getLocationPoint();
+    this.features.accuracy = this.getAccuracyFeature();
 
     this.locationLayer
       .getSource()
-      ?.addFeatures([this.positionFeature, this.accuracyFeature]);
+      ?.addFeatures([this.features.position, this.features.accuracy]);
   }
 
   /**
@@ -222,10 +231,10 @@ class Location extends Interaction {
       image: new CircleStyle({
         radius: 6,
         fill: new Fill({
-          color: LocationStyle.POSITION_COLOR,
+          color: LocationColors.POSITION_COLOR,
         }),
         stroke: new Stroke({
-          color: LocationStyle.POSITION_HIGHLIGHT,
+          color: LocationColors.POSITION_HIGHLIGHT,
           width: 2,
         }),
       }),
@@ -239,7 +248,7 @@ class Location extends Interaction {
   private getAccuracyStyle(): Style {
     return new Style({
       fill: new Fill({
-        color: LocationStyle.ACCURACY_STYLE,
+        color: LocationColors.ACCURACY_STYLE,
       }),
     });
   }
@@ -263,7 +272,7 @@ class Location extends Interaction {
    */
   private getLocationPoint(): Feature {
     const feature = new Feature();
-    feature.setStyle(this.positionStyle);
+    feature.setStyle(this.style.position);
     return feature;
   }
 
@@ -273,7 +282,7 @@ class Location extends Interaction {
    */
   private getAccuracyFeature(): Feature {
     const feature = new Feature();
-    feature.setStyle(this.accuracyStyle);
+    feature.setStyle(this.style.accuracy);
     return feature;
   }
 
@@ -281,19 +290,19 @@ class Location extends Interaction {
    * Add location events listeners.
    */
   private addEventsListeners(): void {
-    this.addAccuracyTracker();
-    this.addPositionTracker();
-    this.addErrorHandler();
+    this.eventListeners.accuracy = this.getAccuracyTracker();
+    this.eventListeners.position = this.getPositionTracker();
+    this.eventListeners.error = this.getErrorHandler();
   }
 
   /**
    * Remove all location events listeners.
    */
   private removeEventsListeners(): void {
-    unByKey(this.viewChangeListener);
-    unByKey(this.accuracyTracker);
-    unByKey(this.positionTracker);
-    unByKey(this.errorTracker);
+    Object.values(this.eventListeners).forEach((listener) => {
+      unByKey(listener);
+    });
+    this.eventListeners = {};
   }
 
   /**
@@ -312,7 +321,7 @@ class Location extends Interaction {
    */
   private reset(): void {
     this.locationLayer.getSource()?.clear();
-    this.isLocationFound = false;
+    this.state.isLocationFound = false;
     this.removeEventsListeners();
   }
 }
