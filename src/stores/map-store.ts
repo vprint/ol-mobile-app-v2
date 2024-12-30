@@ -25,8 +25,9 @@ import {
   addRasterBackgroundLayers,
   addVectorTileLayers,
   addOGCLayer,
-} from 'src/plugins/LayerImporter';
+} from 'src/services/LayerImporter';
 import { MapSettings } from 'src/enums/map.enum';
+import { Extent } from 'ol/extent';
 
 /**
  * This store provide the application map and functionnalities related to the map
@@ -56,10 +57,8 @@ export const useMapStore = defineStore('map', () => {
    */
   function getLayerById(id: string): Layer | undefined {
     return map.getAllLayers().find((layer) => {
-      const layerProperties = layer.get(LAYER_PROPERTIES_FIELD) as
-        | ILayerProperties
-        | undefined;
-      return layerProperties?.id === id;
+      const properties = layer.get(LAYER_PROPERTIES_FIELD);
+      return properties?.id === id;
     });
   }
 
@@ -80,17 +79,10 @@ export const useMapStore = defineStore('map', () => {
       }
     }
 
-    const extent = feature
-      ? feature.getGeometry()?.getExtent()
-      : view.calculateExtent(map.getSize());
+    const extent = _getExtentFromFeature(feature);
 
     if (extent) {
-      view.fit(extent, {
-        maxZoom: newZoom,
-        padding: padding,
-        duration: 250,
-        easing: easeOut,
-      });
+      _fitMapView(extent, newZoom, padding);
     }
   }
 
@@ -138,17 +130,55 @@ export const useMapStore = defineStore('map', () => {
       },
     });
     map.addLayer(mapLibreLayer);
+    _addApplicationLayers(map, mapLibreLayer);
+    map.setTarget('map');
 
-    /**
-     * Add the application layers.
-     */
+    isMapInitialized.value = true;
+  }
+
+  /**
+   * Add the application layers.
+   * @param map - The OpenLayers map.
+   * @param mapLibreLayer - The MapLibre layer.
+   */
+  function _addApplicationLayers(map: Map, mapLibreLayer: MapLibreLayer): void {
     addVectorBackgroundLayers(mapLibreLayer, BACKGROUND_LAYERS_SETTINGS);
     addRasterBackgroundLayers(map, BACKGROUND_LAYERS_SETTINGS);
     addVectorTileLayers(map, VECTOR_TILE_LAYERS_SETTINGS);
     addOGCLayer(map, RASTER_LAYERS_SETTINGS);
+  }
 
-    map.setTarget('map');
-    isMapInitialized.value = true;
+  /**
+   * Returns the geographical extent of a feature or the
+   * current map view extent if no feature is provided.
+   * @param - Optional feature from which to calculate the extent.
+   * @returns - The extent.
+   * @private
+   */
+  function _getExtentFromFeature(feature?: Feature): Extent | undefined {
+    return feature
+      ? feature.getGeometry()?.getExtent()
+      : map.getView().calculateExtent(map.getSize());
+  }
+
+  /**
+   * Adjusts the map view to display the given
+   * extent with optional zoom level and padding.
+   * @param extent - The geographic extent to display.
+   * @param newZoom - The zoom level to apply.
+   * @param padding - Padding array in pixels.
+   */
+  function _fitMapView(
+    extent: Extent,
+    newZoom?: number,
+    padding?: number[]
+  ): void {
+    map.getView().fit(extent, {
+      maxZoom: newZoom,
+      padding: padding,
+      duration: 250,
+      easing: easeOut,
+    });
   }
 
   return {

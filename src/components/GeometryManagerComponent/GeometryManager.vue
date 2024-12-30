@@ -1,51 +1,58 @@
 <script setup lang="ts">
-import { useDrawStore } from 'src/stores/draw-store';
-
 // Map imports
 
 // Vue/Quasar imports
 
 // Store imports
+import { useDrawStore } from 'src/stores/draw-store';
 
 // Interface, type and enum imports
 
 // Others imports
 
 // script
-const ds = useDrawStore();
+const drs = useDrawStore();
+
+const geometryManagerButtons = [
+  {
+    action: (): void => drs.createNewPolygon(),
+    icon: 'sym_o_pentagon',
+  },
+  {
+    action: (): void => drs.createNewLine(),
+    icon: 'sym_o_timeline',
+  },
+  {
+    action: (): void => drs.createNewPoint(),
+    icon: 'sym_o_point_scan',
+  },
+  {
+    action: (): void => drs.undoModification(),
+    icon: 'sym_o_undo',
+  },
+  {
+    action: (): void => drs.RedoModification(),
+    icon: 'sym_o_redo',
+  },
+  {
+    action: (): void => drs.deleteDraw(),
+    icon: 'sym_o_delete',
+  },
+];
 </script>
 
 <template>
-  <div v-if="ds.isActive" class="q-pa-md draw-container">
+  <div v-if="drs.isVisible" class="q-pa-md draw-container">
     <q-btn-group rounded class="app-button-group">
       <q-btn
+        v-for="(button, index) in geometryManagerButtons"
+        :key="index"
         rounded
         class="app-button btn--no-hover"
-        @click="ds.createNewPolygon"
-        ><q-icon name="sym_o_pentagon"
-      /></q-btn>
-      <q-btn rounded class="app-button btn--no-hover" @click="ds.createNewLine"
-        ><q-icon name="sym_o_timeline"
-      /></q-btn>
-      <q-separator vertical class="draw-separator" />
-
-      <q-btn
-        rounded
-        class="app-button btn--no-hover"
-        @click="ds.undoModification"
-        ><q-icon name="sym_o_undo"
-      /></q-btn>
-      <q-btn
-        rounded
-        class="app-button btn--no-hover"
-        @click="ds.RedoModification"
-        ><q-icon name="sym_o_redo"
-      /></q-btn>
-      <q-separator vertical class="draw-separator" />
-
-      <q-btn rounded class="app-button btn--no-hover" @click="ds.deleteDraw"
-        ><q-icon name="sym_o_delete"
-      /></q-btn>
+        @click="button.action"
+      >
+        <q-icon :name="button.icon" />
+      </q-btn>
     </q-btn-group>
   </div>
 </template>

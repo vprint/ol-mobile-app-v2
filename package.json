@@ -8,9 +8,12 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "build": "quasar build",
+    "test:unit": "vitest",
+    "test:unit:ci": "vitest run",
+    "test:unit:ui": "vitest --ui"
   },
   "dependencies": {
     "@geoblocks/ol-maplibre-layer": "^1.0.1",
@@ -21,6 +24,7 @@
     "ol": "^10.1.0",
     "pinia": "^2.0.11",
     "quasar": "^2.8.0",
+    "simple-notify": "^1.0.6",
     "vue": "^3.4.18",
     "vue-draggable-plus": "^0.5.2",
     "vue-router": "^4.0.12",
@@ -28,10 +32,12 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.8.0",
+    "@quasar/quasar-app-extension-testing-unit-vitest": "^1.1.0",
     "@types/lodash": "^4.17.7",
-    "@types/node": "^12.20.21",
+    "@types/node": "^22.10.2",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
+    "@vue/test-utils": "^2.4.4",
     "autoprefixer": "^10.4.2",
     "eslint": "^8.11.0",
     "eslint-config-prettier": "^8.1.0",
@@ -39,7 +45,9 @@
     "prettier": "^2.5.1",
     "typescript": "^4.5.4",
     "vite-plugin-checker": "^0.6.4",
-    "vue-tsc": "^1.8.22"
+    "vitest": "^2.0.5",
+    "vue-tsc": "^1.8.22",
+    "@vitest/ui": "^2.0.5"
   },
   "engines": {
     "node": "^20 || ^18 || ^16",

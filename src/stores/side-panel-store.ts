@@ -55,46 +55,53 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   }
 
   /**
-   * Open or close the side panel
-   * @param active Should the side panel be opened or closed ?
+   * Close the panel parameters
    */
-  function setActive(active: boolean, parameters?: ISidePanelParameters): void {
-    if (!active) {
-      router.push({ name: 'home' });
+  function closePanel(): void {
+    router.push({ name: 'home' });
 
-      panelParameters.value = {
-        location: 'home',
-      };
-      if (isOpen.value) {
-        setPanelPadding(false);
-      }
+    panelParameters.value = {
+      location: 'home',
+    };
+
+    if (isOpen.value) setPanelPadding(false);
+  }
+
+  /**
+   * Open the side panel with the given parameters
+   * @param parameters Panel parameters
+   */
+  function openPanel(parameters: ISidePanelParameters): void {
+    router.push({
+      name: parameters.location,
+      params:
+        parameters.parameterName && parameters.parameterValue
+          ? { [parameters.parameterName]: parameters.parameterValue }
+          : undefined,
+    });
+
+    const url = router.resolve(route).href;
+    window.history.replaceState(history.state, '', url);
+
+    panelParameters.value = parameters;
+    // If the the site panel is opened a custom panel padding is applied (see siteStore().updateMap())
+    if (
+      !isOpen.value &&
+      panelParameters.value.location !== SidePanelParameters.SITE
+    ) {
+      setPanelPadding(true);
     }
+  }
 
+  /**
+   * Open or close the side panel
+   * @param open Should the side panel be opened or closed ?
+   */
+  function setOpen(open: boolean, parameters?: ISidePanelParameters): void {
+    if (!open) closePanel();
     // Open the side panel with the associated parameters
-    else {
-      if (parameters) {
-        router.push({
-          name: parameters.location,
-          params:
-            parameters.parameterName && parameters.parameterValue
-              ? { [parameters.parameterName]: parameters.parameterValue }
-              : undefined,
-        });
-
-        const url = router.resolve(route).href;
-        window.history.replaceState(history.state, '', url);
-
-        panelParameters.value = parameters;
-        // If the the site panel is opened a custom panel padding is applied (see siteStore().updateMap())
-        if (
-          !isOpen.value &&
-          panelParameters.value.location !== SidePanelParameters.SITE
-        ) {
-          setPanelPadding(true);
-        }
-      }
-    }
-    isOpen.value = active;
+    else if (parameters) openPanel(parameters);
+    isOpen.value = open;
   }
 
   /**
@@ -104,8 +111,8 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * @param setZoom
    */
   function setPanelPadding(isOpen: boolean, feature?: Feature): void {
-    const openPadding = [0, -800, 0, 0];
-    const closePadding = [0, 0, 0, -800];
+    const openPadding = [0, -400, 0, 0];
+    const closePadding = [0, 0, 0, -400];
     mas.setPaddingAndExtent(isOpen ? openPadding : closePadding, feature);
   }
 
@@ -125,7 +132,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   return {
     isOpen,
     panelParameters,
-    setActive,
+    setActive: setOpen,
     setPanelPadding,
   };
 });

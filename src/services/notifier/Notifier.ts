@@ -1,0 +1,96 @@
+import Notify, { NotifyStatus } from 'simple-notify';
+import './Notifier.css';
+import 'simple-notify/dist/simple-notify.css';
+
+enum NotifyStatusEnum {
+  ERROR = 'error',
+  WARNING = 'warning',
+  SUCCESS = 'success',
+  INFO = 'info',
+}
+
+/**
+ * This class provides basics success, warning, error and information notifications.
+ * The notification must have at least a text, and may have a title.
+ */
+class NotificationService {
+  private static readonly DEFAULT_TIMEOUT = 3000;
+  private static readonly ERROR_TIMEOUT = 10000;
+
+  /**
+   * Create a new notification
+   * @param mode Notification mode
+   * @param text Text of the notification
+   * @param title Title of the notification
+   * @param timout Notification delay
+   */
+  private createNotify(
+    mode: NotifyStatus,
+    timout: number,
+    text: string,
+    title?: string
+  ): void {
+    const notification = new Notify({
+      status: mode,
+      title: title,
+      text: text,
+      speed: 300,
+      showIcon: true,
+      showCloseButton: true,
+      autoclose: true,
+      autotimeout: timout,
+      position: 'right bottom',
+    });
+
+    this.setCustomPadding(notification);
+  }
+
+  /**
+   * Set the notification padding to match with OpenLayers style.
+   * @param notification The input notification
+   */
+  private setCustomPadding(notification: Notify): void {
+    notification.container.style.setProperty(
+      '--sn-notifications-padding',
+      '20px 20px 40px 20px'
+    );
+  }
+
+  public pushError(text: string, title?: string): void {
+    this.createNotify(
+      NotifyStatusEnum.ERROR,
+      NotificationService.ERROR_TIMEOUT,
+      text,
+      title
+    );
+  }
+
+  public pushWarning(text: string, title?: string): void {
+    this.createNotify(
+      NotifyStatusEnum.WARNING,
+      NotificationService.DEFAULT_TIMEOUT,
+      text,
+      title
+    );
+  }
+
+  public pushSuccess(text: string, title?: string): void {
+    this.createNotify(
+      NotifyStatusEnum.SUCCESS,
+      NotificationService.DEFAULT_TIMEOUT,
+      text,
+      title
+    );
+  }
+
+  public pushInfo(text: string, title?: string): void {
+    this.createNotify(
+      NotifyStatusEnum.INFO,
+      NotificationService.DEFAULT_TIMEOUT,
+      text,
+      title
+    );
+  }
+}
+
+export default NotificationService;

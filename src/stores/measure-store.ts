@@ -10,7 +10,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 // Others imports
 
 // Interface imports
-import { MeasureEventType } from 'src/plugins/measure/Measure';
+import { MeasureEventType } from 'src/services/measure/Measure';
 
 // Enum imports
 import { Interactions } from 'src/enums/interactions.enum';
@@ -42,7 +42,7 @@ export const useMeasureStore = defineStore('measure', () => {
    * Remove measure and activate selector
    */
   function removeMeasure(): void {
-    mis.measurePlugin.deactivateMeasure();
+    mis.measurePlugin.removeFeature();
     mis.enableInteraction(Interactions.SELECTOR, true);
   }
 
@@ -50,8 +50,15 @@ export const useMeasureStore = defineStore('measure', () => {
    * Remove all measures and associated overlays
    */
   function removeAllMeasure(): void {
-    mis.measurePlugin.clearMeasureFeatures();
+    mis.measurePlugin.removeAllFeatures();
     mis.enableInteraction(Interactions.SELECTOR, true);
+  }
+
+  /**
+   * Abort the current measure
+   */
+  function abortCurrentMeasure(): void {
+    mis.measurePlugin.abortMeasuring();
   }
 
   onMounted(() => {
@@ -65,6 +72,7 @@ export const useMeasureStore = defineStore('measure', () => {
     addMeasure,
     removeMeasure,
     removeAllMeasure,
+    abortCurrentMeasure,
     formatedMeasure,
     measureMenu,
   };

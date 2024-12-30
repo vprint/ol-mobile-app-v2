@@ -8,15 +8,15 @@ import { defineStore, storeToRefs } from 'pinia';
 
 // Store imports
 import { useMapInteractionStore } from './map-interaction-store';
+import { useApiClientStore } from './api-client-store';
 import { useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 
 // Others imports
-import ApiRequestor from 'src/services/ApiRequestor';
 import {
   VectorTileSelectEvent,
   VectorTileSelectEventType,
-} from 'src/plugins/VectorTileSelect';
+} from 'src/services/VectorTileSelect';
 import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface imports
@@ -78,7 +78,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @returns
    */
   async function setSiteById(siteId: number): Promise<void> {
-    const rawSite = await ApiRequestor.getSiteById(siteId);
+    const rawSite = await useApiClientStore().getSiteById(siteId);
     const feature = rawSite?.features[0];
 
     if (feature) {

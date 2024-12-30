@@ -15,8 +15,9 @@ import { ref, watch } from 'vue';
 import { useMapStore } from './map-store';
 
 // Others imports
-import VectorTileSelect from 'src/plugins/VectorTileSelect';
-import Measure from 'src/plugins/measure/Measure';
+import VectorTileSelect from 'src/services/VectorTileSelect';
+import Measure from 'src/services/measure/Measure';
+import Drawer from 'src/services/drawer/Drawer';
 
 // Interface imports
 import { Interactions } from 'src/enums/interactions.enum';
@@ -28,40 +29,50 @@ import { Interactions } from 'src/enums/interactions.enum';
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const ms = useMapStore();
   const isMapInteractionsInitialized = ref(false);
-  const selectionStyle = new Style({
-    image: new CircleStyle({
-      radius: 15,
-      fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
-      stroke: new Stroke({ color: '#e820c0', width: 2 }),
-    }),
-  });
+
   const selectorPlugin = new VectorTileSelect({
     name: Interactions.SELECTOR,
-    selectionStyle: selectionStyle,
+    selectionStyle: new Style({
+      image: new CircleStyle({
+        radius: 15,
+        fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
+        stroke: new Stroke({ color: '#e820c0', width: 2 }),
+      }),
+    }),
   });
+
   const measurePlugin = new Measure(Interactions.MEASURE);
+
+  const drawPlugin = new Drawer(Interactions.DRAWER, {
+    strokeColor: 'rgba(232,32,192,1)',
+    fillColor: 'rgba(232,32,192,0.2)',
+    strokeWidth: 2,
+  });
+
+  const link = new Link({
+    params: ['x', 'y', 'z', 'r'],
+  });
+  link.set('name', Interactions.LINK);
+
+  const scaleline = new ScaleLine({
+    units: 'metric',
+    text: true,
+    minWidth: 140,
+    className: 'app-scale-line',
+  });
+  scaleline.set('name', Interactions.SCALELINE);
+
+  const attribution = new Attribution({
+    collapsible: false,
+  });
+  attribution.set('name', Interactions.ATTRIBUTION);
 
   /**
    * Get the map interactions.
    * @returns List of map interactions.
    */
   function getInteractions(): Interaction[] {
-    // Initialization of the selector
-    const archsiteLayer = ms.getLayerById('archsites');
-    if (archsiteLayer) {
-      selectorPlugin.setSelectableLayer(archsiteLayer as VectorTileLayer);
-    }
-
-    // Initialization of the measure plugin
-    measurePlugin.setActive(false);
-
-    // Create link
-    const link = new Link({
-      params: ['x', 'y', 'z', 'r'],
-    });
-    link.set('name', Interactions.LINK);
-
-    return [selectorPlugin, measurePlugin, link];
+    return [selectorPlugin, measurePlugin, drawPlugin, link];
   }
 
   /**
@@ -69,21 +80,6 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * @returns List of map controls.
    */
   function getControls(): Control[] {
-    // Create scaleline
-    const scaleline = new ScaleLine({
-      units: 'metric',
-      text: true,
-      minWidth: 140,
-      className: 'app-scale-line',
-    });
-    scaleline.set('name', Interactions.SCALELINE);
-
-    // Create attribution
-    const attribution = new Attribution({
-      collapsible: false,
-    });
-    attribution.set('name', Interactions.ATTRIBUTION);
-
     return [scaleline, attribution];
   }
 
@@ -95,6 +91,15 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     getInteractions().forEach((interaction) => {
       ms.map.addInteraction(interaction);
     });
+
+    // Set the selection layer
+    const archsiteLayer = ms.getLayerById('archsites') as
+      | VectorTileLayer
+      | undefined;
+    selectorPlugin.setSelectionLayer(archsiteLayer);
+
+    measurePlugin.setActive(false);
+    drawPlugin.setActive(false);
 
     // add the contols
     getControls().forEach((control) => {
@@ -150,6 +155,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     isMapInteractionsInitialized,
     selectorPlugin,
     measurePlugin,
+    drawPlugin,
     enableInteraction,
     getInteractionByName,
   };

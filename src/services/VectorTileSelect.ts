@@ -98,9 +98,9 @@ class VectorTileSelect extends Interaction {
    * Set the selection layer
    * @param layer The layer where the feature should be selected
    */
-  public setSelectableLayer(layer: VectorTileLayer): void {
+  public setSelectionLayer(layer: VectorTileLayer | undefined): void {
     this.selectableLayer = layer;
-    this.selectionLayer.setSource(layer.getSource());
+    this.selectionLayer.setSource(layer?.getSource() ?? null);
   }
 
   /**
