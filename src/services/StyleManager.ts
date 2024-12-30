@@ -6,6 +6,7 @@ import { Polygon, LineString, MultiPoint, Point } from 'ol/geom';
 import { Circle, Fill, Stroke, Style } from 'ol/style';
 
 const WHITE = '255, 255, 255';
+const HIGHLIGHT_OPACITY = '0.2';
 
 export interface IStyleOptions {
   strokeColor: Color | ColorLike;
@@ -73,7 +74,7 @@ class StyleManager {
       // A translucid white stroke to highlight the feature.
       new Style({
         stroke: this.getStroke(
-          `rgba(${WHITE}, 0.2)`,
+          `rgba(${WHITE}, ${HIGHLIGHT_OPACITY})`,
           this.options.strokeWidth ? this.options.strokeWidth + 4 : undefined
         ),
       }),
@@ -124,7 +125,7 @@ class StyleManager {
     if (selected) {
       strokeStyle = new Stroke({
         color: `rgba(${WHITE}, 1)`,
-        width: 2,
+        width: this.options.strokeWidth ? this.options.strokeWidth : undefined,
       });
     }
 

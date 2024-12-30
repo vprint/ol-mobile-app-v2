@@ -38,20 +38,27 @@ enum LocationColors {
   ACCURACY_STYLE = 'rgba(51, 153, 204, 0.2)',
 }
 
-interface LocationStyle {
+interface ILocationStyle {
   position: Style;
   accuracy: Style;
 }
 
-interface LocationFeatures {
+interface ILocationFeatures {
   position: Feature;
   accuracy: Feature;
 }
 
-interface LocationOptions {
+interface ILocationOptions {
   interactionName: string;
   positionStyle?: Style;
   accuracyStyle?: Style;
+}
+
+interface IEventsListeners {
+  view?: EventsKey | EventsKey[];
+  accuracy?: EventsKey | EventsKey[];
+  position?: EventsKey | EventsKey[];
+  error?: EventsKey | EventsKey[];
 }
 
 /**
@@ -66,24 +73,18 @@ export class LocationEvents extends Event {}
  * @extends Interaction
  */
 class Location extends Interaction {
-  private readonly features: LocationFeatures;
+  private readonly features: ILocationFeatures;
   private readonly locationLayer: VectorLayer;
   private readonly geolocation: Geolocation;
-  private readonly style: LocationStyle;
-
-  private eventListeners: {
-    view?: EventsKey | EventsKey[];
-    accuracy?: EventsKey | EventsKey[];
-    position?: EventsKey | EventsKey[];
-    error?: EventsKey | EventsKey[];
-  } = {};
+  private readonly style: ILocationStyle;
+  private eventListeners: IEventsListeners = {};
 
   private state = {
     isViewCentered: false,
     isLocationFound: false,
   };
 
-  constructor(options: LocationOptions) {
+  constructor(options: ILocationOptions) {
     super();
     this.set('name', options.interactionName);
 
@@ -112,7 +113,7 @@ class Location extends Interaction {
   }
 
   /**
-   * Throw an error event an log the error.
+   * Throw an error event and log the error.
    */
   private getErrorHandler(): EventsKey | EventsKey[] {
     return this.geolocation.on(GeolocationEvents.ERROR, (error) => {
@@ -142,7 +143,7 @@ class Location extends Interaction {
         const point = new Point(coordinates);
         this.features.position.setGeometry(point);
         if (!this.state.isLocationFound) {
-          this.handleFirstLocation();
+          this.handleLocationFound();
         }
       }
     });
@@ -151,7 +152,7 @@ class Location extends Interaction {
   /**
    * Handle the user location found event.
    */
-  private handleFirstLocation(): void {
+  private handleLocationFound(): void {
     this.fitViewToLocation(() => {
       this.state.isLocationFound = true;
       this.dispatchEvent(new LocationEvents(LocationEventsType.LOCATION_FOUND));
@@ -203,6 +204,7 @@ class Location extends Interaction {
   public enableTracking(enable: boolean): void {
     this.reset();
     this.geolocation.setTracking(enable);
+
     if (enable) {
       this.addLocationFeatures();
       this.addEventsListeners();
