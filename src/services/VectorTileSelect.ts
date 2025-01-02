@@ -1,11 +1,11 @@
 import { Interaction } from 'ol/interaction';
 import { Map, MapBrowserEvent } from 'ol';
 import { FeatureLike } from 'ol/Feature';
-import VectorTileLayer from 'ol/layer/VectorTile';
-import Event from 'ol/events/Event.js';
 import { Fill, Stroke, Style } from 'ol/style';
-import CircleStyle from 'ol/style/Circle';
 import { getUid } from 'ol/util.js';
+import VectorTileLayer from 'ol/layer/VectorTile';
+import BaseEvent from 'ol/events/Event.js';
+import CircleStyle from 'ol/style/Circle';
 
 /**
  * Vector tile select event type definition
@@ -17,7 +17,7 @@ export enum VectorTileSelectEventType {
 /**
  * Vector tile selection event
  */
-export class VectorTileSelectEvent extends Event {
+export class VectorTileSelectEvent extends BaseEvent {
   public selected: FeatureLike[] | undefined;
   public mapBrowserEvent: MapBrowserEvent<UIEvent>;
 

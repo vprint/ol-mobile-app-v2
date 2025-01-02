@@ -5,11 +5,11 @@ import { easeOut } from 'ol/easing';
 import { Point } from 'ol/geom';
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';
-import Event from 'ol/events/Event.js';
 import CircleStyle from 'ol/style/Circle';
 import Geolocation from 'ol/Geolocation.js';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
+import BaseEvent from 'ol/events/Event.js';
 
 /**
  * Location events.
@@ -64,7 +64,7 @@ interface IEventsListeners {
 /**
  * Location events manager.
  */
-export class LocationEvents extends Event {}
+export class LocationEvents extends BaseEvent {}
 
 /**
  * This class add a location tracker to the map.

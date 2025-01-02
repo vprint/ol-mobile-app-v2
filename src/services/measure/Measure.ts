@@ -10,7 +10,7 @@ import { LineString, Polygon } from 'ol/geom';
 import { DrawStartEvent } from '../../services/drawer/drawStartEvent';
 import { DrawRemoveEvent } from '../../services/drawer/DrawRemoveEvent';
 import { DrawEventType } from 'src/enums/draw-types.enum';
-import Event from 'ol/events/Event.js';
+import BaseEvent from 'ol/events/Event.js';
 import Map from 'ol/Map';
 import Drawer from '../../services/drawer/Drawer';
 
@@ -27,7 +27,7 @@ type IMeasureType = GeometryType.POLYGON | GeometryType.LINE_STRING;
 /**
  * Measure start event. This event is emmited when a draw start. The measure feature is returned by the event.
  */
-export class MeasureStartEvent extends Event {
+export class MeasureStartEvent extends BaseEvent {
   public feature: Feature;
 
   constructor(type: MeasureEventType.MEASURE_START, feature: Feature) {
@@ -39,7 +39,7 @@ export class MeasureStartEvent extends Event {
 /**
  * Measure end event. This event is throwed after a completion of a measure
  */
-export class MeasureEndEvent extends Event {}
+export class MeasureEndEvent extends BaseEvent {}
 
 /**
  * This class provides measurement functionality for distances (LineString) and areas (Polygon).
