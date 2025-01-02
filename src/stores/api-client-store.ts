@@ -7,6 +7,8 @@ import { defineStore } from 'pinia';
 import { Reactive } from 'vue';
 import { AppVariables } from 'src/enums/app-variables.enum';
 import ApiClient from '../services/ApiClient';
+import { useNotificationStore } from './notify-store';
+import { WretchError } from 'wretch/resolver';
 
 export enum cacheEntry {
   SITE = 'site',
@@ -23,6 +25,8 @@ interface ApiRequestorCache {
   siteList: ISiteList[] | undefined;
   siteTypeList: ISiteType[] | undefined;
 }
+
+const ns = useNotificationStore();
 
 export const useApiClientStore = defineStore('apiClient', () => {
   const apiClient = new ApiClient();
@@ -54,6 +58,15 @@ export const useApiClientStore = defineStore('apiClient', () => {
     cache[ref] = undefined;
   }
 
+  function manageError(error: unknown): void {
+    console.log(error, "l'erreur dans api-cleint-store");
+    if (error instanceof WretchError) {
+      ns.pushError(error.message, `${error.status}`);
+    } else {
+      ns.pushError(`${error}`);
+    }
+  }
+
   /**
    * Returns a site for a give id.
    * @param siteId id of the site
@@ -63,9 +76,13 @@ export const useApiClientStore = defineStore('apiClient', () => {
     siteId: number
   ): Promise<FeatureCollection | undefined> {
     clearCacheByReference(cacheEntry.SITE);
-    cache.site = await apiClient.getJSON<FeatureCollection>(
-      `${AppVariables.FUNCTION_SERVER}.get_site_by_id/items.json?id=${siteId}`
-    );
+    try {
+      cache.site = await apiClient.getJSON<FeatureCollection>(
+        `${AppVariables.FUNCTION_SERVER}.get_site_by_id/items.json?id=${siteId}`
+      );
+    } catch (error) {
+      manageError(error);
+    }
     return cache.site;
   }
 
@@ -75,11 +92,15 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getIndividualList(): Promise<IIndividual[] | undefined> {
     if (!cache.individualList) {
-      cache.individualList = await apiClient.getJSON<IIndividual[]>(
-        `${AppVariables.FUNCTION_SERVER}.get_individual_list/items.json?`
-      );
+      try {
+        cache.individualList = await apiClient.getJSON<IIndividual[]>(
+          `${AppVariables.FUNCTION_SERVER}.get_individual_list/items.json?`
+        );
+      } catch (error) {
+        manageError(error);
+      }
+      return cache.individualList;
     }
-    return cache.individualList;
   }
 
   /**
@@ -88,11 +109,15 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getProjectList(): Promise<IProject[] | undefined> {
     if (!cache.projectList) {
-      cache.projectList = await apiClient.getJSON<IProject[]>(
-        `${AppVariables.FUNCTION_SERVER}.get_project_list/items.json?`
-      );
+      try {
+        cache.projectList = await apiClient.getJSON<IProject[]>(
+          `${AppVariables.FUNCTION_SERVER}.get_project_list/items.json?`
+        );
+      } catch (error) {
+        manageError(error);
+      }
+      return cache.projectList;
     }
-    return cache.projectList;
   }
 
   /**
@@ -102,11 +127,15 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getSiteList(limit = 1000): Promise<ISiteList[] | undefined> {
     if (!cache.siteList) {
-      cache.siteList = await apiClient.getJSON<ISiteList[]>(
-        `${AppVariables.FUNCTION_SERVER}.get_site_list/items.json?limit=${limit}`
-      );
+      try {
+        cache.siteList = await apiClient.getJSON<ISiteList[]>(
+          `${AppVariables.FUNCTION_SERVER}.get_site_list/items.json?limit=${limit}`
+        );
+      } catch (error) {
+        manageError(error);
+      }
+      return cache.siteList;
     }
-    return cache.siteList;
   }
 
   /**
@@ -115,11 +144,15 @@ export const useApiClientStore = defineStore('apiClient', () => {
    */
   async function getSiteTypeList(): Promise<ISiteType[] | undefined> {
     if (!cache.siteTypeList) {
-      cache.siteTypeList = await apiClient.getJSON<ISiteType[]>(
-        `${AppVariables.FUNCTION_SERVER}.get_sitetypes_list/items.json?`
-      );
+      try {
+        cache.siteTypeList = await apiClient.getJSON<ISiteType[]>(
+          `${AppVariables.FUNCTION_SERVER}.get_sitetypes_list/items.json?`
+        );
+      } catch (error) {
+        manageError(error);
+      }
+      return cache.siteTypeList;
     }
-    return cache.siteTypeList;
   }
 
   return {

@@ -1,8 +1,8 @@
-import Notify, { NotifyStatus } from 'simple-notify';
+import Notify, { NotifyStatus as INotifyStatus } from 'simple-notify';
 import './Notifier.css';
 import 'simple-notify/dist/simple-notify.css';
 
-enum NotifyStatusEnum {
+export enum NotifyStatus {
   ERROR = 'error',
   WARNING = 'warning',
   SUCCESS = 'success',
@@ -25,7 +25,7 @@ class NotificationService {
    * @param timout Notification delay
    */
   private createNotify(
-    mode: NotifyStatus,
+    mode: INotifyStatus,
     timout: number,
     text: string,
     title?: string
@@ -58,7 +58,7 @@ class NotificationService {
 
   public pushError(text: string, title?: string): void {
     this.createNotify(
-      NotifyStatusEnum.ERROR,
+      NotifyStatus.ERROR,
       NotificationService.ERROR_TIMEOUT,
       text,
       title
@@ -67,7 +67,7 @@ class NotificationService {
 
   public pushWarning(text: string, title?: string): void {
     this.createNotify(
-      NotifyStatusEnum.WARNING,
+      NotifyStatus.WARNING,
       NotificationService.DEFAULT_TIMEOUT,
       text,
       title
@@ -76,7 +76,7 @@ class NotificationService {
 
   public pushSuccess(text: string, title?: string): void {
     this.createNotify(
-      NotifyStatusEnum.SUCCESS,
+      NotifyStatus.SUCCESS,
       NotificationService.DEFAULT_TIMEOUT,
       text,
       title
@@ -85,7 +85,7 @@ class NotificationService {
 
   public pushInfo(text: string, title?: string): void {
     this.createNotify(
-      NotifyStatusEnum.INFO,
+      NotifyStatus.INFO,
       NotificationService.DEFAULT_TIMEOUT,
       text,
       title

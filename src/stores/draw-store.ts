@@ -6,6 +6,7 @@ import { onMounted, ref } from 'vue';
 // Store imports
 import { defineStore } from 'pinia';
 import { useMapInteractionStore } from './map-interaction-store';
+import { useNotificationStore } from './notify-store';
 
 // Interface, type and enum imports
 
@@ -13,10 +14,10 @@ import { useMapInteractionStore } from './map-interaction-store';
 import { GeometryType } from 'src/enums/geometry.enum';
 import { MeasureEventType } from 'src/services/measure/Measure';
 import { Interactions } from 'src/enums/interactions.enum';
-import NotificationService from 'src/services/notifier/Notifier';
 
 // script
 const mis = useMapInteractionStore();
+const ns = useNotificationStore();
 
 export const useDrawStore = defineStore('draw', () => {
   const isVisible = ref(false);
@@ -41,11 +42,10 @@ export const useDrawStore = defineStore('draw', () => {
   }
 
   function RedoModification(): void {
-    new NotificationService().pushSuccess('Super !', 'Ca marche !');
-    new NotificationService().pushWarning('Super !', 'Ca marche !');
-    new NotificationService().pushError('Super !', 'Ca marche !');
-    new NotificationService().pushInfo('Super !', 'Ca marche !');
-    console.log('redo');
+    ns.pushSuccess('Super !', 'Ca marche !');
+    ns.pushWarning('Super !', 'Ca marche !');
+    ns.pushError('Super !', 'Ca marche !');
+    ns.pushInfo('Super !', 'Ca marche !');
   }
 
   function deleteDraw(): void {

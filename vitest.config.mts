@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { quasar, transformAssetUrls } from '@quasar/vite-plugin';
@@ -18,10 +20,11 @@ export default defineConfig({
   plugins: [
     vue({
       template: { transformAssetUrls },
-    }),
+    }) as any,
     quasar({
       sassVariables: 'src/quasar-variables.scss',
-    }),
-    tsconfigPaths(),
+    }) as any,
+    ,
+    tsconfigPaths() as any,
   ],
 });
