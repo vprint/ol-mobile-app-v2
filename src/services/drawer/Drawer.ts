@@ -93,7 +93,7 @@ class Drawer extends Interaction {
     this.startEvent = this.drawInteraction.on(
       DrawEventType.DRAW_START,
       (evt) => {
-        this.drawModifier?.removeModifier();
+        this.drawModifier?.setActive(false);
         this.dispatchEvent(
           new DrawStartEvent(DrawEventType.DRAW_START, evt.feature)
         );
@@ -126,7 +126,10 @@ class Drawer extends Interaction {
     setTimeout(() => {
       this.dispatchEvent(new DrawEndEvent(DrawEventType.DRAW_END));
       this.deactivateDraw();
-      this.addModifier();
+
+      this.drawModifier
+        ? this.drawModifier.setActive(true)
+        : this.addModifier();
     }, 50);
   }
 
@@ -136,7 +139,8 @@ class Drawer extends Interaction {
   private dispatchAbortEvent(): void {
     this.dispatchEvent(new DrawAbortEvent(DrawEventType.DRAW_ABORT));
     this.deactivateDraw();
-    this.addModifier();
+
+    this.drawModifier ? this.drawModifier.setActive(true) : this.addModifier();
   }
 
   /**
@@ -157,7 +161,7 @@ class Drawer extends Interaction {
    */
   public removeAllFeatures(): void {
     this.deactivateDraw();
-    this.drawModifier?.removeModifier();
+    this.drawModifier?.setActive(false);
     this.drawLayer?.getSource()?.clear();
   }
 

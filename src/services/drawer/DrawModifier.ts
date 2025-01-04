@@ -6,7 +6,7 @@ import StyleManager from '../StyleManager';
 import VectorLayer from 'ol/layer/Vector';
 
 /**
- * This class provide selection and modification methods for draws.
+ * Provide selection and modification methods for draws.
  */
 class DrawModifier extends Interaction {
   private modifyInteraction: Modify | undefined;
@@ -31,7 +31,7 @@ class DrawModifier extends Interaction {
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
-    if (map) this.initializeModifier();
+    this.initializeModifier();
   }
 
   /**
@@ -58,14 +58,11 @@ class DrawModifier extends Interaction {
     }
   }
 
-  /**
-   * Remove select and modify interactions.
-   * This is usefull when the user is drawing as it's allow to avoid unwanted selection on previous feature.
-   */
-  public removeModifier(): void {
+  setActive(active: boolean): void {
+    super.setActive(active);
     if (this.modifyInteraction && this.selectInteraction) {
-      this.getMap()?.removeInteraction(this.modifyInteraction);
-      this.getMap()?.removeInteraction(this.selectInteraction);
+      this.modifyInteraction.setActive(active);
+      this.selectInteraction.setActive(active);
     }
   }
 

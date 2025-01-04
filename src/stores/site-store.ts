@@ -60,8 +60,8 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    mis.selectorPlugin.clearFeatures();
-    updateMap();
+    mis.selectorPlugin.clear();
+    fitMap();
   }
 
   /**
@@ -88,17 +88,23 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
         openSitePanel(newSite.siteId);
       }
 
-      updateMap(feature);
+      fitMap(feature);
       site.value = newSite;
-      mis.selectorPlugin.setFeaturesById([siteId.toString()]);
+      mis.selectorPlugin.setSelectedById([siteId.toString()]);
     }
   }
+
+  // function setModifiable(rawFeature: GeoJSONFeature): void {
+  //   const drawer = mis.drawPlugin
+  //   const feature = new GeoJSON().readFeatures(rawFeature)
+  //   mis.drawPlugin.addFeature(feature)
+  // }
 
   /**
    * Fit the map to the selected site and set the style.
    * @param geoJsonFeature Selected feature
    */
-  function updateMap(geoJsonFeature?: GeoJSONFeature): void {
+  function fitMap(geoJsonFeature?: GeoJSONFeature): void {
     if (geoJsonFeature) {
       const feature = new GeoJSON().readFeature(geoJsonFeature, {
         dataProjection: 'EPSG:4326',
@@ -123,7 +129,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
         if (features && features.length > 0) {
           openSitePanel(features[0].getId() as number);
-          mis.selectorPlugin.setFeaturesById([features[0].getId()?.toString()]);
+          mis.selectorPlugin.setSelectedById([features[0].getId()?.toString()]);
         }
       }
     );
