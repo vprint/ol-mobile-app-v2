@@ -8,7 +8,7 @@ import VectorLayer from 'ol/layer/Vector';
 /**
  * Provide selection and modification methods for draws.
  */
-class DrawModifier extends Interaction {
+class ExtendedModify extends Interaction {
   private modifyInteraction: Modify | undefined;
   private selectInteraction: Select | undefined;
   private drawLayer: VectorLayer | undefined;
@@ -26,36 +26,51 @@ class DrawModifier extends Interaction {
   }
 
   /**
-   * Initialize the component
-   * @param map OpenLayers map
+   * Initialize the component and add the required interactions.
+   * @param map - OpenLayers map
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
-    this.initializeModifier();
+
+    if (
+      this.drawLayer?.getSource() &&
+      !this.selectInteraction &&
+      !this.modifyInteraction
+    ) {
+      this.selectInteraction = this.getSelect(this.drawLayer);
+      this.getMap()?.addInteraction(this.selectInteraction);
+
+      this.modifyInteraction = this.getModify(this.selectInteraction);
+      this.getMap()?.addInteraction(this.modifyInteraction);
+    }
   }
 
   /**
-   * Add a select and modify interactions to the draw layer
+   * Get the modify interaction.
+   * @param selector - The select interaction.
+   * @returns
    */
-  private initializeModifier(): void {
-    if (this.drawLayer?.getSource()) {
-      this.selectInteraction = new Select({
-        layers: (layer): boolean => {
-          return getUid(layer) === getUid(this.drawLayer);
-        },
-        condition: click,
-        style: this.style.getSelectionStyle(),
-        hitTolerance: 30,
-      });
+  private getModify(selector: Select): Modify {
+    return new Modify({
+      style: this.style.getEditionStyle(),
+      features: selector.getFeatures(),
+    });
+  }
 
-      this.modifyInteraction = new Modify({
-        style: this.style.getEditionStyle(),
-        features: this.selectInteraction.getFeatures(),
-      });
-
-      this.getMap()?.addInteraction(this.selectInteraction);
-      this.getMap()?.addInteraction(this.modifyInteraction);
-    }
+  /**
+   * Creates a select interaction for the specified layer.
+   * @param selectionLayer - The layer on which to enable selection.
+   * @returns A Select interaction configured for the given layer.
+   */
+  private getSelect(selectionLayer: VectorLayer): Select {
+    return new Select({
+      layers: (layer): boolean => {
+        return getUid(layer) === getUid(selectionLayer);
+      },
+      condition: click,
+      style: this.style.getSelectionStyle(),
+      hitTolerance: 30,
+    });
   }
 
   setActive(active: boolean): void {
@@ -72,16 +87,14 @@ class DrawModifier extends Interaction {
    */
   public removeFeature(): void {
     const feature = this.getFeature();
-
     if (feature) {
       this.drawLayer?.getSource()?.removeFeature(feature);
     }
-
     this.selectInteraction?.getFeatures().clear();
   }
 
   /**
-   * Get the selected feature
+   * Get the modified feature
    * @returns
    */
   public getFeature(): Feature | undefined {
@@ -89,11 +102,12 @@ class DrawModifier extends Interaction {
   }
 
   /**
-   * Clear feature from the selector. Doesn't remove the feature from the layer like `removeFeature`.
+   * Clear feature from the modifier.
+   * Doesn't remove the feature from the layer like `removeFeature`.
    */
   public unselectFeature(): void {
     this.selectInteraction?.getFeatures().clear();
   }
 }
 
-export default DrawModifier;
+export default ExtendedModify;

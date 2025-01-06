@@ -12,7 +12,7 @@ import { DrawRemoveEvent } from '../../services/drawer/DrawRemoveEvent';
 import { DrawEventType } from 'src/enums/draw-types.enum';
 import Event from 'ol/events/Event.js';
 import Map from 'ol/Map';
-import Drawer from '../../services/drawer/Drawer';
+import ExtendedDraw from '../drawer/Draw2';
 
 /**
  * Measure event definition
@@ -49,7 +49,7 @@ export class MeasureEndEvent extends Event {}
  * @extends Interaction
  */
 class Measure extends Interaction {
-  private drawInteraction: Drawer;
+  private drawInteraction: ExtendedDraw;
   private measureStartEvent!: EventsKey;
   private measureEndEvent!: EventsKey;
   private measureAbortEvent!: EventsKey;
@@ -64,7 +64,7 @@ class Measure extends Interaction {
   constructor(interactionName: string) {
     super();
     this.set('name', interactionName);
-    this.drawInteraction = new Drawer(
+    this.drawInteraction = new ExtendedDraw(
       `${interactionName}-drawer`,
       this.measureStyle
     );
@@ -106,7 +106,7 @@ class Measure extends Interaction {
    * @param type Measure type
    */
   public addMeasureFeature(type: IMeasureType): void {
-    this.drawInteraction.addFeature(type);
+    this.drawInteraction.createFeature(type);
   }
 
   /**
@@ -148,7 +148,7 @@ class Measure extends Interaction {
    * Manage draw-end and draw-abort event.
    * @param drawInteraction Draw plugin
    */
-  private manageMeasureEnd(drawInteraction: Drawer): void {
+  private manageMeasureEnd(drawInteraction: ExtendedDraw): void {
     this.measureEndEvent = drawInteraction.on(
       // @ts-expect-error type error due to custom event
       DrawEventType.DRAW_END,
@@ -289,17 +289,17 @@ class Measure extends Interaction {
    * Remove a measure and the associated overlay from the map
    * @param feature Measure feature to remove
    */
-  public removeFeature(): void {
-    const drawModifier = this.drawInteraction.getDrawModifier();
-    const selectedMeasure = drawModifier?.getFeature();
-    this.removeOverlayById(getUid(selectedMeasure));
-    drawModifier?.removeFeature();
+  public removeMeasure(): void {
+    // //const drawModifier = this.drawInteraction.getDrawModifier();
+    // const selectedMeasure = drawModifier?.getFeature();
+    // this.removeOverlayById(getUid(selectedMeasure));
+    // drawModifier?.removeFeature();
   }
 
   /**
    * Remove all the measure feature and the associated overlays
    */
-  public removeAllFeatures(): void {
+  public removeAllMeasures(): void {
     this.drawInteraction.removeAllFeatures();
     this.removeAllOverlays();
   }
