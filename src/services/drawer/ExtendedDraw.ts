@@ -9,7 +9,7 @@ import { unByKey } from 'ol/Observable';
 import { Map } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import StyleManager, { IStyleOptions } from '../StyleManager';
+import StyleManager from '../StyleManager';
 
 interface IDrawerEvents {
   end: EventsKey | EventsKey[] | undefined;
@@ -24,7 +24,7 @@ interface IDrawerEvents {
 class ExtendedDraw extends Interaction {
   private drawInteraction: Draw | undefined;
 
-  private drawLayer: VectorLayer | undefined;
+  private drawLayer: VectorLayer;
   private style: StyleManager;
 
   private events: IDrawerEvents = {
@@ -33,10 +33,11 @@ class ExtendedDraw extends Interaction {
     start: undefined,
   };
 
-  constructor(interactionName: string, style: IStyleOptions) {
+  constructor(interactionName: string, style: StyleManager) {
     super();
     this.set('name', interactionName);
-    this.style = new StyleManager(style);
+    this.style = style;
+    this.drawLayer = this.createDrawLayer();
   }
 
   /**
@@ -53,14 +54,20 @@ class ExtendedDraw extends Interaction {
    * @param map - OpenLayers map
    */
   private addDrawLayer(map: Map): void {
-    this.drawLayer = new VectorLayer({
+    map.addLayer(this.drawLayer);
+    this.drawLayer.setStyle(this.style.getStyle());
+  }
+
+  /**
+   * Create a draw layer.
+   * @returns - The draw layer.
+   */
+  private createDrawLayer(): VectorLayer {
+    return new VectorLayer({
       source: new VectorSource(),
       visible: true,
       zIndex: Infinity,
     });
-
-    map.addLayer(this.drawLayer);
-    this.drawLayer.setStyle(this.style.getStyle());
   }
 
   /**
@@ -68,7 +75,7 @@ class ExtendedDraw extends Interaction {
    * @param type - Draw type
    */
   public createFeature(type: Type): void {
-    const drawSource = this.drawLayer?.getSource();
+    const drawSource = this.drawLayer.getSource();
 
     // Create draw interaction.
     this.drawInteraction = this.createDraw(drawSource, type);
@@ -141,11 +148,9 @@ class ExtendedDraw extends Interaction {
       this.drawInteraction.setActive(false);
     }
 
-    if (this.events.end && this.events.abort && this.events.start) {
-      unByKey(this.events.end);
-      unByKey(this.events.abort);
-      unByKey(this.events.start);
-    }
+    if (this.events.end) unByKey(this.events.end);
+    if (this.events.abort) unByKey(this.events.abort);
+    if (this.events.start) unByKey(this.events.start);
   }
 
   /**
@@ -153,14 +158,14 @@ class ExtendedDraw extends Interaction {
    */
   public removeAllFeatures(): void {
     this.deactivateDraw();
-    this.drawLayer?.getSource()?.clear();
+    this.drawLayer.getSource()?.clear();
   }
 
   /**
    * Returns the layer on which the drawing is made.
    * @returns - The drawing layer.
    */
-  public getDrawLayer(): VectorLayer | undefined {
+  public getLayer(): VectorLayer {
     return this.drawLayer;
   }
 

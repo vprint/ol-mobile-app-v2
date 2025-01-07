@@ -1,5 +1,5 @@
 import { Interaction, Modify, Select } from 'ol/interaction';
-import { Feature, getUid } from 'ol';
+import { Collection, Feature, getUid } from 'ol';
 import { click } from 'ol/events/condition';
 import { Map } from 'ol';
 import StyleManager from '../StyleManager';
@@ -11,18 +11,18 @@ import VectorLayer from 'ol/layer/Vector';
 class ExtendedModify extends Interaction {
   private modifyInteraction: Modify | undefined;
   private selectInteraction: Select | undefined;
-  private drawLayer: VectorLayer | undefined;
+  private modificationLayer: VectorLayer;
   private style: StyleManager;
 
   constructor(
     interactionName: string,
     style: StyleManager,
-    drawLayer: VectorLayer | undefined
+    layer: VectorLayer
   ) {
     super();
     this.set('name', interactionName);
     this.style = style;
-    this.drawLayer = drawLayer;
+    this.modificationLayer = layer;
   }
 
   /**
@@ -32,12 +32,8 @@ class ExtendedModify extends Interaction {
   public setMap(map: Map | null): void {
     super.setMap(map);
 
-    if (
-      this.drawLayer?.getSource() &&
-      !this.selectInteraction &&
-      !this.modifyInteraction
-    ) {
-      this.selectInteraction = this.getSelect(this.drawLayer);
+    if (!this.selectInteraction && !this.modifyInteraction) {
+      this.selectInteraction = this.getSelect(this.modificationLayer);
       this.getMap()?.addInteraction(this.selectInteraction);
 
       this.modifyInteraction = this.getModify(this.selectInteraction);
@@ -54,6 +50,9 @@ class ExtendedModify extends Interaction {
     return new Modify({
       style: this.style.getEditionStyle(),
       features: selector.getFeatures(),
+      deleteCondition: (event): boolean => {
+        return click(event);
+      },
     });
   }
 
@@ -75,10 +74,15 @@ class ExtendedModify extends Interaction {
 
   setActive(active: boolean): void {
     super.setActive(active);
-    if (this.modifyInteraction && this.selectInteraction) {
-      this.modifyInteraction.setActive(active);
-      this.selectInteraction.setActive(active);
+
+    if (!active) {
+      this.unselectFeature();
+      this.selectInteraction?.getFeatures().clear();
+      this.modifyInteraction?.getOverlay().getSource()?.clear();
     }
+
+    this.selectInteraction?.setActive(active);
+    this.modifyInteraction?.setActive(active);
   }
 
   /**
@@ -87,10 +91,13 @@ class ExtendedModify extends Interaction {
    */
   public removeFeature(): void {
     const feature = this.getFeature();
+
     if (feature) {
-      this.drawLayer?.getSource()?.removeFeature(feature);
+      this.modifyInteraction?.getOverlay().getSource()?.clear();
+      this.modificationLayer.getSource()?.removeFeature(feature);
     }
-    this.selectInteraction?.getFeatures().clear();
+
+    this.unselectFeature();
   }
 
   /**

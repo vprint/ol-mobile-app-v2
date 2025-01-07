@@ -34,7 +34,7 @@ export const useMeasureStore = defineStore('measure', () => {
     mode: GeometryType.LINE_STRING | GeometryType.POLYGON
   ): void {
     mis.measurePlugin.setActive(true);
-    mis.measurePlugin.addMeasureFeature(mode);
+    mis.measurePlugin.createMeasureFeature(mode);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 

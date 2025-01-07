@@ -13,7 +13,7 @@ import { getUid } from 'ol/util';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import StyleManager, { IStyleOptions } from '../StyleManager';
-import ExtendedModify from './DrawModifier';
+import ExtendedModify from './ExtendedModify';
 
 /**
  * Provides function to manage draw
