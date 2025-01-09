@@ -17,10 +17,11 @@ import { useMapStore } from './map-store';
 // Others imports
 import VectorTileSelect from 'src/services/VectorTileSelect';
 import Measure from 'src/services/measure/Measure';
-import Drawer from 'src/services/drawer/Drawer';
+import ExtendedDraw from 'src/services/drawer/ExtendedDraw';
 
 // Interface imports
 import { Interactions } from 'src/enums/interactions.enum';
+import StyleManager from 'src/services/StyleManager';
 
 /**
  * Store and manage mapInteraction.
@@ -43,11 +44,14 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   const measurePlugin = new Measure(Interactions.MEASURE);
 
-  const drawPlugin = new Drawer(Interactions.DRAWER, {
-    strokeColor: 'rgba(232,32,192,1)',
-    fillColor: 'rgba(232,32,192,0.2)',
-    strokeWidth: 2,
-  });
+  const drawPlugin = new ExtendedDraw(
+    Interactions.DRAWER,
+    new StyleManager({
+      strokeColor: 'rgba(232,32,192,1)',
+      fillColor: 'rgba(232,32,192,0.2)',
+      strokeWidth: 2,
+    })
+  );
 
   const link = new Link({
     params: ['x', 'y', 'z', 'r'],

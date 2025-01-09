@@ -23,17 +23,17 @@ export const useDrawStore = defineStore('draw', () => {
   const isVisible = ref(false);
 
   function createNewPolygon(): void {
-    mis.drawPlugin.addFeature(GeometryType.POLYGON);
+    mis.drawPlugin.createFeature(GeometryType.POLYGON);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function createNewLine(): void {
-    mis.drawPlugin.addFeature(GeometryType.LINE_STRING);
+    mis.drawPlugin.createFeature(GeometryType.LINE_STRING);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function createNewPoint(): void {
-    mis.drawPlugin.addFeature(GeometryType.POINT);
+    mis.drawPlugin.createFeature(GeometryType.POINT);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
@@ -49,7 +49,8 @@ export const useDrawStore = defineStore('draw', () => {
   }
 
   function deleteDraw(): void {
-    mis.drawPlugin.getDrawModifier()?.removeFeature();
+    console.log('need to implement this');
+    //mis.drawPlugin.removeFeature();
   }
 
   function setVisible(active: boolean): void {

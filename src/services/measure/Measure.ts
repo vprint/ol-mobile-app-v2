@@ -1,7 +1,6 @@
 import './Measure.css';
 import { GeometryType } from 'src/enums/geometry.enum';
 import { EventsKey } from 'ol/events';
-import StyleManager, { IStyleOptions } from '../StyleManager';
 import { getUid } from 'ol/util';
 import { Interaction } from 'ol/interaction';
 import { Feature, Overlay } from 'ol';
@@ -16,6 +15,7 @@ import Map from 'ol/Map';
 import ExtendedDraw from '../drawer/ExtendedDraw';
 import ExtendedModify from '../drawer/ExtendedModify';
 import VectorLayer from 'ol/layer/Vector';
+import StyleManager, { IStyleOptions } from '../StyleManager';
 
 /**
  * Measure event definition
@@ -45,7 +45,7 @@ const MeasureParameters: IMeasureParameters = {
   RAW_MEASURE: 'measure',
   TOOLTIP_POSITIONING: 'center-center',
   FORMATED_MEASURE: 'formatedMeasure',
-} as const;
+};
 
 type IMeasureType = GeometryType.POLYGON | GeometryType.LINE_STRING;
 
@@ -102,7 +102,6 @@ class Measure extends Interaction {
 
     this.modifyInteraction = this.getModify(
       interactionName,
-      this.measureStyle,
       this.drawInteraction.getLayer()
     );
   }
@@ -122,18 +121,16 @@ class Measure extends Interaction {
   /**
    * Returns a modify interaction for feature editing.
    * @param interactionName - Unique identifier of the interaction.
-   * @param style - Style configuration for modified features.
    * @param draw - The target layer.
    * @returns Enhanced Modify interaction.
    */
   private getModify(
     interactionName: string,
-    style: IStyleOptions,
     drawLayer: VectorLayer
   ): ExtendedModify {
     return new ExtendedModify(
       `${interactionName}-${MeasureParameters.MODIFY}`,
-      new StyleManager(style),
+      new StyleManager(this.measureStyle),
       drawLayer
     );
   }
@@ -415,8 +412,10 @@ class Measure extends Interaction {
    */
   public removeMeasure(): void {
     const selectedMeasure = this.modifyInteraction.getFeature();
-    this.removeOverlayById(getUid(selectedMeasure));
-    this.modifyInteraction.removeFeature();
+    if (selectedMeasure) {
+      this.removeOverlayById(getUid(selectedMeasure));
+      this.modifyInteraction.removeFeature();
+    }
   }
 
   /**
