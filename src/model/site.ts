@@ -1,154 +1,127 @@
-import { format } from 'date-fns';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import { Feature } from 'ol';
+import { GeoJSONFeature } from 'ol/format/GeoJSON';
+import TypedFeature from 'src/services/TypedFeature';
 import { ISite } from 'src/interface/ISite';
+import { SiteAttributes } from 'src/enums/site-type.enums';
+
+const booleanAttributes = [
+  SiteAttributes.VERIFIED,
+  SiteAttributes.CERAMICS,
+  SiteAttributes.LOOTED,
+  SiteAttributes.CULTIVATED,
+  SiteAttributes.CLEARED,
+  SiteAttributes.THREATENED,
+  SiteAttributes.MATERIAL_SANDSTONE,
+  SiteAttributes.MATERIAL_PINK_SANDSTONE,
+  SiteAttributes.MATERIAL_LATERITE,
+  SiteAttributes.MATERIAL_BRICK,
+  SiteAttributes.MATERIAL_THMAPHNOM,
+  SiteAttributes.MATERIAL_OTHER,
+  SiteAttributes.ARTEFACTS_PEDESTAL,
+  SiteAttributes.ARTEFACTS_COLONETTE,
+  SiteAttributes.ARTEFACTS_DOORFRAME,
+  SiteAttributes.ARTEFACTS_STATUARY,
+  SiteAttributes.ARTEFACTS_DECORATED_BLOCKS,
+  SiteAttributes.ARTEFACTS_OTHER,
+  SiteAttributes.ID_AMBIGUITY,
+  SiteAttributes.IK_STARRED,
+  SiteAttributes.IN_GAP_STUDY_AREA,
+  SiteAttributes.IN_LIDAR_STUDY_AREA,
+  SiteAttributes.TO_BE_INVESTIGATED,
+  SiteAttributes.TO_BE_REMAPPED,
+  SiteAttributes.TO_BE_REMOVED,
+];
+
+const regularAttributes = [
+  SiteAttributes.ENGLISH_NAME,
+  SiteAttributes.FRENCH_NAME,
+  SiteAttributes.KHMER_NAME,
+  SiteAttributes.ALTERNATIVE_NAME,
+  SiteAttributes.ALTERNATIVE_KHMER_NAME,
+  SiteAttributes.DESCRIPTION,
+  SiteAttributes.CERAMICS_DETAILS,
+  SiteAttributes.BUILD_MATERIAL_COMMENTS,
+  SiteAttributes.ARTEFACTS_COMMENTS,
+  SiteAttributes.DATABASING_COMMENTS,
+  SiteAttributes.USER_CREATION,
+  SiteAttributes.USER_MODIFICATION,
+  SiteAttributes.STUDY_AREA,
+  SiteAttributes.FEATURE_TYPE,
+  SiteAttributes.ID_AMBIGUITY_DETAIL,
+  SiteAttributes.IK_ID,
+  SiteAttributes.MH_ID,
+  SiteAttributes.BD_ID,
+  SiteAttributes.DC_ID,
+  SiteAttributes.COORDINATE_SOURCE,
+  SiteAttributes.SITE_ID,
+  SiteAttributes.LOCATED_BY,
+  SiteAttributes.GROUND_VERIFIED_BY,
+  SiteAttributes.CK_ID,
+  SiteAttributes.GT_ID,
+  SiteAttributes.CP_ID,
+  SiteAttributes.GA_ID,
+  SiteAttributes.JB_ID,
+  SiteAttributes.EM_ID,
+  SiteAttributes.PK_ID,
+  SiteAttributes.IS_ID,
+  SiteAttributes.DB_RESOLVED,
+  SiteAttributes.DOCUMENTS,
+  SiteAttributes.ARTEFACTS,
+  SiteAttributes.INDIVIDUALS,
+];
+
+const dateAttributes = [
+  SiteAttributes.VERIFICATION_DATE,
+  SiteAttributes.CREATION_DATE,
+  SiteAttributes.MODIFICATION_DATE,
+];
 
 /**
  * Site
  */
-export class Site {
-  public siteId: number;
-  public englishName?: string;
-  public frenchName?: string;
-  public khmerName?: string;
-  public alternativeName?: string;
-  public alternativeKhmerName?: string;
-  public description?: string;
-  public verified?: boolean;
-  public ceramicsDetails?: string;
-  public ceramics?: boolean;
-  public buildMaterialComments?: string;
-  public artefactsComments?: string;
-  public looted?: boolean;
-  public cultivated?: boolean;
-  public cleared?: boolean;
-  public threatened?: boolean;
-  public databasingComments?: string;
-  public userCreation?: string;
-  public userModification?: string;
-  public featureType?: string;
-  public locatedBy?: number;
-  public groundVerifiedBy?: number;
-  public materialSandstone?: boolean;
-  public materialPinkSandstone?: boolean;
-  public materialLaterite?: boolean;
-  public materialBrick?: boolean;
-  public materialThmaphnom?: boolean;
-  public materialOther?: boolean;
-  public artefactsPedestal?: boolean;
-  public artefactsColonette?: boolean;
-  public artefactsDoorframe?: boolean;
-  public artefactsStatuary?: boolean;
-  public artefactsDecoratedBlocks?: boolean;
-  public artefactsOther?: boolean;
-  public idAmbiguity?: boolean;
-  public idAmbiguityDetail?: string;
-  public ckId?: number;
-  public ikId?: string;
-  public mhId?: string;
-  public ikStarred?: boolean;
-  public bdId?: string;
-  public gtId?: number;
-  public cpId?: number;
-  public dcId?: string;
-  public gaId?: number;
-  public jbId?: number;
-  public emId?: number;
-  public pkId?: number;
-  public isId?: number;
-  public coordinateSource?: string;
-  public inGapStudyArea?: boolean;
-  public inLidarStudyArea?: boolean;
-  public toBeInvestigated?: boolean;
-  public toBeRemapped?: boolean;
-  public toBeRemoved?: boolean;
-  public dbResolved?: number;
-  public creationDate?: string;
-  public verificationDate?: string;
-  public modificationDate?: string;
+export class Site extends TypedFeature<ISite> {
+  constructor(site: GeoJSONFeature) {
+    super();
+    this.initializeFeature(site);
+  }
 
-  constructor(partialEntity: ISite | Site) {
-    this.siteId =
-      partialEntity instanceof Site
-        ? partialEntity.siteId
-        : Number(partialEntity.siteId);
-    this.englishName = partialEntity.englishName ?? undefined;
-    this.frenchName = partialEntity.frenchName ?? undefined;
-    this.khmerName = partialEntity.khmerName ?? undefined;
-    this.alternativeName = partialEntity.alternativeName ?? undefined;
-    this.alternativeKhmerName = partialEntity.alternativeKhmerName ?? undefined;
-    this.description = partialEntity.description ?? undefined;
-    this.ikId = partialEntity.ikId ?? undefined;
-    this.mhId = partialEntity.mhId ?? undefined;
-    this.verified = Boolean(partialEntity.verified);
-    this.locatedBy = partialEntity.locatedBy ?? undefined;
-    this.ceramicsDetails = partialEntity.ceramicsDetails ?? undefined;
-    this.ceramics = Boolean(partialEntity.ceramics);
-    this.buildMaterialComments =
-      partialEntity.buildMaterialComments ?? undefined;
-    this.artefactsComments = partialEntity.artefactsComments ?? undefined;
-    this.looted = Boolean(partialEntity.looted);
-    this.cultivated = Boolean(partialEntity.cultivated);
-    this.cleared = Boolean(partialEntity.cleared);
-    this.threatened = Boolean(partialEntity.threatened);
-    this.databasingComments = partialEntity.databasingComments ?? undefined;
-    this.userCreation = partialEntity.userCreation ?? undefined;
-    this.userModification = partialEntity.userModification ?? undefined;
-    this.featureType = partialEntity.featureType ?? undefined;
-    this.groundVerifiedBy = partialEntity.groundVerifiedBy ?? undefined;
-    this.materialSandstone = partialEntity.materialSandstone ?? undefined;
-    this.materialPinkSandstone =
-      partialEntity.materialPinkSandstone ?? undefined;
-    this.materialLaterite = partialEntity.materialLaterite ?? undefined;
-    this.materialBrick = partialEntity.materialBrick ?? undefined;
-    this.materialThmaphnom = partialEntity.materialThmaphnom ?? undefined;
-    this.materialOther = partialEntity.materialOther ?? undefined;
-    this.artefactsPedestal = partialEntity.artefactsPedestal ?? undefined;
-    this.artefactsColonette = partialEntity.artefactsColonette ?? undefined;
-    this.artefactsDoorframe = partialEntity.artefactsDoorframe ?? undefined;
-    this.artefactsStatuary = partialEntity.artefactsStatuary ?? undefined;
-    this.artefactsDecoratedBlocks =
-      partialEntity.artefactsDecoratedBlocks ?? undefined;
-    this.artefactsOther = partialEntity.artefactsOther ?? undefined;
-    this.idAmbiguity = partialEntity.idAmbiguity ?? undefined;
-    this.idAmbiguityDetail = partialEntity.idAmbiguityDetail ?? undefined;
-    this.ckId = partialEntity.ckId ?? undefined;
-    this.ikId = partialEntity.ikId ?? undefined;
-    this.mhId = partialEntity.mhId ?? undefined;
-    this.ikStarred = partialEntity.ikStarred ?? undefined;
-    this.bdId = partialEntity.bdId ?? undefined;
-    this.gtId = partialEntity.gtId ?? undefined;
-    this.cpId = partialEntity.cpId ?? undefined;
-    this.dcId = partialEntity.dcId ?? undefined;
-    this.gaId = partialEntity.gaId ?? undefined;
-    this.jbId = partialEntity.jbId ?? undefined;
-    this.emId = partialEntity.emId ?? undefined;
-    this.pkId = partialEntity.pkId ?? undefined;
-    this.isId = partialEntity.isId ?? undefined;
-    this.coordinateSource = partialEntity.coordinateSource ?? undefined;
-    this.inGapStudyArea = partialEntity.inGapStudyArea ?? undefined;
-    this.inLidarStudyArea = partialEntity.inLidarStudyArea ?? undefined;
-    this.toBeInvestigated = partialEntity.toBeInvestigated ?? undefined;
-    this.toBeRemapped = partialEntity.toBeRemapped ?? undefined;
-    this.toBeRemoved = partialEntity.toBeRemoved ?? undefined;
-    this.dbResolved = partialEntity.dbResolved ?? undefined;
-
-    this.creationDate = partialEntity.creationDate
-      ? format(partialEntity.creationDate, 'yyyy/MM/dd')
-      : undefined;
-
-    this.modificationDate = partialEntity.modificationDate
-      ? format(partialEntity.modificationDate, 'yyyy/MM/dd')
-      : undefined;
-
-    this.verificationDate = partialEntity.verificationDate
-      ? format(partialEntity.verificationDate, 'yyyy/MM/dd')
-      : undefined;
+  private initializeFeature(site: GeoJSONFeature): void {
+    const feature = new GeoJSON().readFeature(site) as Feature;
+    this.setGeometry(feature.getGeometry());
+    this.setAttributes(site.properties as ISite);
   }
 
   /**
-   * Clone the site
-   * @returns new site instance
+   * Set the attributes and values.
+   * @param attributes - The site attributes
    */
-  public clone(): Site {
-    return new Site(this);
+  private setAttributes(attributes: ISite): void {
+    Object.entries(attributes).forEach(([key, value]) => {
+      const attribute = key as SiteAttributes;
+      if (!value) {
+        this.set(attribute, undefined);
+      } else {
+        if (booleanAttributes.includes(attribute)) {
+          this.set(attribute, Boolean(value));
+        } else if (dateAttributes.includes(attribute)) {
+          const date = new Date(value);
+          this.set(attribute, date);
+        } else if (regularAttributes.includes(attribute)) {
+          this.set(attribute, value);
+        }
+      }
+    });
+  }
+
+  public override clone(): Site {
+    const geoJSON = new GeoJSON();
+    const featureGeoJSON = geoJSON.writeFeatureObject(this);
+    return new Site(featureGeoJSON);
+  }
+
+  public getGeoJSON(): GeoJSONFeature {
+    const geoJSON = new GeoJSON();
+    return geoJSON.writeFeatureObject(this);
   }
 }

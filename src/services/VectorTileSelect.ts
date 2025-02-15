@@ -115,7 +115,7 @@ class VectorTileSelect extends Interaction {
       const featureIds = features?.map((feature) =>
         feature.getId()?.toString()
       );
-      this.setSelectedById(featureIds);
+      this.setAsSelected(featureIds);
 
       this.dispatchEvent(
         new VectorTileSelectEvent(
@@ -141,7 +141,7 @@ class VectorTileSelect extends Interaction {
    * Set features as selected given a list of id.
    * @param featuresId - A list of ids.
    */
-  public setSelectedById(featuresId: (string | undefined)[] | undefined): void {
+  public setAsSelected(featuresId: (string | undefined)[] | undefined): void {
     this.clear();
     featuresId?.forEach((featureId) => {
       if (featureId) this.selectedFeatures.add(featureId);

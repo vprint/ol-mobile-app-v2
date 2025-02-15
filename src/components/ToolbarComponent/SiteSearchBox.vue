@@ -11,6 +11,7 @@ import { useReferencesStore } from '../../stores/references-store';
 
 // Component imports
 import { QSelect } from 'quasar';
+import { SiteAttributes } from 'src/enums/site-type.enums';
 
 // Others imports
 
@@ -40,8 +41,10 @@ const model = computed({
   get: () =>
     site.value
       ? {
-          label: `${site.value.englishName} - ${site.value.siteId}`,
-          value: site.value.siteId,
+          label: `${site.value.get(
+            SiteAttributes.ENGLISH_NAME
+          )} - ${site.value.get(SiteAttributes.SITE_ID)}`,
+          value: site.value.get(SiteAttributes.SITE_ID),
         }
       : undefined,
   set: () => {

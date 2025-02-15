@@ -1,45 +1,47 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends object">
 import { computed } from 'vue';
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    options: unknown;
-    editionMode: boolean;
-    optionValue?: string;
-    optionLabel?: string;
-    multiple?: boolean;
-    noPadding?: boolean;
-  }>(),
-  {
-    optionValue: undefined,
-    optionLabel: undefined,
-    multiple: false,
-    noPadding: false,
-  }
-);
+interface FormSelectProps<T extends object> {
+  label: string;
+  options: T[];
+  editionMode: boolean;
+  optionValue?: keyof T;
+  optionLabel?: keyof T;
+  multiple?: boolean;
+  noPadding?: boolean;
+}
 
-const model = defineModel<unknown>();
+const props = withDefaults(defineProps<FormSelectProps<T>>(), {
+  optionValue: undefined,
+  optionLabel: undefined,
+  multiple: false,
+  noPadding: false,
+});
+
+const model = defineModel<T | T[]>();
 
 /**
  * Read properties of objets
  */
 const computedModel = computed({
   get: () => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (props.optionLabel && props.optionValue && !props.multiple) {
-      // @ts-expect-error unknown type error
-      return props.options.find(
-        // @ts-expect-error unknown type error
-        (element: unknown) => element[props.optionValue] === model.value
-      );
+      return props.options.find((element: T) => {
+        const key = props.optionValue as keyof T;
+        return element[key] === model.value;
+      });
     } else {
       return model.value;
     }
   },
-
-  set: (newValue) => {
-    if (props.optionValue) {
-      model.value = newValue[props.optionValue];
+  set: (newValue: T | T[]) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (props.optionValue && !props.multiple) {
+      const key = props.optionValue;
+      if (!Array.isArray(newValue)) {
+        model.value = newValue[key] as T;
+      }
     } else {
       model.value = newValue;
     }
@@ -50,12 +52,12 @@ const computedModel = computed({
 <template>
   <q-select
     v-model="computedModel"
-    :options="(options as any)"
+    :options="options"
     :label="label"
     :readonly="!editionMode"
     :hide-dropdown-icon="!editionMode"
-    :option-value="optionValue"
-    :option-label="optionLabel"
+    :option-value="optionValue?.toString()"
+    :option-label="optionLabel?.toString()"
     :multiple="multiple"
     :use-chips="multiple"
     :class="noPadding ? undefined : 'form-select-element'"

@@ -22,7 +22,8 @@ import { Feature as GeoJSONFeature } from 'geojson';
 // Enum / Interface imports
 import { Site } from 'src/model/site';
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { ISite } from 'src/interface/ISite';
+import { SiteAttributes } from 'src/enums/site-type.enums';
+import NewSite from 'src/model/newSite';
 
 /**
  * Store sites and and related functionnalities
@@ -82,23 +83,24 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     const feature = rawSite?.features[0];
 
     if (feature) {
-      const newSite = new Site(feature.properties as ISite);
+      const test = new NewSite(feature);
+      console.log(test.attributes.alternativeName);
+      // TODO: Continuer de travailler ici
+      console.log(test, 'Feature de test');
+      const newSite = new Site(feature);
 
-      if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
-        openSitePanel(newSite.siteId);
+      if (
+        sps.panelParameters.parameterValue !==
+        newSite.get(SiteAttributes.SITE_ID).toString()
+      ) {
+        openSitePanel(newSite.get(SiteAttributes.SITE_ID));
       }
 
       fitMap(feature);
       site.value = newSite;
-      mis.selectorPlugin.setSelectedById([siteId.toString()]);
+      mis.selectorPlugin.setAsSelected([siteId.toString()]);
     }
   }
-
-  // function setModifiable(rawFeature: GeoJSONFeature): void {
-  //   const drawer = mis.drawPlugin
-  //   const feature = new GeoJSON().readFeatures(rawFeature)
-  //   mis.drawPlugin.addFeature(feature)
-  // }
 
   /**
    * Fit the map to the selected site and set the style.
@@ -129,7 +131,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
         if (features && features.length > 0) {
           openSitePanel(features[0].getId() as number);
-          mis.selectorPlugin.setSelectedById([features[0].getId()?.toString()]);
+          mis.selectorPlugin.setAsSelected([features[0].getId()?.toString()]);
         }
       }
     );
@@ -160,7 +162,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
           newPanelParameters.parameterValue as string,
           10
         );
-        if (siteId !== site.value?.siteId) {
+        if (siteId !== site.value?.get(SiteAttributes.SITE_ID)) {
           setSiteById(siteId);
         }
       } else {
