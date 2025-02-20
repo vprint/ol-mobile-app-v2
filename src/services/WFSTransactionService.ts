@@ -116,41 +116,57 @@ class WFSTransactionService {
     transactionResult: TransactionResponse | undefined
   ): ICheckingParameters {
     return {
-      [TransactionMode.INSERT]: {
-        message: {
-          success: { title: 'Succès', text: 'Entité inserée avec succès' },
-          error: { title: 'Echec', text: "Echec de l'insertion" },
-        },
-        check: () =>
-          transactionResult !== undefined &&
-          transactionResult.transactionSummary.totalInserted >= 1,
-      },
+      [TransactionMode.INSERT]: this.getInsertParameters(transactionResult),
+      [TransactionMode.UPDATE]: this.getUpdateParameters(transactionResult),
+      [TransactionMode.DELETE]: this.getDeleteParameters(transactionResult),
+    };
+  }
 
-      [TransactionMode.UPDATE]: {
-        message: {
-          success: {
-            title: 'Succès',
-            text: 'Entité mise à jour avec succès',
-          },
-          error: { title: 'Echec', text: 'Echec de la mise à jour' },
-        },
-        check: () =>
-          transactionResult !== undefined &&
-          transactionResult.transactionSummary.totalUpdated >= 1,
+  private getInsertParameters(
+    transactionResult: TransactionResponse | undefined
+  ): ICheckingItem {
+    return {
+      message: {
+        success: { title: 'Succès', text: 'Entité inserée avec succès' },
+        error: { title: 'Echec', text: "Echec de l'insertion" },
       },
+      check: () =>
+        transactionResult !== undefined &&
+        transactionResult.transactionSummary.totalInserted >= 1,
+    };
+  }
 
-      [TransactionMode.DELETE]: {
-        message: {
-          success: {
-            title: 'Suppression',
-            text: 'Entité supprimée avec succès',
-          },
-          error: { title: 'Echec', text: 'Echec de la suppression' },
+  private getUpdateParameters(
+    transactionResult: TransactionResponse | undefined
+  ): ICheckingItem {
+    return {
+      message: {
+        success: {
+          title: 'Succès',
+          text: 'Entité mise à jour avec succès',
         },
-        check: () =>
-          transactionResult !== undefined &&
-          transactionResult.transactionSummary.totalDeleted >= 1,
+        error: { title: 'Echec', text: 'Echec de la mise à jour' },
       },
+      check: () =>
+        transactionResult !== undefined &&
+        transactionResult.transactionSummary.totalUpdated >= 1,
+    };
+  }
+
+  private getDeleteParameters(
+    transactionResult: TransactionResponse | undefined
+  ): ICheckingItem {
+    return {
+      message: {
+        success: {
+          title: 'Suppression',
+          text: 'Entité supprimée avec succès',
+        },
+        error: { title: 'Echec', text: 'Echec de la suppression' },
+      },
+      check: () =>
+        transactionResult !== undefined &&
+        transactionResult.transactionSummary.totalDeleted >= 1,
     };
   }
 

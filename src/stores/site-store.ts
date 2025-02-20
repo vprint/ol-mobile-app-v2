@@ -20,10 +20,8 @@ import {
 import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface imports
-import { Site } from 'src/model/site';
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { SiteAttributes } from 'src/enums/site-type.enums';
-import NewSite from 'src/model/newSite';
+import Site from 'src/model/site';
 
 /**
  * Store sites and and related functionnalities
@@ -83,17 +81,13 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     const feature = rawSite?.features[0];
 
     if (feature) {
-      const test = new NewSite(feature);
-      console.log(test.attributes.alternativeName);
-      // TODO: Continuer de travailler ici
-      console.log(test, 'Feature de test');
-      const newSite = new Site(feature);
+      const newSite = new Site({
+        ...feature.properties,
+        geometry: new GeoJSON().readGeometry(feature.geometry),
+      });
 
-      if (
-        sps.panelParameters.parameterValue !==
-        newSite.get(SiteAttributes.SITE_ID).toString()
-      ) {
-        openSitePanel(newSite.get(SiteAttributes.SITE_ID));
+      if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
+        openSitePanel(newSite.siteId);
       }
 
       fitMap(feature);
@@ -162,7 +156,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
           newPanelParameters.parameterValue as string,
           10
         );
-        if (siteId !== site.value?.get(SiteAttributes.SITE_ID)) {
+        if (siteId !== site.value?.siteId) {
           setSiteById(siteId);
         }
       } else {

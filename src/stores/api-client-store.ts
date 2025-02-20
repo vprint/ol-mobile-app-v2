@@ -14,7 +14,7 @@ import {
 } from 'src/enums/error-event.enum';
 import ApiClient from '../services/ApiClient';
 
-export enum cacheEntry {
+export enum CacheEntry {
   SITE = 'site',
   INDIVIDUAL_LIST = 'individualList',
   PROJECT_LIST = 'projectList',
@@ -23,11 +23,11 @@ export enum cacheEntry {
 }
 
 interface ApiRequestorCache {
-  site: FeatureCollection | undefined;
-  individualList: IIndividual[] | undefined;
-  projectList: IProject[] | undefined;
-  siteList: ISiteList[] | undefined;
-  siteTypeList: ISiteType[] | undefined;
+  [CacheEntry.SITE]: FeatureCollection | undefined;
+  [CacheEntry.INDIVIDUAL_LIST]: IIndividual[] | undefined;
+  [CacheEntry.PROJECT_LIST]: IProject[] | undefined;
+  [CacheEntry.SITE_LIST]: ISiteList[] | undefined;
+  [CacheEntry.SITE_TYPE_LIST]: ISiteType[] | undefined;
 }
 
 const ns = useNotificationStore();
@@ -59,7 +59,7 @@ export const useApiClientStore = defineStore('apiClient', () => {
    * Clear a cache entry
    * @param ref The cache reference to clear
    */
-  function clearCacheByReference(ref: cacheEntry): void {
+  function clearCacheByReference(ref: CacheEntry): void {
     _cache[ref] = undefined;
   }
 
@@ -82,7 +82,7 @@ export const useApiClientStore = defineStore('apiClient', () => {
   async function getSiteById(
     siteId: number
   ): Promise<FeatureCollection | undefined> {
-    clearCacheByReference(cacheEntry.SITE);
+    clearCacheByReference(CacheEntry.SITE);
     _cache.site = await apiClient.getJSON<FeatureCollection>(
       `${AppVariables.FUNCTION_SERVER}.get_site_by_id/items.json?id=${siteId}`
     );

@@ -53,7 +53,7 @@ class EventEmitter<IEventList extends Record<string, unknown[]>>
     if (!this.events[eventName]) {
       this.events[eventName] = [];
     }
-    this.events[eventName]?.push(handler);
+    this.events[eventName].push(handler);
   }
 
   /**

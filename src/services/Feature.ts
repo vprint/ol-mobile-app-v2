@@ -1,21 +1,60 @@
+import Geometry from 'ol/geom/Geometry';
 import { Feature } from 'ol';
-import { GeoJSONFeature } from 'ol/format/GeoJSON';
-import GeoJSON from 'ol/format/GeoJSON';
+import { ObjectWithGeometry } from 'ol/Feature';
 
 /**
- * Extended OL Feature class proving types for attributes
+ * An extended feature class providing types for attributes.
+ * Attributes can be accessed through `attributes`.
  */
 class TypedFeature<IAttributes extends object> extends Feature {
-  public attributes!: IAttributes;
+  private _attributes!: IAttributes;
   private isInitialized = false;
 
-  constructor(feature: GeoJSONFeature) {
-    super({
-      ...feature.properties,
-      geometry: new GeoJSON().readGeometry(feature.geometry),
-    });
+  /**
+   * Feature attributes with type.
+   */
+  public get attributes(): IAttributes {
+    return this._attributes;
+  }
 
-    this.manageAttributes(feature);
+  constructor(geometryOrProperties: Geometry | ObjectWithGeometry | undefined) {
+    super(geometryOrProperties);
+    this.addProxy();
+    this.isInitialized = true;
+  }
+
+  /**
+   * Set the attributes and setup the proxy to track attributes change.
+   * @param feature - The input feature.
+   */
+  private addProxy(): void {
+    this._attributes = new Proxy(
+      this.getProperties() as IAttributes,
+      this.getHandler()
+    );
+  }
+
+  /**
+   * Get the attributes handler. This manager allows to
+   * change properties in both the class and the OL feature.
+   * @returns
+   */
+  private getHandler(): ProxyHandler<IAttributes> {
+    return {
+      set: (target: IAttributes, key: PropertyKey, value: unknown): boolean => {
+        target[key as keyof IAttributes] =
+          value as IAttributes[keyof IAttributes];
+        super.set(key as string & keyof IAttributes, value);
+        return true;
+      },
+
+      get: (
+        target: IAttributes,
+        key: string
+      ): IAttributes[string & keyof IAttributes] => {
+        return this.get(key as string & keyof IAttributes);
+      },
+    };
   }
 
   override get<Key extends string & keyof IAttributes>(
@@ -24,7 +63,7 @@ class TypedFeature<IAttributes extends object> extends Feature {
     return super.get(key) as IAttributes[Key];
   }
 
-  override getProperties(): Partial<IAttributes> {
+  override getProperties(): IAttributes {
     return super.getProperties() as IAttributes;
   }
 
@@ -32,41 +71,27 @@ class TypedFeature<IAttributes extends object> extends Feature {
     key: Key,
     value: IAttributes[Key]
   ): void {
-    if (this.isInitialized) this.attributes[key] = value;
+    if (this.isInitialized) {
+      this.attributes[key] = value;
+    } else {
+      super.set(key, value);
+    }
   }
 
-  override setProperties(props: Partial<IAttributes>, silent?: boolean): void {
+  override setProperties(props: IAttributes, silent?: boolean): void {
     super.setProperties(props, silent);
     if (this.isInitialized) Object.assign(this.attributes, props);
   }
 
   /**
-   * Set attributes to the feature and add the proxy to track attributes change
-   * @param feature - The input feature
+   * Clone the feature.
+   * @returns A new instance of the feature.
    */
-  private manageAttributes(feature: GeoJSONFeature): void {
-    this.attributes = feature.properties as IAttributes;
-    this.attributes = new Proxy(
-      this.attributes,
-      this.getAttributeChangeManager()
-    );
-    this.isInitialized = true;
-  }
-
-  /**
-   * Get the attribute change manager. This manager allows to
-   * change properties in the class and in the OL feature.
-   * @returns
-   */
-  private getAttributeChangeManager(): ProxyHandler<IAttributes> {
-    return {
-      set: (target: IAttributes, key: PropertyKey, value: unknown): boolean => {
-        target[key as keyof IAttributes] =
-          value as IAttributes[keyof IAttributes];
-        super.set(key as string & keyof IAttributes, value);
-        return true;
-      },
-    };
+  override clone(): TypedFeature<IAttributes> {
+    return new TypedFeature<IAttributes>({
+      ...this.getProperties(),
+      geometry: this.getGeometry()?.clone(),
+    });
   }
 }
 
