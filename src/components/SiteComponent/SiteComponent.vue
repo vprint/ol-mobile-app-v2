@@ -13,13 +13,13 @@ import { useDrawStore } from 'src/stores/draw-store';
 // Component import
 import FormInput from '../ReusableComponents/FormInput.vue';
 import FormSelect from '../ReusableComponents/FormSelect.vue';
+import DateSelect from '../ReusableComponents/DateSelect.vue';
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 
 // Others imports
 
 // Type & interface
-import { SiteTypeRefs, SiteAttributes } from '../../enums/site-type.enums';
-import { ISite } from 'src/interface/ISite';
+import { SiteTypeRefs } from '../../enums/site-type.enums';
 
 // script
 const sis = useSiteStore();
@@ -60,45 +60,11 @@ function cancel(): void {
 
 /**
  * Enable form modification and drawing.
- * @param active - Should the edition mode be opened ?
+ * @param active - Should the edition mode be enabled ?
  */
 function setEditionMode(active: boolean): void {
   editionMode.value = active;
   drs.setVisible(active);
-}
-
-function updateStringProperty<Key extends keyof ISite>(
-  key: Key,
-  value: string | number
-): void {
-  if (site.value) {
-    if (typeof value === 'number') value = value.toString();
-    site.value.set(key, value as ISite[Key]);
-  }
-}
-
-function updateNumberProperty<Key extends keyof ISite>(
-  key: Key,
-  value: string | number
-): void {
-  if (site.value) {
-    site.value.set(key, value());
-  }
-}
-
-function updateDateProperty<Key extends keyof ISite>(
-  key: SiteAttributes,
-  value: ISite[Key]
-): void {
-  if (site.value) {
-    site.value.set(key, value);
-  }
-}
-
-function getSiteProperty<Key extends keyof ISite>(
-  key: Key
-): ISite[Key] | undefined {
-  return site.value?.get(key);
 }
 
 // watch for site change and update component
@@ -116,11 +82,7 @@ watch(
 <template>
   <SidePanelComponent v-if="site" @close="sis.closeSitePanel()">
     <template #title>
-      {{
-        `${site.get(SiteAttributes.ENGLISH_NAME)} - ${site.get(
-          SiteAttributes.SITE_ID
-        )}`
-      }}
+      {{ `${site.attributes.englishName} - ${site.siteId}` }}
     </template>
 
     <template #content>
@@ -133,47 +95,28 @@ watch(
           <legend>Names</legend>
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.ALTERNATIVE_NAME)"
+            v-model="site.attributes.alternativeName"
             :label="SiteTypeRefs.ALTERNATIVE_NAME"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.ALTERNATIVE_NAME, value)
-            "
           />
 
           <FormInput
-            :model-value="site[SiteAttributes.FRENCH_NAME]"
+            v-model="site.attributes.frenchName"
             :label="SiteTypeRefs.FRENCH_NAME"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.FRENCH_NAME, value)
-            "
           />
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.KHMER_NAME)"
+            v-model="site.attributes.khmerName"
             :label="SiteTypeRefs.KHMER_NAME"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.KHMER_NAME, value)
-            "
           />
 
           <FormInput
-            :model-value="
-              getSiteProperty(SiteAttributes.ALTERNATIVE_KHMER_NAME)
-            "
+            v-model="site.attributes.alternativeKhmerName"
             :label="SiteTypeRefs.ALTERNATIVE_KHMER_NAME"
             :edition-mode="editionMode"
             no-padding
-            @update:model-value="
-              (value) =>
-                updateStringProperty(
-                  SiteAttributes.ALTERNATIVE_KHMER_NAME,
-                  value
-                )
-            "
           />
         </fieldset>
 
@@ -181,57 +124,41 @@ watch(
           <legend>Informations</legend>
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.DESCRIPTION)"
+            v-model="site.attributes.description"
             :label="SiteTypeRefs.DESCRIPTION"
             :edition-mode="editionMode"
             autogrow
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.DESCRIPTION, value)
-            "
           />
 
           <FormSelect
-            :model-value="getSiteProperty(SiteAttributes.FEATURE_TYPE)"
+            v-model="site.attributes.featureType"
             :label="SiteTypeRefs.FEATURE_TYPE"
             :options="res.siteTypeList"
             option-value="siteTypeId"
             option-label="siteTypeName"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.FEATURE_TYPE, value)
-            "
           />
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.IK_ID)"
+            v-model="site.attributes.ikId"
             :label="SiteTypeRefs.IK_ID"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.IK_ID, value)
-            "
           />
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.MH_ID)"
+            v-model="site.attributes.mhId"
             :label="SiteTypeRefs.MH_ID"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.MH_ID, value)
-            "
           />
 
           <FormSelect
-            :model-value="getSiteProperty(SiteAttributes.LOCATED_BY)"
+            v-model="site.attributes.locatedBy"
             :label="SiteTypeRefs.LOCATED_BY"
             :options="res.individuals"
             option-value="individualId"
             option-label="individualName"
             :edition-mode="editionMode"
             no-padding
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.LOCATED_BY, value)
-            "
           />
         </fieldset>
 
@@ -239,24 +166,17 @@ watch(
           <legend>Verification</legend>
 
           <q-checkbox
-            :model-value="Boolean(getSiteProperty(SiteAttributes.VERIFIED))"
+            v-model="site.attributes.verified"
             :label="SiteTypeRefs.VERIFIED"
             :disable="!editionMode"
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.VERIFIED, value)
-            "
           />
 
-          <FormInput
-            :model-value="getSiteProperty(SiteAttributes.VERIFICATION_DATE)"
+          <DateSelect
+            v-model="site.attributes.verificationDate"
             :label="SiteTypeRefs.VERIFICATION_DATE"
             :edition-mode="editionMode"
             date
             no-padding
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.VERIFICATION_DATE, value)
-            "
           />
         </fieldset>
 
@@ -264,27 +184,17 @@ watch(
           <legend>Ceramics</legend>
 
           <q-checkbox
-            :model-value="Boolean(getSiteProperty(SiteAttributes.CERAMICS))"
+            v-model="site.attributes.ceramics"
             :label="SiteTypeRefs.CERAMICS"
             :disable="!editionMode"
-            @update:model-value="
-              (value) => updateStringProperty(SiteAttributes.CERAMICS, value)
-            "
           />
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.CERAMICS_DETAILS)"
+            v-model="site.attributes.ceramicsDetails"
             :label="SiteTypeRefs.CERAMICS_DETAILS"
             :edition-mode="editionMode"
             autogrow
             no-padding
-            @update:model-value="
-              (value) =>
-                updateStringProperty(
-                  SiteAttributes.CERAMICS_DETAILS,
-                  value.toString()
-                )
-            "
           />
         </fieldset>
 
@@ -292,18 +202,11 @@ watch(
           <legend>Artefacts</legend>
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.ARTEFACTS_COMMENTS)"
+            v-model="site.attributes.artefactsComments"
             :label="SiteTypeRefs.ARTEFACT_COMMENTS"
             :edition-mode="editionMode"
             autogrow
             no-padding
-            @update:model-value="
-              (value) =>
-                updateStringProperty(
-                  SiteAttributes.ARTEFACTS_COMMENTS,
-                  value.toString()
-                )
-            "
           />
         </fieldset>
 
@@ -311,20 +214,11 @@ watch(
           <legend>Build Materials</legend>
 
           <FormInput
-            :model-value="
-              getSiteProperty(SiteAttributes.BUILD_MATERIAL_COMMENTS)
-            "
+            v-model="site.attributes.buildMaterialComments"
             :label="SiteTypeRefs.BUILD_MATERIAL_COMMENTS"
             :edition-mode="editionMode"
             autogrow
             no-padding
-            @update:model-value="
-              (value) =>
-                updateStringProperty(
-                  SiteAttributes.BUILD_MATERIAL_COMMENTS,
-                  value
-                )
-            "
           />
         </fieldset>
 
@@ -333,47 +227,33 @@ watch(
 
           <div class="row">
             <q-checkbox
-              :model-value="Boolean(getSiteProperty(SiteAttributes.LOOTED))"
+              v-model="site.attributes.looted"
               class="col"
               :label="SiteTypeRefs.LOOTED"
               :disable="!editionMode"
-              @update:model-value="
-                (value) => updateStringProperty(SiteAttributes.LOOTED, value)
-              "
             />
 
             <q-checkbox
-              :model-value="Boolean(getSiteProperty(SiteAttributes.CLEARED))"
+              v-model="site.attributes.cleared"
               class="col"
               :label="SiteTypeRefs.CLEARED"
               :disable="!editionMode"
-              @update:model-value="
-                (value) => updateStringProperty(SiteAttributes.CLEARED, value)
-              "
             />
           </div>
 
           <div class="row">
             <q-checkbox
-              :model-value="Boolean(getSiteProperty(SiteAttributes.CULTIVATED))"
+              v-model="site.attributes.cultivated"
               class="col"
               :label="SiteTypeRefs.CULTIVATED"
               :disable="!editionMode"
-              @update:model-value="
-                (value) =>
-                  updateStringProperty(SiteAttributes.CULTIVATED, value)
-              "
             />
 
             <q-checkbox
-              :model-value="Boolean(getSiteProperty(SiteAttributes.THREATENED))"
+              v-model="site.attributes.threatened"
               class="col"
               :label="SiteTypeRefs.THREATENED"
               :disable="!editionMode"
-              @update:model-value="
-                (value) =>
-                  updateStringProperty(SiteAttributes.THREATENED, value)
-              "
             />
           </div>
         </fieldset>
@@ -382,66 +262,41 @@ watch(
           <legend>Database information</legend>
 
           <FormInput
-            :model-value="getSiteProperty(SiteAttributes.DATABASING_COMMENTS)"
+            v-model="site.attributes.databasingComments"
             :label="SiteTypeRefs.DATABASING_COMMENTS"
             :edition-mode="editionMode"
             autogrow
-            @update:model-value="
-              (value) =>
-                updateStringProperty(
-                  SiteAttributes.DATABASING_COMMENTS,
-                  value.toString()
-                )
-            "
           />
 
-          <FormInput
-            :model-value="getSiteProperty(SiteAttributes.CREATION_DATE)"
+          <DateSelect
+            v-model="site.attributes.creationDate"
             :label="SiteTypeRefs.CREATION_DATE"
             :edition-mode="editionMode"
-            date
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.CREATION_DATE, value)
-            "
           />
 
-          <FormInput
-            :model-value="getSiteProperty(SiteAttributes.MODIFICATION_DATE)"
+          <DateSelect
+            v-model="site.attributes.modificationDate"
             :label="SiteTypeRefs.MODIFICATION_DATE"
             :edition-mode="editionMode"
-            date
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.MODIFICATION_DATE, value)
-            "
           />
 
           <FormSelect
-            :model-value="getSiteProperty(SiteAttributes.USER_CREATION)"
+            v-model="site.attributes.userCreation"
             :label="SiteTypeRefs.USER_CREATION"
             :options="res.individuals"
             option-value="individualId"
             option-label="individualName"
             :edition-mode="editionMode"
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.USER_CREATION, value)
-            "
           />
 
           <FormSelect
-            :model-value="getSiteProperty(SiteAttributes.USER_MODIFICATION)"
+            v-model="site.attributes.userModification"
             :label="SiteTypeRefs.USER_MODIFICATION"
             :options="res.individuals"
             option-value="individualId"
             option-label="individualName"
             :edition-mode="editionMode"
             no-padding
-            @update:model-value="
-              (value) =>
-                updateStringProperty(SiteAttributes.USER_MODIFICATION, value)
-            "
           />
         </fieldset>
       </q-form>
