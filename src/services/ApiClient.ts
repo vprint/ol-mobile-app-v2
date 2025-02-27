@@ -47,6 +47,33 @@ class ApiClient {
     return response;
   }
 
+  public async postData<ObjectType>(
+    url: string,
+    data: string
+  ): Promise<ObjectType | undefined> {
+    const response = wretch(url)
+      .post(data)
+      .badRequest((err) => this.eventEmitter.emit(ApiEvents.BAD_REQUEST, err))
+      .unauthorized((err) =>
+        this.eventEmitter.emit(ApiEvents.UNAUTHORIZED, err)
+      )
+      .forbidden((err) => this.eventEmitter.emit(ApiEvents.FORBIDDEN, err))
+      .notFound((err) => this.eventEmitter.emit(ApiEvents.NOT_FOUND, err))
+      .timeout((err) => this.eventEmitter.emit(ApiEvents.TIMEOUT, err))
+      .internalError((err) =>
+        this.eventEmitter.emit(ApiEvents.INTERNAL_ERROR, err)
+      )
+      .error(418, (err) => this.eventEmitter.emit(ApiEvents.ERROR, err))
+      .fetchError((err) => this.eventEmitter.emit(ApiEvents.FETCH_ERROR, err))
+      .text<ObjectType>()
+      .catch((error) => {
+        console.error(error.message);
+        return undefined;
+      });
+
+    return response;
+  }
+
   /**
    * Register an event listener for API errors
    * @param eventName - The type of error event to listen for

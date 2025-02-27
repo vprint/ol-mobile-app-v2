@@ -65,8 +65,8 @@ export const useMapStore = defineStore('map', () => {
   /**
    * Adjusts the map view by applying padding and optionally zooming to a feature.
    * If no feature is provided, only applies padding to the current extent.
-   * @param padding - The padding to apply to the map
-   * @param feature - Optional feature to center and zoom the view on. If not provided, maintains the current map extent
+   * @param padding - Padding (in pixels) to be cleared inside the view. Values in the array are top, right, bottom and left padding.
+   * @param feature - Optional feature to center and zoom the view on. If not provided, maintains the current map extent.
    */
   function setPaddingAndExtent(padding: number[], feature?: Feature): void {
     let newZoom: number | undefined;
@@ -87,10 +87,10 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Get layers with a given properties
-   * @param property - The layer properties to inspect
-   * @param value - The value of the properties
-   * @returns - List of layers that match the filter
+   * Get layers with a given properties.
+   * @param property - The layer properties to inspect.
+   * @param value - The value of the properties.
+   * @returns - List of layers that match the filter.
    */
   function getLayersByProperties<K extends keyof ILayerProperties>(
     property: K,
@@ -113,8 +113,7 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Initialize the map. This function create the layers and set the map target.
-   * Set the isMapInitialized to true after that.
+   * Create the layers, set the map target and then set `isMapInitialized` to true.
    */
   function initializeMap(): void {
     // An empty mapLibre layer is added to the map
@@ -137,7 +136,7 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Add the application layers.
+   * Add the application layers to the map.
    * @param map - The OpenLayers map.
    * @param mapLibreLayer - The MapLibre layer.
    */
@@ -149,8 +148,8 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Returns the geographical extent of a feature or the
-   * current map view extent if no feature is provided.
+   * Returns the geographical extent of a feature.
+   * Current view extent is returned if the feature is undefined.
    * @param - Optional feature from which to calculate the extent.
    * @returns - The extent.
    * @private
@@ -162,11 +161,10 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Adjusts the map view to display the given
-   * extent with optional zoom level and padding.
+   * Adjusts the map view to display the given extent with optional zoom level and padding.
    * @param extent - The geographic extent to display.
    * @param newZoom - The zoom level to apply.
-   * @param padding - Padding array in pixels.
+   * @param padding - Padding (in pixels) to be cleared inside the view. Values in the array are top, right, bottom and left padding.
    */
   function _fitMapView(
     extent: Extent,

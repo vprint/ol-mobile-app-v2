@@ -42,7 +42,7 @@ const geometryManagerButtons = [
 </script>
 
 <template>
-  <div v-if="drs.isVisible" class="q-pa-md draw-container">
+  <div v-if="drs.isVisible" class="q-pb-md draw-container">
     <q-btn-group rounded class="app-button-group">
       <q-btn
         v-for="(button, index) in geometryManagerButtons"

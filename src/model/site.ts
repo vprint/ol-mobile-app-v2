@@ -1,20 +1,18 @@
 import TypedFeature from 'src/services/Feature';
 import { ISite } from 'src/interface/ISite';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { ObjectWithGeometry } from 'ol/Feature';
 import { SiteAttributes } from 'src/enums/site-type.enums';
 
 class Site extends TypedFeature<ISite> {
-  private static readonly DATE_FORMAT = 'yyyy/MM/dd';
-
   private static readonly FIELDS_TYPE = {
     dateFields: [
       SiteAttributes.CREATION_DATE,
       SiteAttributes.MODIFICATION_DATE,
-      SiteAttributes.VERIFICATION_DATE,
+      SiteAttributes.GROUND_VERIFIED_DATE,
     ] as const,
     booleanFields: [
-      SiteAttributes.VERIFIED,
+      SiteAttributes.GROUND_VERIFIED,
       SiteAttributes.CERAMICS,
       SiteAttributes.LOOTED,
       SiteAttributes.CULTIVATED,
@@ -23,20 +21,45 @@ class Site extends TypedFeature<ISite> {
     ] as const,
   };
 
-  constructor(data: ObjectWithGeometry) {
-    const site = Site.prepareData(data as ISite);
+  constructor(data: ObjectWithGeometry, formatData = true) {
+    const site = formatData ? Site.prepareData(data as ISite) : data;
     super(site);
   }
 
   public get siteId(): number {
-    return this.attributes.siteId;
+    return this.attributes[SiteAttributes.SITE_ID];
   }
 
   override clone(): Site {
-    return new Site({
-      ...this.getProperties(),
-      geometry: this.getGeometry()?.clone(),
-    });
+    return new Site(
+      {
+        ...this.getProperties(),
+        geometry: this.getGeometry()?.clone(),
+      },
+      false
+    );
+  }
+
+  /**
+   * Format the site to be OGC WFS conveniant.
+   * @returns A 'WFS ready' feature.
+   */
+  public getWFSFeature(): Site {
+    const wfsFeature = this.clone();
+
+    wfsFeature.setId(this.siteId);
+    wfsFeature.setGeometryName('geom');
+    wfsFeature.unset('id');
+
+    wfsFeature.setProperties(
+      Site.formatDate(
+        wfsFeature.getProperties(),
+        'yyyy/MM/dd',
+        "yyyy-MM-dd'T'HH:mm:ssXXX"
+      )
+    );
+
+    return wfsFeature;
   }
 
   /**
@@ -45,7 +68,11 @@ class Site extends TypedFeature<ISite> {
    * @returns A copy of the formatted data.
    */
   private static prepareData(data: ISite): ISite {
-    const formatedDate = Site.formatDate({ ...data });
+    const formatedDate = Site.formatDate(
+      { ...data },
+      'yyyy-MM-dd HH:mm:ss',
+      'yyyy/MM/dd'
+    );
     const formatedBoolean = Site.formatBoolean(formatedDate);
     return formatedBoolean;
   }
@@ -55,11 +82,16 @@ class Site extends TypedFeature<ISite> {
    * @param site - Site data.
    * @returns Data with updated date.
    */
-  private static formatDate(site: ISite): ISite {
+  private static formatDate(
+    site: ISite,
+    inputDateFormat: string,
+    outputDateFormat: string
+  ): ISite {
     this.FIELDS_TYPE.dateFields.forEach((dateField) => {
-      site[dateField] = site[dateField]
-        ? format(site[dateField], this.DATE_FORMAT)
-        : undefined;
+      if (site[dateField]) {
+        const parsedDate = parse(site[dateField], inputDateFormat, new Date());
+        site[dateField] = format(parsedDate, outputDateFormat);
+      }
     });
     return site;
   }
@@ -71,9 +103,7 @@ class Site extends TypedFeature<ISite> {
    */
   private static formatBoolean(site: ISite): ISite {
     this.FIELDS_TYPE.booleanFields.forEach((booleanFields) => {
-      site[booleanFields] = site[booleanFields]
-        ? Boolean(site[booleanFields])
-        : false;
+      site[booleanFields] = !!site[booleanFields];
     });
     return site;
   }

@@ -97,9 +97,7 @@ class Measure extends Interaction {
   constructor(interactionName: string) {
     super();
     this.set('name', interactionName);
-
     this.drawInteraction = this.getDraw(interactionName);
-
     this.modifyInteraction = this.getModify(
       interactionName,
       this.drawInteraction.getLayer()

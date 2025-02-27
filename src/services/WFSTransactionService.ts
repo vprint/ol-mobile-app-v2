@@ -5,6 +5,7 @@ import { fromCircle } from 'ol/geom/Polygon';
 import { TransactionMode } from 'src/enums/transaction.enum';
 import WFS from 'ol/format/WFS';
 import NotificationService from './notifier/Notifier';
+import { UserMessage } from 'src/enums/user-messages.enum';
 
 interface ICheckingMessage {
   title: string;
@@ -34,59 +35,35 @@ class WFSTransactionService {
    */
   public writeTransactionByMode(
     mode: TransactionMode,
-    feature: Feature | undefined,
+    feature: Feature,
     options: WriteTransactionOptions
-  ): Node | undefined {
+  ): Node {
     let wfsSerializer: Node | undefined;
 
-    if (feature) {
-      switch (mode) {
-        case TransactionMode.INSERT:
-          wfsSerializer = new WFS().writeTransaction(
-            [feature],
-            [],
-            [],
-            options
-          );
-          break;
-        case TransactionMode.UPDATE:
-          wfsSerializer = new WFS().writeTransaction(
-            [],
-            [feature],
-            [],
-            options
-          );
-          break;
-        case TransactionMode.DELETE:
-          wfsSerializer = new WFS().writeTransaction(
-            [],
-            [],
-            [feature],
-            options
-          );
-          break;
-      }
-    } else {
-      wfsSerializer = undefined;
+    switch (mode) {
+      case TransactionMode.INSERT:
+        wfsSerializer = new WFS().writeTransaction([feature], [], [], options);
+        break;
+      case TransactionMode.UPDATE:
+        wfsSerializer = new WFS().writeTransaction([], [feature], [], options);
+        break;
+      case TransactionMode.DELETE:
+        wfsSerializer = new WFS().writeTransaction([], [], [feature], options);
+        break;
     }
 
     return wfsSerializer;
   }
 
   /**
-   * Analyze result and push
+   * Analyse result and push information notification.
    * @param result - OL transaction result.
    * @param mode - Transaction mode.
    * @returns Transaction result as boolean.
    */
-  public checkResult(
-    result: Document | Element | object | string | undefined,
-    mode: TransactionMode
-  ): boolean {
-    const transactionResult = new WFS().readTransactionResponse(result);
-    const checkParameters = this.getCheckParameters(transactionResult)[mode];
+  public checkResult(result: TransactionResponse, mode: TransactionMode): void {
+    const checkParameters = this.getCheckParameters(result)[mode];
     this.pushNotification(checkParameters.check(), checkParameters);
-    return checkParameters.check();
   }
 
   /**
@@ -96,11 +73,11 @@ class WFSTransactionService {
    */
   private pushNotification(
     isSuccess: boolean,
-    chackParameters: ICheckingItem
+    checkParameters: ICheckingItem
   ): void {
     const msg = isSuccess
-      ? chackParameters.message.success
-      : chackParameters.message.error;
+      ? checkParameters.message.success
+      : checkParameters.message.error;
 
     isSuccess
       ? new NotificationService().pushSuccess(msg.title, msg.text)
@@ -127,8 +104,14 @@ class WFSTransactionService {
   ): ICheckingItem {
     return {
       message: {
-        success: { title: 'Succès', text: 'Entité inserée avec succès' },
-        error: { title: 'Echec', text: "Echec de l'insertion" },
+        success: {
+          title: UserMessage.GENERIC.SUCCESS,
+          text: UserMessage.WFS.INSERT.SUCCESS,
+        },
+        error: {
+          title: UserMessage.GENERIC.FAIL,
+          text: UserMessage.WFS.INSERT.FAIL,
+        },
       },
       check: () =>
         transactionResult !== undefined &&
@@ -142,10 +125,13 @@ class WFSTransactionService {
     return {
       message: {
         success: {
-          title: 'Succès',
-          text: 'Entité mise à jour avec succès',
+          title: UserMessage.GENERIC.SUCCESS,
+          text: UserMessage.WFS.UPDATE.SUCCESS,
         },
-        error: { title: 'Echec', text: 'Echec de la mise à jour' },
+        error: {
+          title: UserMessage.GENERIC.FAIL,
+          text: UserMessage.WFS.UPDATE.FAIL,
+        },
       },
       check: () =>
         transactionResult !== undefined &&
@@ -159,10 +145,13 @@ class WFSTransactionService {
     return {
       message: {
         success: {
-          title: 'Suppression',
-          text: 'Entité supprimée avec succès',
+          title: UserMessage.GENERIC.SUCCESS,
+          text: UserMessage.WFS.DELETE.SUCCESS,
         },
-        error: { title: 'Echec', text: 'Echec de la suppression' },
+        error: {
+          title: UserMessage.GENERIC.FAIL,
+          text: UserMessage.WFS.DELETE.FAIL,
+        },
       },
       check: () =>
         transactionResult !== undefined &&

@@ -1,6 +1,6 @@
 // Map imports
-import GeoJSON from 'ol/format/GeoJSON.js';
 import { Feature } from 'ol';
+import GeoJSON from 'ol/format/GeoJSON.js';
 
 // Vue/Quasar imports
 import { onMounted, Ref, ref, watch } from 'vue';
@@ -19,9 +19,13 @@ import {
 } from 'src/services/VectorTileSelect';
 import { Feature as GeoJSONFeature } from 'geojson';
 
-// Enum / Interface imports
+// Enum / Interface / Model imports
+
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
 import Site from 'src/model/site';
+import { WriteTransactionOptions } from 'ol/format/WFS';
+import WFSTransactionService from 'src/services/WFSTransactionService';
+import { TransactionMode } from 'src/enums/transaction.enum';
 
 /**
  * Store sites and and related functionnalities
@@ -33,6 +37,14 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   const sps = useSidePanelStore();
   const mas = useMapStore();
   const SITE_LAYER = 'archsites';
+  const WFS_TRANSACTION_OPTIONS = {
+    featureNS: 'ArchaeoSpringMap',
+    srsName: 'EPSG:3857',
+    featurePrefix: 'ArchaeoSpringMap',
+    featureType: 'archsites',
+    nativeElements: [],
+  };
+  const transactor = new WFSTransactionService();
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -77,13 +89,15 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @returns
    */
   async function setSiteById(siteId: number): Promise<void> {
-    const rawSite = await useApiClientStore().getSiteById(siteId);
-    const feature = rawSite?.features[0];
+    const feature = await useApiClientStore().getSiteById(siteId);
 
     if (feature) {
       const newSite = new Site({
         ...feature.properties,
-        geometry: new GeoJSON().readGeometry(feature.geometry),
+        geometry: new GeoJSON().readGeometry(feature.geometry, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857',
+        }),
       });
 
       if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
@@ -114,6 +128,29 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   }
 
   /**
+   * Execute a WFS-Transaction. A feature and a transaction mode shoud be give by the user.
+   * @param wfsFeature - The feature.
+   * @param mode - The transaction mode.
+   */
+  async function wfsTransaction(
+    wfsFeature: Site,
+    mode: TransactionMode
+  ): Promise<void> {
+    const olTransaction = transactor.writeTransactionByMode(
+      mode,
+      wfsFeature,
+      WFS_TRANSACTION_OPTIONS
+    );
+    const xmlTransaction = new XMLSerializer().serializeToString(olTransaction);
+    const transactionResult = await useApiClientStore().postWFSTransaction(
+      xmlTransaction
+    );
+
+    if (transactionResult)
+      transactor.checkResult(transactionResult, TransactionMode.UPDATE);
+  }
+
+  /**
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
@@ -129,16 +166,6 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
         }
       }
     );
-  }
-
-  /**
-   *
-   * @param event the keyboard press envent
-   */
-  function handleEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && sps.isOpen && site.value) {
-      closeSitePanel();
-    }
   }
 
   /**
@@ -182,12 +209,16 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Initialize site
    */
   onMounted(async () => {
-    window.addEventListener('keydown', handleEscape);
-
     if (sps.panelParameters.location === SidePanelParameters.SITE) {
       openSitePanel(parseInt(sps.panelParameters.parameterValue as string));
     }
   });
 
-  return { site, openSitePanel, updateSite, closeSitePanel };
+  return {
+    site,
+    openSitePanel,
+    updateSite,
+    wfsTransaction,
+    closeSitePanel,
+  };
 });

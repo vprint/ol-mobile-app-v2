@@ -14,14 +14,15 @@ import { ref, watch } from 'vue';
 // Store imports
 import { useMapStore } from './map-store';
 
-// Others imports
+// Services imports
 import VectorTileSelect from 'src/services/VectorTileSelect';
 import Measure from 'src/services/measure/Measure';
 import ExtendedDraw from 'src/services/drawer/ExtendedDraw';
+import StyleManager from 'src/services/StyleManager';
+import ExtendedModify from 'src/services/drawer/ExtendedModify';
 
 // Interface imports
 import { Interactions } from 'src/enums/interactions.enum';
-import StyleManager from 'src/services/StyleManager';
 
 /**
  * Store and manage mapInteraction.
@@ -70,6 +71,20 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     collapsible: false,
   });
   attribution.set('name', Interactions.ATTRIBUTION);
+
+  // TODO: FIXME: Completer
+  const modifier = new ExtendedModify(
+    Interactions.MODIFIER,
+    new StyleManager({
+      strokeColor: 'red',
+      fillColor: 'blue',
+      strokeWidth: 1,
+    }),
+    new VectorLayer({
+      source: new VectorSource(),
+      zIndex: 999,
+    })
+  );
 
   /**
    * Get the map interactions.

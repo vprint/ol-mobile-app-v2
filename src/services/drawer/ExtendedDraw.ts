@@ -41,7 +41,7 @@ class ExtendedDraw extends Interaction {
   }
 
   /**
-   * Initialize the component
+   * Initialize the component.
    * @param map - OpenLayers map
    */
   public setMap(map: Map | null): void {
@@ -50,7 +50,7 @@ class ExtendedDraw extends Interaction {
   }
 
   /**
-   * Add the draw layer to the map
+   * Add the draw layer to the map.
    * @param map - OpenLayers map
    */
   private addDrawLayer(map: Map): void {
@@ -71,16 +71,13 @@ class ExtendedDraw extends Interaction {
   }
 
   /**
-   * Add draw interaction to the map.
+   * Add a new draw interaction to the map.
    * @param type - Draw type
    */
   public createFeature(type: Type): void {
     const drawSource = this.drawLayer.getSource();
-
-    // Create draw interaction.
     this.drawInteraction = this.createDraw(drawSource, type);
     this.getMap()?.addInteraction(this.drawInteraction);
-
     this.manageEvent(this.drawInteraction);
   }
 

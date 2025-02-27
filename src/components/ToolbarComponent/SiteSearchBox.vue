@@ -41,10 +41,10 @@ const model = computed({
   get: () =>
     site.value
       ? {
-          label: `${site.value.get(
-            SiteAttributes.ENGLISH_NAME
-          )} - ${site.value.get(SiteAttributes.SITE_ID)}`,
-          value: site.value.get(SiteAttributes.SITE_ID),
+          label: `${site.value.attributes[SiteAttributes.ENGLISH_NAME]} - ${
+            site.value.siteId
+          }`,
+          value: site.value.attributes[SiteAttributes.SITE_ID],
         }
       : undefined,
   set: () => {

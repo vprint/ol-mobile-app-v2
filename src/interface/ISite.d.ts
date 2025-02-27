@@ -1,6 +1,3 @@
-import { IArtefact } from './IArtefact';
-import { IDocument } from './IDocument';
-import { IIndividual } from './IIndividual';
 import { SiteAttributes } from 'src/enums/site-type.enums';
 
 export interface ISite {
@@ -11,10 +8,10 @@ export interface ISite {
   [SiteAttributes.ALTERNATIVE_NAME]: string | undefined;
   [SiteAttributes.ALTERNATIVE_KHMER_NAME]: string | undefined;
   [SiteAttributes.DESCRIPTION]: string | undefined;
-  [SiteAttributes.VERIFIED]: boolean | undefined;
-  [SiteAttributes.VERIFICATION_DATE]: string | undefined;
+  [SiteAttributes.GROUND_VERIFIED]: boolean | undefined;
+  [SiteAttributes.GROUND_VERIFIED_DATE]: string | undefined;
   [SiteAttributes.LOCATED_BY]: number | undefined;
-  [SiteAttributes.CERAMICS_DETAILS]: string | undefined;
+  [SiteAttributes.CERAMICS_COMMENTS]: string | undefined;
   [SiteAttributes.CERAMICS]: boolean | undefined;
   [SiteAttributes.BUILD_MATERIAL_COMMENTS]: string | undefined;
   [SiteAttributes.ARTEFACTS_COMMENTS]: string | undefined;
@@ -27,11 +24,7 @@ export interface ISite {
   [SiteAttributes.MODIFICATION_DATE]: string | undefined;
   [SiteAttributes.USER_CREATION]: string | undefined;
   [SiteAttributes.USER_MODIFICATION]: string | undefined;
-  [SiteAttributes.STUDY_AREA]: string | undefined;
   [SiteAttributes.FEATURE_TYPE]: string | undefined;
-  [SiteAttributes.DOCUMENTS]: IDocument[] | undefined;
-  [SiteAttributes.ARTEFACTS]: IArtefact[] | undefined;
-  [SiteAttributes.INDIVIDUALS]: IIndividual | undefined;
   [SiteAttributes.GROUND_VERIFIED_BY]: number | undefined;
   [SiteAttributes.MATERIAL_SANDSTONE]: boolean | undefined;
   [SiteAttributes.MATERIAL_PINK_SANDSTONE]: boolean | undefined;

@@ -12,7 +12,9 @@ import {
   errorMessages,
   ApiEvents,
 } from 'src/enums/error-event.enum';
+import { Feature as GeoJSONFeature } from 'geojson';
 import ApiClient from '../services/ApiClient';
+import WFS, { TransactionResponse } from 'ol/format/WFS';
 
 export enum CacheEntry {
   SITE = 'site',
@@ -23,7 +25,7 @@ export enum CacheEntry {
 }
 
 interface ApiRequestorCache {
-  [CacheEntry.SITE]: FeatureCollection | undefined;
+  [CacheEntry.SITE]: GeoJSONFeature | undefined;
   [CacheEntry.INDIVIDUAL_LIST]: IIndividual[] | undefined;
   [CacheEntry.PROJECT_LIST]: IProject[] | undefined;
   [CacheEntry.SITE_LIST]: ISiteList[] | undefined;
@@ -75,16 +77,16 @@ export const useApiClientStore = defineStore('apiClient', () => {
   }
 
   /**
-   * Returns a site for a give id.
+   * Returns a site for a given id.
    * @param siteId id of the site
    * @returns A Site object
    */
   async function getSiteById(
     siteId: number
-  ): Promise<FeatureCollection | undefined> {
+  ): Promise<GeoJSONFeature | undefined> {
     clearCacheByReference(CacheEntry.SITE);
-    _cache.site = await apiClient.getJSON<FeatureCollection>(
-      `${AppVariables.FUNCTION_SERVER}.get_site_by_id/items.json?id=${siteId}`
+    _cache.site = await apiClient.getJSON<GeoJSONFeature>(
+      `${AppVariables.FEATURE_SERVER}/data.archsites/items/${siteId}.json`
     );
     return _cache.site;
   }
@@ -144,6 +146,16 @@ export const useApiClientStore = defineStore('apiClient', () => {
     }
   }
 
+  async function WFSTransaction(
+    data: string
+  ): Promise<TransactionResponse | undefined> {
+    const result = await apiClient.postData(
+      `${AppVariables.TRANSACTION_SERVER}`,
+      data
+    );
+    return new WFS().readTransactionResponse(result);
+  }
+
   return {
     clearCache,
     clearCacheByReference,
@@ -152,5 +164,6 @@ export const useApiClientStore = defineStore('apiClient', () => {
     getProjectList,
     getSiteList,
     getSiteTypeList,
+    postWFSTransaction: WFSTransaction,
   };
 });

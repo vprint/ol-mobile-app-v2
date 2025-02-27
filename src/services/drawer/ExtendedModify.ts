@@ -1,5 +1,5 @@
 import { Interaction, Modify, Select } from 'ol/interaction';
-import { Feature, getUid } from 'ol';
+import { Collection, Feature, getUid } from 'ol';
 import { click } from 'ol/events/condition';
 import { Map } from 'ol';
 import StyleManager from '../StyleManager';
@@ -28,7 +28,9 @@ class ExtendedModify extends Interaction {
     this.style = style;
     this.modificationLayer = layer;
     this.selectInteraction = this.getSelect(this.modificationLayer);
-    this.modifyInteraction = this.getModify(this.selectInteraction);
+    this.modifyInteraction = this.getModify(
+      this.selectInteraction.getFeatures()
+    );
   }
 
   /**
@@ -37,7 +39,6 @@ class ExtendedModify extends Interaction {
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
-
     map?.addInteraction(this.selectInteraction);
     map?.addInteraction(this.modifyInteraction);
     this.addSelectionListener();
@@ -48,10 +49,10 @@ class ExtendedModify extends Interaction {
    * @param selector - The select interaction.
    * @returns
    */
-  private getModify(selector: Select): Modify {
+  private getModify(feature?: Collection<Feature>): Modify {
     return new Modify({
       style: this.style.getEditionStyle(),
-      features: selector.getFeatures(),
+      features: feature,
       deleteCondition: (event): boolean => {
         return click(event);
       },
@@ -88,11 +89,18 @@ class ExtendedModify extends Interaction {
    */
   private addSelectionListener(): void {
     this.selectInteraction.on(ModifyEvent.SELECT, () => {
-      this.removeModifyInteraction();
-
-      this.modifyInteraction = this.getModify(this.selectInteraction);
-      this.getMap()?.addInteraction(this.modifyInteraction);
+      this.addFeaturesToModifier(this.selectInteraction.getFeatures());
     });
+  }
+
+  /**
+   * Enable the modifier.
+   * @param feature - The feature to modify.
+   */
+  public addFeaturesToModifier(feature: Collection<Feature>): void {
+    this.removeModifyInteraction();
+    this.modifyInteraction = this.getModify(feature);
+    this.getMap()?.addInteraction(this.modifyInteraction);
   }
 
   /**

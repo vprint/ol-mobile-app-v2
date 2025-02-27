@@ -10,37 +10,44 @@ export const AppVariables = {
   API_URL: `${import.meta.env.VITE_API_URL}`,
 
   /**
-   * Tegola Server. Allows to send vector tiles to the frontend.
+   * Allows to send vector tiles to the frontend. Use Tegola Server.
    */
   VECTOR_TILE_SERVER: `${import.meta.env.VITE_API_URL}:${
     import.meta.env.VITE_VECTOR_TILE_SERVER_PORT
   }`,
 
   /**
-   * GGIS Server. Allows to display dynamics WMS.
+   * Allows to display dynamics WMS. Use GGIS Server.
    */
   QGIS_SERVER: `${import.meta.env.VITE_API_URL}:${
     import.meta.env.VITE_QGIS_SERVER_URL
   }`,
 
   /**
-   * MapProxy URL. This server is used for WMTS (cached WMS).
+   * WMTS (cached WMS) server. Use a MapProxy instance.
    */
   MAPPROXY_SERVER: `${import.meta.env.VITE_API_URL}:${
     import.meta.env.VITE_MAPPROXY_PORT
   }`,
 
   /**
-   * pg_featureserv. The OGC API Feature server. Allows to read data (update / delete is not yet implemented).
+   * Allows to read data (update / delete is not yet implemented) using OGC API Feature. Made with a pg_featurserv instance
    */
   FEATURE_SERVER: `${import.meta.env.VITE_API_URL}:${
     import.meta.env.VITE_FEATURE_SERVER
   }`,
 
   /**
-   * pg_featureserv. The function server. Allows to execute processes online.
+   * Allows to execute processes online. Use a pg_featurserv instance
    */
   FUNCTION_SERVER: `${import.meta.env.VITE_API_URL}:${
     import.meta.env.VITE_FUNCTION_SERVER
+  }`,
+
+  /**
+   * Allows CRUD on geo-feature. Use geoserver.
+   */
+  TRANSACTION_SERVER: `${import.meta.env.VITE_API_URL}:${
+    import.meta.env.VITE_TRANSACTION_SERVER
   }`,
 } as const;

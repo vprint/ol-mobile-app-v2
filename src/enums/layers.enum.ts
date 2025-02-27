@@ -152,7 +152,7 @@ export const RASTER_LAYERS_SETTINGS: IRasterLayer[] = [
     layerId: 'SVF',
     name: 'Sky-View-Factor',
     description:
-      'Le Sky-View-Factor est une méthode de visualisation des données altimétrique appréciée des archéologue. Elle permet de visualiser les zones enclavées dans des teintes sombres et les zones surélevées dans des teintes claires',
+      'Le Sky-View-Factor est une méthode de visualisation des données altimétrique. Elle permet de visualiser les zones enclavées dans des teintes sombres et les zones surélevées dans des teintes claires.',
     attribution: ['Données LiDAR | <b>EFEO</b>'],
     visible: false,
     editable: true,

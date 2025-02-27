@@ -6,4 +6,5 @@ export enum Interactions {
   LINK = 'LinkInteraction',
   SCALELINE = 'ScaleLineInteraction',
   ATTRIBUTION = 'AttributionControl',
+  MODIFIER = 'ModifierInteraction',
 }
