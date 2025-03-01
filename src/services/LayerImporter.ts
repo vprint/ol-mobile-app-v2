@@ -13,7 +13,8 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
-import LayerGroup from 'ol/layer/Group';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * Add raster background layers to the map
@@ -75,40 +76,59 @@ export function addVectorTileLayers(
   map: Map,
   layerList: IVectorTileLayer[]
 ): void {
-  const vectorTileLayers: VectorTileLayer[] = layerList.map((layer) => {
-    return new VectorTileLayer({
-      source: new VectorTileSource({
-        format: new MVT({
-          idProperty: layer.featureId,
-        }),
-        url: layer.url,
-        attributions: layer.attribution,
-      }),
-
-      style: layer.style,
-      zIndex: layer.zIndex,
-      properties: {
-        layerProperties: {
-          id: layer.layerId,
-          title: layer.name,
-          editable: layer.editable,
-          selectable: layer.selectable,
-          tunable: true,
-        } as ILayerProperties,
-        featureId: layer.featureId,
-      },
-      visible: layer.visible,
-    });
+  layerList.map((layerParams) => {
+    if (layerParams.editable) {
+      map.addLayer(getEdtionLayer(layerParams));
+    }
+    map.addLayer(getVectorTileLayer(layerParams));
   });
+}
 
-  map.addLayer(
-    new LayerGroup({
-      layers: vectorTileLayers,
-      properties: {
-        title: 'Data',
-      },
-    })
-  );
+function getVectorTileLayer(layer: IVectorTileLayer): VectorTileLayer {
+  return new VectorTileLayer({
+    source: getVectorTileSource(layer),
+    style: layer.style,
+    zIndex: layer.zIndex,
+    properties: {
+      layerProperties: {
+        id: layer.layerId,
+        title: layer.name,
+        editable: layer.editable,
+        selectable: layer.selectable,
+        tunable: true,
+      } as ILayerProperties,
+      featureId: layer.featureId,
+    },
+    visible: layer.visible,
+  });
+}
+
+function getVectorTileSource(layer: IVectorTileLayer): VectorTileSource {
+  return new VectorTileSource({
+    format: new MVT({
+      idProperty: layer.featureId,
+    }),
+    url: layer.url,
+    attributions: layer.attribution,
+  });
+}
+
+function getEdtionLayer(layer: IVectorTileLayer): VectorLayer {
+  return new VectorLayer({
+    source: new VectorSource(),
+    zIndex: layer.zIndex + 1,
+    properties: {
+      layerProperties: {
+        id: `${layer.layerId}_edition`,
+        title: `${layer.name}_edition`,
+        editable: layer.editable,
+        selectable: layer.selectable,
+        tunable: true,
+      } as ILayerProperties,
+      featureId: layer.featureId,
+    },
+    visible: layer.visible,
+  });
 }
 
 /**

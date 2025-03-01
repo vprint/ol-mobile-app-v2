@@ -23,6 +23,9 @@ import ExtendedModify from 'src/services/drawer/ExtendedModify';
 
 // Interface imports
 import { Interactions } from 'src/enums/interactions.enum';
+import { LayerIdentifier } from 'src/enums/layers.enum';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * Store and manage mapInteraction.
@@ -54,6 +57,17 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     })
   );
 
+  // TODO: FIXME: Completer
+  const modifierPlugin = new ExtendedModify(
+    Interactions.MODIFIER,
+    new StyleManager({
+      strokeColor: 'rgba(232,32,192,1)',
+      fillColor: 'rgba(232,32,192,0.2)',
+      strokeWidth: 2,
+    }),
+    _getModificationLayer()
+  );
+
   const link = new Link({
     params: ['x', 'y', 'z', 'r'],
   });
@@ -72,26 +86,12 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   });
   attribution.set('name', Interactions.ATTRIBUTION);
 
-  // TODO: FIXME: Completer
-  const modifier = new ExtendedModify(
-    Interactions.MODIFIER,
-    new StyleManager({
-      strokeColor: 'red',
-      fillColor: 'blue',
-      strokeWidth: 1,
-    }),
-    new VectorLayer({
-      source: new VectorSource(),
-      zIndex: 999,
-    })
-  );
-
   /**
    * Get the map interactions.
    * @returns List of map interactions.
    */
   function getInteractions(): Interaction[] {
-    return [selectorPlugin, measurePlugin, drawPlugin, link];
+    return [selectorPlugin, measurePlugin, drawPlugin, link, modifierPlugin];
   }
 
   /**
@@ -112,7 +112,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     });
 
     // Set the selection layer
-    const archsiteLayer = ms.getLayerById('archsites') as
+    const archsiteLayer = ms.getLayerById(LayerIdentifier.SITES) as
       | VectorTileLayer
       | undefined;
     selectorPlugin.setSelectionLayer(archsiteLayer);
@@ -158,6 +158,13 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     return findedElement;
   }
 
+  // TODO: FIXME: Finir cette fonction.
+  function _getModificationLayer(): VectorLayer {
+    return new VectorLayer({
+      source: new VectorSource(),
+    });
+  }
+
   /**
    * Watch for map initialization and then enable the interaction.
    */
@@ -175,6 +182,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     selectorPlugin,
     measurePlugin,
     drawPlugin,
+    modifierPlugin,
     enableInteraction,
     getInteractionByName,
   };

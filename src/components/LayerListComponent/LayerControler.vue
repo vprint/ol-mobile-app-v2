@@ -9,11 +9,11 @@ import { onMounted, ref } from 'vue';
 import { useMapStore } from 'src/stores/map-store';
 
 // Type & interface import
-import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
+import { LAYER_PROPERTIES_FIELD, LayerName } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 const props = defineProps<{
-  layerId: string;
+  layerId: LayerName;
   /**
    * Relative to the layer manager (ie. an element is dragged in the layer manager).
    */

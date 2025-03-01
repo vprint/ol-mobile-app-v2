@@ -7,6 +7,7 @@ import { ref, watch } from 'vue';
 // Store imports
 import { storeToRefs } from 'pinia';
 import { useSiteStore } from 'src/stores/site-store';
+import { useMapInteractionStore } from '../../stores/map-interaction-store';
 
 // Component import
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
@@ -22,13 +23,14 @@ import { useDrawStore } from 'src/stores/draw-store';
 // Type & interface
 
 // script
-const sis = useSiteStore();
+const siteStore = useSiteStore();
 const drawStore = useDrawStore();
-const { site } = storeToRefs(sis);
+const mapInteractionStore = useMapInteractionStore();
+const { site } = storeToRefs(siteStore);
 const editionMode = ref(false);
 const confirmDialogVisibility = ref(false);
 
-let originalSite = sis.site?.clone();
+let originalSite = siteStore.site?.clone();
 
 /**
  * Show dialog window
@@ -40,7 +42,10 @@ function openDialog(): void {
 async function updateSite(): Promise<void> {
   if (site.value) {
     enableEdition(false);
-    sis.wfsTransaction(site.value.getWFSFeature(), TransactionMode.UPDATE);
+    siteStore.wfsTransaction(
+      site.value.getWFSFeature(),
+      TransactionMode.UPDATE
+    );
   }
 }
 
@@ -49,7 +54,7 @@ async function updateSite(): Promise<void> {
  */
 function cancel(): void {
   if (originalSite) {
-    sis.updateSite(originalSite.clone());
+    siteStore.updateSite(originalSite.clone());
   }
   editionMode.value = false;
 }
@@ -60,14 +65,7 @@ function cancel(): void {
  */
 function enableEdition(active: boolean): void {
   editionMode.value = active;
-  drawStore.setVisible(active);
-  modifier.setActive(active);
-
-  if (active) {
-    const features = new Collection([siteFeature.value] as Feature[]);
-    modifier.addFeaturesToModifier(features);
-    mapStore.map.addInteraction(modifier);
-  }
+  siteStore.enableEdition(active);
 }
 
 // watch for site change and update component
@@ -83,7 +81,7 @@ watch(
 </script>
 
 <template>
-  <SidePanelComponent v-if="site" @close="sis.closeSitePanel()">
+  <SidePanelComponent v-if="site" @close="siteStore.closeSitePanel()">
     <template #title>
       {{ `${site.attributes[SiteAttributes.ENGLISH_NAME]} - ${site.siteId}` }}
     </template>
@@ -97,7 +95,8 @@ watch(
         v-model:edition-mode="editionMode"
         v-model:site-feature="site"
         @submit="openDialog()"
-        @reset="cancel"
+        @cancel="cancel()"
+        @edit="enableEdition(true)"
       ></SiteFooter>
     </template>
   </SidePanelComponent>

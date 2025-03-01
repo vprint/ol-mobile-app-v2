@@ -1,5 +1,5 @@
 // Map imports
-import { Feature } from 'ol';
+import { Collection, Feature } from 'ol';
 import GeoJSON from 'ol/format/GeoJSON.js';
 
 // Vue/Quasar imports
@@ -11,6 +11,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 import { useApiClientStore } from './api-client-store';
 import { useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
+import { useDrawStore } from './draw-store';
 
 // Others imports
 import {
@@ -20,23 +21,23 @@ import {
 import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface / Model imports
-
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import Site from 'src/model/site';
-import { WriteTransactionOptions } from 'ol/format/WFS';
-import WFSTransactionService from 'src/services/WFSTransactionService';
 import { TransactionMode } from 'src/enums/transaction.enum';
+import Site from 'src/model/site';
+import WFSTransactionService from 'src/services/WFSTransactionService';
+import { LayerIdentifier } from 'src/enums/layers.enum';
 
 /**
  * Store sites and and related functionnalities
  */
 export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
-  const site: Ref<Site | undefined> = ref();
-  const mis = useMapInteractionStore();
-  const { isMapInteractionsInitialized } = storeToRefs(mis);
-  const sps = useSidePanelStore();
-  const mas = useMapStore();
-  const SITE_LAYER = 'archsites';
+  const mapInteractionStore = useMapInteractionStore();
+  const drawStore = useDrawStore();
+  const sitePanelStore = useSidePanelStore();
+  const mapStore = useMapStore();
+
+  const { isMapInteractionsInitialized } = storeToRefs(mapInteractionStore);
+
   const WFS_TRANSACTION_OPTIONS = {
     featureNS: 'ArchaeoSpringMap',
     srsName: 'EPSG:3857',
@@ -45,13 +46,14 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     nativeElements: [],
   };
   const transactor = new WFSTransactionService();
+  const site: Ref<Site | undefined> = ref();
 
   /**
    * Main site-store function that allow to set the working site by it's id.
    * @param newSiteId
    */
   async function openSitePanel(newSiteId: number): Promise<void> {
-    sps.setActive(true, {
+    sitePanelStore.setActive(true, {
       location: SidePanelParameters.SITE,
       parameterName: 'siteId',
       parameterValue: newSiteId.toString(),
@@ -63,7 +65,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function closeSitePanel(): void {
     clearSite();
-    sps.setActive(false);
+    sitePanelStore.setActive(false);
   }
 
   /**
@@ -71,7 +73,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    mis.selectorPlugin.clear();
+    mapInteractionStore.selectorPlugin.clear();
     fitMap();
   }
 
@@ -100,13 +102,16 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
         }),
       });
 
-      if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
+      if (
+        sitePanelStore.panelParameters.parameterValue !==
+        newSite.siteId.toString()
+      ) {
         openSitePanel(newSite.siteId);
       }
 
       fitMap(feature);
       site.value = newSite;
-      mis.selectorPlugin.setAsSelected([siteId.toString()]);
+      mapInteractionStore.selectorPlugin.setAsSelected([siteId.toString()]);
     }
   }
 
@@ -120,11 +125,31 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
-      sps.setPanelPadding(true, feature);
+      sitePanelStore.setPanelPadding(true, feature);
     }
 
-    const archLayer = mas.getLayerById(SITE_LAYER);
+    const archLayer = mapStore.getLayerById(LayerIdentifier.SITES);
     archLayer?.changed();
+  }
+
+  /**
+   * Enable form modification and drawing.
+   * @param active - Should the edition mode be enabled ?
+   */
+  function enableEdition(active: boolean): void {
+    const modifier = mapInteractionStore.modifierPlugin;
+    drawStore.setVisible(active);
+    modifier.setActive(active);
+
+    // TODO: FIXME: A débroussailler
+    if (active) {
+      const features = new Collection([site.value] as Feature[]);
+      modifier.addFeaturesToModifier(features);
+      const modificationLayer = modifier.getModificationLayer();
+      mapStore.map.addLayer(modificationLayer);
+      modificationLayer.getSource()?.clear();
+      modificationLayer.getSource()?.addFeatures(features.getArray());
+    }
   }
 
   /**
@@ -154,7 +179,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    mis.selectorPlugin.on(
+    mapInteractionStore.selectorPlugin.on(
       // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
@@ -162,7 +187,9 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
         if (features && features.length > 0) {
           openSitePanel(features[0].getId() as number);
-          mis.selectorPlugin.setAsSelected([features[0].getId()?.toString()]);
+          mapInteractionStore.selectorPlugin.setAsSelected([
+            features[0].getId()?.toString(),
+          ]);
         }
       }
     );
@@ -172,7 +199,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * watch for site change in URL
    */
   watch(
-    () => sps.panelParameters,
+    () => sitePanelStore.panelParameters,
     (newPanelParameters) => {
       // Open site if URL contains site data
       if (
@@ -209,13 +236,16 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Initialize site
    */
   onMounted(async () => {
-    if (sps.panelParameters.location === SidePanelParameters.SITE) {
-      openSitePanel(parseInt(sps.panelParameters.parameterValue as string));
+    if (sitePanelStore.panelParameters.location === SidePanelParameters.SITE) {
+      openSitePanel(
+        parseInt(sitePanelStore.panelParameters.parameterValue as string)
+      );
     }
   });
 
   return {
     site,
+    enableEdition,
     openSitePanel,
     updateSite,
     wfsTransaction,

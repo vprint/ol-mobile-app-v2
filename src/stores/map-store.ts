@@ -16,6 +16,7 @@ import { defineStore } from 'pinia';
 import {
   BACKGROUND_LAYERS_SETTINGS,
   LAYER_PROPERTIES_FIELD,
+  LayerIdentifier,
   RASTER_LAYERS_SETTINGS,
   VECTOR_TILE_LAYERS_SETTINGS,
 } from 'src/enums/layers.enum';
@@ -55,7 +56,7 @@ export const useMapStore = defineStore('map', () => {
    * Get a layer by it's id
    * @param id - layer id
    */
-  function getLayerById(id: string): Layer | undefined {
+  function getLayerById(id: LayerIdentifier): Layer | undefined {
     return map.getAllLayers().find((layer) => {
       const properties = layer.get(LAYER_PROPERTIES_FIELD);
       return properties?.id === id;
@@ -115,8 +116,9 @@ export const useMapStore = defineStore('map', () => {
   /**
    * Create the layers, set the map target and then set `isMapInitialized` to true.
    */
+  // TODO: FIXME: Déplacer la création du maplibre layer.
+  // Le maplibbre layer doit apparaitre dans les enums de layer (cf. layer.enum.ts)
   function initializeMap(): void {
-    // An empty mapLibre layer is added to the map
     const mapLibreLayer = new MapLibreLayer({
       mapLibreOptions: {},
       zIndex: 0,

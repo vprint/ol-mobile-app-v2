@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UserMessage } from 'src/enums/user-messages.enum';
 import {
   DateValidationOptions,
   DateValidator,
@@ -54,7 +55,12 @@ const model = defineModel<string>();
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">
           <q-date v-model="model" minimal class="date-picker merriweather">
             <div class="row items-center justify-end">
-              <q-btn v-close-popup label="Close" color="primary" flat />
+              <q-btn
+                v-close-popup
+                :label="UserMessage.GENERIC.CLOSE"
+                color="primary"
+                flat
+              />
             </div>
           </q-date>
         </q-popup-proxy>

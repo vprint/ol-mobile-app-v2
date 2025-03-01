@@ -1,49 +1,11 @@
+<!-- eslint-disable vue/valid-define-emits -->
+
 <script setup lang="ts">
-// Store import
-import { useDrawStore } from 'src/stores/draw-store';
-import { useMapStore } from 'src/stores/map-store';
+import { UserMessage } from 'src/enums/user-messages.enum';
 
-// Map import
-import { Collection, Feature } from 'ol';
-
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
-
-// Model import
-import Site from 'src/model/site';
-
-// Service import
-import ExtendedModify from 'src/services/drawer/ExtendedModify';
-import StyleManager from 'src/services/StyleManager';
-
-const drawStore = useDrawStore();
-const mapStore = useMapStore();
 const editionMode = defineModel<boolean>('editionMode');
-const siteFeature = defineModel<Site>('siteFeature');
-const emit = defineEmits(['submit', 'reset']);
 
-function submit(): void {
-  //enableEdition(false);
-  emit('submit');
-}
-
-function reset(): void {
-  enableEdition(false);
-  emit('reset');
-}
-
-const modifier = new ExtendedModify(
-  'site-modifier',
-  new StyleManager({
-    strokeColor: 'red',
-    fillColor: 'blue',
-    strokeWidth: 1,
-  }),
-  new VectorLayer({
-    source: new VectorSource(),
-    zIndex: 999,
-  })
-);
+const emit = defineEmits(['submit', 'cancel', 'edit']);
 </script>
 
 <template>
@@ -52,26 +14,26 @@ const modifier = new ExtendedModify(
       v-if="!editionMode"
       rounded
       color="primary"
-      label="Edit"
+      :label="UserMessage.GENERIC.EDIT"
       class="buttons merriweather"
-      @click="enableEdition(true)"
+      @click="emit('edit')"
     />
     <q-btn
       v-if="editionMode"
       outline
       rounded
       color="primary"
-      label="Cancel"
+      :label="UserMessage.GENERIC.CANCEL"
       class="buttons merriweather"
-      @click="reset()"
+      @click="emit('cancel')"
     />
     <q-btn
       v-if="editionMode"
       rounded
       color="primary"
-      label="Save"
+      :label="UserMessage.GENERIC.SAVE"
       class="buttons merriweather"
-      @click="submit()"
+      @click="emit('submit')"
     />
   </div>
 </template>

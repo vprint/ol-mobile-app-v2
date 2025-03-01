@@ -2,7 +2,6 @@ import { IIndividual } from 'src/interface/IIndividual';
 import { IProject } from 'src/interface/IProject';
 import { ISiteList } from 'src/interface/ISite';
 import { ISiteType } from 'src/interface/ISiteType';
-import { FeatureCollection } from 'geojson';
 import { defineStore } from 'pinia';
 import { Reactive } from 'vue';
 import { AppVariables } from 'src/enums/app-variables.enum';

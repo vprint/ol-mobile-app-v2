@@ -23,5 +23,8 @@ export const UserMessage = {
     CANCEL: 'Annuler',
     INSERT: 'Insérer',
     DEFINITIVE_OPERATION: 'Cette opération est définitive.',
+    EDIT: 'Editer',
+    SAVE: 'Sauvegarder',
+    CLOSE: 'Fermer',
   },
 } as const;

@@ -1,9 +1,10 @@
 import { Style } from 'ol/style';
 import { StyleFunction } from 'ol/style/Style';
+import { LayerIdentifier } from 'src/enums/layers.enum';
 
 export interface IBaseLayer {
   name: string;
-  layerId: string;
+  layerId: LayerIdentifier;
   zIndex: number;
   visible: boolean;
 }
