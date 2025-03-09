@@ -12,7 +12,7 @@ const sidePanelStore = useSidePanelStore();
  */
 export const useKeyStore = defineStore('keyStore', () => {
   /**
-   *
+   * Handle the escape event.
    * @param event the keyboard press envent
    */
   function handleEscape(event: KeyboardEvent): void {
@@ -22,7 +22,7 @@ export const useKeyStore = defineStore('keyStore', () => {
   }
 
   /**
-   * Initialize site
+   * Initialize site.
    */
   onMounted(async () => {
     window.addEventListener('keydown', handleEscape);

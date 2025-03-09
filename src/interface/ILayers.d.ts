@@ -2,14 +2,14 @@ import { Style } from 'ol/style';
 import { StyleFunction } from 'ol/style/Style';
 import { LayerIdentifier } from 'src/enums/layers.enum';
 
-export interface IBaseLayer {
-  name: string;
+export interface IBaseLayerParameters {
+  title: string;
   layerId: LayerIdentifier;
   zIndex: number;
   visible: boolean;
 }
 
-export interface IBackgroundLayer extends IBaseLayer {
+export interface IBackgroundLayerParameters extends IBaseLayerParameters {
   img: string;
   token?: string;
   attribution: string[];
@@ -17,7 +17,7 @@ export interface IBackgroundLayer extends IBaseLayer {
   vector: boolean;
 }
 
-export interface IRasterLayer extends IBaseLayer {
+export interface IRasterLayerParameters extends IBaseLayerParameters {
   mode: 'wmts' | 'wms';
   description: string;
   editable: boolean;
@@ -26,7 +26,7 @@ export interface IRasterLayer extends IBaseLayer {
   url: string;
 }
 
-export interface IVectorTileLayer extends IBaseLayer {
+export interface IVectorTileLayerParameters extends IBaseLayerParameters {
   featureId: string;
   attribution: string[];
   editable: boolean;

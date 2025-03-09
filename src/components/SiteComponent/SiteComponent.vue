@@ -7,7 +7,6 @@ import { ref, watch } from 'vue';
 // Store imports
 import { storeToRefs } from 'pinia';
 import { useSiteStore } from 'src/stores/site-store';
-import { useMapInteractionStore } from '../../stores/map-interaction-store';
 
 // Component import
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
@@ -18,14 +17,11 @@ import ValidationPopup from './ValidationPopup.vue';
 // Others imports
 import { TransactionMode } from 'src/enums/transaction.enum';
 import { SiteAttributes } from 'src/enums/site-type.enums';
-import { useDrawStore } from 'src/stores/draw-store';
 
 // Type & interface
 
 // script
 const siteStore = useSiteStore();
-const drawStore = useDrawStore();
-const mapInteractionStore = useMapInteractionStore();
 const { site } = storeToRefs(siteStore);
 const editionMode = ref(false);
 const confirmDialogVisibility = ref(false);

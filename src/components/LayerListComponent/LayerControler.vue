@@ -9,11 +9,11 @@ import { onMounted, ref } from 'vue';
 import { useMapStore } from 'src/stores/map-store';
 
 // Type & interface import
-import { LAYER_PROPERTIES_FIELD, LayerName } from 'src/enums/layers.enum';
+import { LAYER_PROPERTIES_FIELD, LayerIdentifier } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 
 const props = defineProps<{
-  layerId: LayerName;
+  layerId: LayerIdentifier;
   /**
    * Relative to the layer manager (ie. an element is dragged in the layer manager).
    */
@@ -35,10 +35,27 @@ onMounted(() => {
     layerProperties = layer.get(LAYER_PROPERTIES_FIELD);
     visible.value = layer.getVisible();
     opacity.value = layer.getOpacity();
+    addOpacityEventListeners(layer);
   }
 
   isInitialized.value = true;
 });
+
+/**
+ * Listen for opacity change and update the opacity slider according to the new value.
+ * This method is usefull if the layer opacity is changed from an other part of the application
+ * @param layer - The layer to listen for.
+ */
+function addOpacityEventListeners(layer: BaseLayer): void {
+  layer.on('change:opacity', () => {
+    if (opacity.value !== layer.getOpacity()) {
+      const layerOpacity = layer.getOpacity();
+      if (layerOpacity) {
+        opacity.value = layerOpacity;
+      }
+    }
+  });
+}
 
 function updateOpacity(newOpacity: number | null): void {
   if (typeof newOpacity === 'number') {

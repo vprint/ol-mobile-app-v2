@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // Map imports
-import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
 
 // Vue/Quasar imports
 import { onMounted, ref } from 'vue';
@@ -13,39 +12,37 @@ import { useMapStore } from 'src/stores/map-store';
 // Others imports
 
 // Type & interface
-import { IBackgroundLayer } from 'src/interface/ILayers';
+import { IBackgroundLayerParameters } from 'src/interface/ILayers';
 
 // enums
 import { BACKGROUND_LAYERS_SETTINGS } from 'src/enums/layers.enum';
 
 // Script
-const mas = useMapStore();
+const mapStore = useMapStore();
 const activeLayer = ref('');
 
 /**
  * Set the active background layer
  */
-function setActive(layerInformation: IBackgroundLayer): void {
+function setActive(layerInformation: IBackgroundLayerParameters): void {
   activeLayer.value = layerInformation.layerId;
   BACKGROUND_LAYERS_SETTINGS.forEach((background) => {
     if (!background.vector)
-      mas.getLayerById(background.layerId)?.setVisible(false);
+      mapStore.getLayerById(background.layerId)?.setVisible(false);
   });
 
-  const mapLibreLayer = mas.getLayerById('maplibre-layer') as
-    | MapLibreLayer
-    | undefined;
+  const mapLibreInstance = mapStore.getMapLibreInstance();
 
   if (layerInformation.vector) {
     setTimeout(() => {
-      mapLibreLayer?.setVisible(true);
-      mapLibreLayer?.mapLibreMap?.setStyle(
+      mapLibreInstance?.setVisible(true);
+      mapLibreInstance?.mapLibreMap?.setStyle(
         `${layerInformation.url}?access-token=${layerInformation.token}`
       );
     }, 100);
   } else {
-    mapLibreLayer?.setVisible(false);
-    const layer = mas.getLayerById(layerInformation.layerId);
+    mapLibreInstance?.setVisible(false);
+    const layer = mapStore.getLayerById(layerInformation.layerId);
     layer?.setVisible(true);
   }
 }
@@ -80,7 +77,7 @@ onMounted(() => {
           <img v-else :src="layer.img" />
         </q-avatar>
       </q-btn>
-      <p class="q-ma-xs merriweather text-center">{{ layer.name }}</p>
+      <p class="q-ma-xs merriweather text-center">{{ layer.title }}</p>
     </div>
   </div>
 </template>

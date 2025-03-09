@@ -64,6 +64,31 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
+   * Get the underlying MapLibre instance
+   * @returns - The MapLibre instance
+   */
+  function getMapLibreInstance(): MapLibreLayer | undefined {
+    return map.getAllLayers().find((layer) => {
+      return layer.get(LAYER_PROPERTIES_FIELD)?.id === 'maplibre-layer';
+    }) as MapLibreLayer | undefined;
+  }
+
+  function _createMapLibreInstance(): MapLibreLayer {
+    const mapLibreLayer = new MapLibreLayer({
+      mapLibreOptions: {},
+      zIndex: 0,
+      properties: {
+        layerProperties: {
+          id: 'maplibre-layer',
+          title: 'maplibre-layer',
+          tunable: false,
+        } as ILayerProperties,
+      },
+    });
+    return mapLibreLayer;
+  }
+
+  /**
    * Adjusts the map view by applying padding and optionally zooming to a feature.
    * If no feature is provided, only applies padding to the current extent.
    * @param padding - Padding (in pixels) to be cleared inside the view. Values in the array are top, right, bottom and left padding.
@@ -116,20 +141,8 @@ export const useMapStore = defineStore('map', () => {
   /**
    * Create the layers, set the map target and then set `isMapInitialized` to true.
    */
-  // TODO: FIXME: Déplacer la création du maplibre layer.
-  // Le maplibbre layer doit apparaitre dans les enums de layer (cf. layer.enum.ts)
   function initializeMap(): void {
-    const mapLibreLayer = new MapLibreLayer({
-      mapLibreOptions: {},
-      zIndex: 0,
-      properties: {
-        layerProperties: {
-          id: 'maplibre-layer',
-          title: 'maplibre-layer',
-          tunable: false,
-        } as ILayerProperties,
-      },
-    });
+    const mapLibreLayer = _createMapLibreInstance();
     map.addLayer(mapLibreLayer);
     _addApplicationLayers(map, mapLibreLayer);
     map.setTarget('map');
@@ -184,6 +197,7 @@ export const useMapStore = defineStore('map', () => {
   return {
     map,
     isMapInitialized,
+    getMapLibreInstance,
     getLayerById,
     setPaddingAndExtent,
     getLayersByProperties,
