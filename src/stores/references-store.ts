@@ -23,8 +23,6 @@ export const useReferencesStore = defineStore('references', () => {
   const siteList: Ref<ISiteList[]> = ref([]);
   const siteTypeList: Ref<ISiteType[]> = ref([]);
   const projectList: Ref<IProject[]> = ref([]);
-  // TODO: Implémenter la recherche de document.
-  // const documentList: Ref<IDocument[]> = ref([]);
 
   const isReferencesInitialized = ref(false);
 

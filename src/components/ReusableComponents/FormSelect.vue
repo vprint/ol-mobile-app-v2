@@ -19,7 +19,7 @@ const props = withDefaults(
   }
 );
 
-const model = defineModel<unknown>();
+const model = defineModel<string | number>();
 
 /**
  * Read properties of objets

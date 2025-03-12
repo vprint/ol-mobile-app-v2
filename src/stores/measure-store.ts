@@ -34,7 +34,7 @@ export const useMeasureStore = defineStore('measure', () => {
     mode: GeometryType.LINE_STRING | GeometryType.POLYGON
   ): void {
     mis.measurePlugin.setActive(true);
-    mis.measurePlugin.addMeasureFeature(mode);
+    mis.measurePlugin.createMeasureFeature(mode);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
@@ -42,7 +42,7 @@ export const useMeasureStore = defineStore('measure', () => {
    * Remove measure and activate selector
    */
   function removeMeasure(): void {
-    mis.measurePlugin.removeFeature();
+    mis.measurePlugin.removeMeasure();
     mis.enableInteraction(Interactions.SELECTOR, true);
   }
 
@@ -50,7 +50,7 @@ export const useMeasureStore = defineStore('measure', () => {
    * Remove all measures and associated overlays
    */
   function removeAllMeasure(): void {
-    mis.measurePlugin.removeAllFeatures();
+    mis.measurePlugin.removeAllMeasures();
     mis.enableInteraction(Interactions.SELECTOR, true);
   }
 

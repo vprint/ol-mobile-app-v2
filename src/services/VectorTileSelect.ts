@@ -19,7 +19,7 @@ export enum VectorTileSelectEventType {
  */
 export class VectorTileSelectEvent extends Event {
   public selected: FeatureLike[] | undefined;
-  public mapBrowserEvent: MapBrowserEvent<UIEvent>;
+  private mapBrowserEvent: MapBrowserEvent<UIEvent>;
 
   constructor(
     type: VectorTileSelectEventType,
@@ -33,11 +33,7 @@ export class VectorTileSelectEvent extends Event {
 }
 
 /**
- * This class provides selection functionality for a
- * given vector tile layer. It is possible to interact
- * with selection by using clearFeatures() and setFeaturesById()
- *
- * @extends Interaction
+ * Provides methods for selection over vector tile layer.
  */
 class VectorTileSelect extends Interaction {
   public selectedFeatures = new Set<string>();
@@ -87,7 +83,7 @@ class VectorTileSelect extends Interaction {
 
   /**
    * Initialize the component
-   * @param map OpenLayers map
+   * @param map - OpenLayers map
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
@@ -96,7 +92,7 @@ class VectorTileSelect extends Interaction {
 
   /**
    * Set the selection layer
-   * @param layer The layer where the feature should be selected
+   * @param layer - The layer where the feature should be selected
    */
   public setSelectionLayer(layer: VectorTileLayer | undefined): void {
     this.selectableLayer = layer;
@@ -107,7 +103,7 @@ class VectorTileSelect extends Interaction {
    * Select vector features at a given pixel and fires
    * a vector tile select event on selection (select:vectortile).
    * @param e - Map browser event
-   * @returns false to stop event propagation if selection is made, true otherwise
+   * @returns - false to stop event propagation if selection is made, true otherwise
    */
   private selectFeaturesAtPixel(e: MapBrowserEvent<UIEvent>): boolean {
     if (e.type === 'click') {
@@ -119,7 +115,7 @@ class VectorTileSelect extends Interaction {
       const featureIds = features?.map((feature) =>
         feature.getId()?.toString()
       );
-      this.setFeaturesById(featureIds);
+      this.setAsSelected(featureIds);
 
       this.dispatchEvent(
         new VectorTileSelectEvent(
@@ -136,17 +132,17 @@ class VectorTileSelect extends Interaction {
   /**
    * Clear selected features.
    */
-  public clearFeatures(): void {
+  public clear(): void {
     this.selectedFeatures.clear();
     this.selectionLayer.changed();
   }
 
   /**
    * Set features as selected given a list of id.
-   * @param featuresId a list of ids
+   * @param featuresId - A list of ids.
    */
-  public setFeaturesById(featuresId: (string | undefined)[] | undefined): void {
-    this.clearFeatures();
+  public setAsSelected(featuresId: (string | undefined)[] | undefined): void {
+    this.clear();
     featuresId?.forEach((featureId) => {
       if (featureId) this.selectedFeatures.add(featureId);
     });

@@ -1,18 +1,17 @@
-// Map imports
-
-import { defineStore } from 'pinia';
-import { useMapStore } from './map-store';
-import { Interactions } from 'src/enums/interactions.enum';
-import { Ref, ref } from 'vue';
-import Location, { LocationEventsType } from 'src/services/Location';
+// OL imports
 import { EventsKey } from 'ol/events';
 import { unByKey } from 'ol/Observable';
 
 // Vue/Quasar imports
+import { Ref, ref } from 'vue';
 
 // Store imports
+import { defineStore } from 'pinia';
+import { useMapStore } from './map-store';
 
 // Interface, type and enum imports
+import { Interactions } from 'src/enums/interactions.enum';
+import Location, { LocationEventsType } from 'src/services/Location';
 
 // Others imports
 
@@ -30,7 +29,7 @@ enum LocationIcons {
 }
 
 enum LocationColors {
-  WHITE = 'rgba(222,255,255, 1)',
+  WHITE = 'rgba(255,255,255, 1)',
   ORANGE = 'rgba(255, 165, 0, 1)',
 }
 
@@ -58,8 +57,11 @@ export const useLocationStore = defineStore('location', () => {
   let viewModificationListener: EventsKey & EventsKey[];
   let locationErrorListener: EventsKey & EventsKey[];
 
+  /**
+   * Manage the user click according to the location state.
+   */
   function manageUserClick(): void {
-    const locationState = _getLocationMode();
+    const locationState = _getLocationState();
     switch (locationState) {
       case LocationStateMode.LOCATION_DISABLED:
         enableTracking();
@@ -182,7 +184,7 @@ export const useLocationStore = defineStore('location', () => {
    * Get the location state mode. Private.
    * @returns - The location mode.
    */
-  function _getLocationMode(): LocationStateMode | undefined {
+  function _getLocationState(): LocationStateMode | undefined {
     locationMode.value = undefined;
     if (!isLocationEnabled.value) {
       locationMode.value = LocationStateMode.LOCATION_DISABLED;

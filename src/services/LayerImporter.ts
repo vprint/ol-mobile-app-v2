@@ -1,9 +1,9 @@
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 import { Map } from 'ol';
 import {
-  IBackgroundLayer,
-  IRasterLayer,
-  IVectorTileLayer,
+  IBackgroundLayerParameters,
+  IRasterLayerParameters,
+  IVectorTileLayerParameters,
 } from '../interface/ILayers';
 import { ImageWMS } from 'ol/source';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
@@ -13,7 +13,8 @@ import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
-import LayerGroup from 'ol/layer/Group';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * Add raster background layers to the map
@@ -22,7 +23,7 @@ import LayerGroup from 'ol/layer/Group';
  */
 export function addRasterBackgroundLayers(
   map: Map,
-  layerList: IBackgroundLayer[]
+  layerList: IBackgroundLayerParameters[]
 ): void {
   const rasterBackgroundLayers = layerList.filter((layer) => !layer.vector);
 
@@ -38,7 +39,7 @@ export function addRasterBackgroundLayers(
       properties: {
         layerProperties: {
           id: layer.layerId,
-          title: layer.name,
+          title: layer.title,
           tunable: false,
         } as ILayerProperties,
       },
@@ -56,7 +57,7 @@ export function addRasterBackgroundLayers(
  */
 export function addVectorBackgroundLayers(
   mapLibreLayer: MapLibreLayer,
-  layerList: IBackgroundLayer[]
+  layerList: IBackgroundLayerParameters[]
 ): void {
   const visibleLayer = layerList.find((layer) => layer.visible && layer.vector);
 
@@ -73,42 +74,70 @@ export function addVectorBackgroundLayers(
  */
 export function addVectorTileLayers(
   map: Map,
-  layerList: IVectorTileLayer[]
+  layerList: IVectorTileLayerParameters[]
 ): void {
-  const vectorTileLayers: VectorTileLayer[] = layerList.map((layer) => {
-    return new VectorTileLayer({
-      source: new VectorTileSource({
-        format: new MVT({
-          idProperty: layer.featureId,
-        }),
-        url: layer.url,
-        attributions: layer.attribution,
-      }),
-
-      style: layer.style,
-      zIndex: layer.zIndex,
-      properties: {
-        layerProperties: {
-          id: layer.layerId,
-          title: layer.name,
-          editable: layer.editable,
-          selectable: layer.selectable,
-          tunable: true,
-        } as ILayerProperties,
-        featureId: layer.featureId,
-      },
-      visible: layer.visible,
-    });
+  layerList.map((layerParams) => {
+    if (layerParams.editable) {
+      map.addLayer(getEdtionLayer(layerParams));
+    }
+    map.addLayer(getVectorTileLayer(layerParams));
   });
+}
 
-  map.addLayer(
-    new LayerGroup({
-      layers: vectorTileLayers,
-      properties: {
-        title: 'Data',
-      },
-    })
-  );
+function getVectorTileLayer(
+  layer: IVectorTileLayerParameters
+): VectorTileLayer {
+  return new VectorTileLayer({
+    source: getVectorTileSource(layer),
+    style: layer.style,
+    zIndex: layer.zIndex,
+    properties: {
+      layerProperties: {
+        id: layer.layerId,
+        title: layer.title,
+        editable: layer.editable,
+        selectable: layer.selectable,
+        tunable: true,
+      } as ILayerProperties,
+      featureId: layer.featureId,
+    },
+    visible: layer.visible,
+  });
+}
+
+function getVectorTileSource(
+  layer: IVectorTileLayerParameters
+): VectorTileSource {
+  return new VectorTileSource({
+    format: new MVT({
+      idProperty: layer.featureId,
+    }),
+    url: layer.url,
+    attributions: layer.attribution,
+  });
+}
+
+/**
+ * Get the edition layer associated to a vector tile layer.
+ * @param layer - The base layer
+ * @returns
+ */
+function getEdtionLayer(layer: IVectorTileLayerParameters): VectorLayer {
+  return new VectorLayer({
+    source: new VectorSource(),
+    zIndex: layer.zIndex + 1,
+    properties: {
+      layerProperties: {
+        id: `${layer.layerId}_edition`,
+        title: `${layer.title}_edition`,
+        editable: layer.editable,
+        selectable: layer.selectable,
+        tunable: true,
+      } as ILayerProperties,
+      featureId: layer.featureId,
+    },
+    visible: layer.visible,
+  });
 }
 
 /**
@@ -116,12 +145,12 @@ export function addVectorTileLayers(
  * @param map
  * @param layerList
  */
-export function addOGCLayer(map: Map, layerList: IRasterLayer[]): void {
+export function addOGCLayer(
+  map: Map,
+  layerList: IRasterLayerParameters[]
+): void {
   const wmsLayers = layerList.filter((layer) => layer.mode === 'wms');
   addWMSLayers(map, wmsLayers);
-
-  // const wmtsLayers = layerList.filter((layer) => layer.mode === 'wmts');
-  // addWMTSLayers(map, wmtsLayers);
 }
 
 /**
@@ -129,7 +158,10 @@ export function addOGCLayer(map: Map, layerList: IRasterLayer[]): void {
  * @param map OpenLayers map
  * @param layerList WMS layer list
  */
-export function addWMSLayers(map: Map, layerList: IRasterLayer[]): void {
+export function addWMSLayers(
+  map: Map,
+  layerList: IRasterLayerParameters[]
+): void {
   layerList.forEach((layer) => {
     map.addLayer(
       new ImageLayer({
@@ -142,7 +174,7 @@ export function addWMSLayers(map: Map, layerList: IRasterLayer[]): void {
         properties: {
           layerProperties: {
             id: `${layer.layerId}_wms`,
-            title: layer.name,
+            title: layer.title,
             editable: layer.editable,
             description: layer.description,
             dynamic: layer.dynamic,

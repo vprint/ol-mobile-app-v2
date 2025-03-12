@@ -14,13 +14,18 @@ import { ref, watch } from 'vue';
 // Store imports
 import { useMapStore } from './map-store';
 
-// Others imports
+// Services imports
 import VectorTileSelect from 'src/services/VectorTileSelect';
 import Measure from 'src/services/measure/Measure';
-import Drawer from 'src/services/drawer/Drawer';
+import ExtendedDraw from 'src/services/drawer/ExtendedDraw';
+import StyleManager from 'src/services/StyleManager';
+import ExtendedModify from 'src/services/drawer/ExtendedModify';
 
 // Interface imports
 import { Interactions } from 'src/enums/interactions.enum';
+import { LayerIdentifier } from 'src/enums/layers.enum';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 
 /**
  * Store and manage mapInteraction.
@@ -43,11 +48,25 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   const measurePlugin = new Measure(Interactions.MEASURE);
 
-  const drawPlugin = new Drawer(Interactions.DRAWER, {
-    strokeColor: 'rgba(232,32,192,1)',
-    fillColor: 'rgba(232,32,192,0.2)',
-    strokeWidth: 2,
-  });
+  const drawPlugin = new ExtendedDraw(
+    Interactions.DRAWER,
+    new StyleManager({
+      strokeColor: 'rgba(232,32,192,1)',
+      fillColor: 'rgba(232,32,192,0.2)',
+      strokeWidth: 2,
+    })
+  );
+
+  // TODO: FIXME: Completer
+  const modifierPlugin = new ExtendedModify(
+    Interactions.MODIFIER,
+    new StyleManager({
+      strokeColor: 'rgba(232,32,192,1)',
+      fillColor: 'rgba(232,32,192,0.2)',
+      strokeWidth: 2,
+    }),
+    _getModificationLayer()
+  );
 
   const link = new Link({
     params: ['x', 'y', 'z', 'r'],
@@ -72,7 +91,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * @returns List of map interactions.
    */
   function getInteractions(): Interaction[] {
-    return [selectorPlugin, measurePlugin, drawPlugin, link];
+    return [selectorPlugin, measurePlugin, drawPlugin, link, modifierPlugin];
   }
 
   /**
@@ -93,7 +112,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     });
 
     // Set the selection layer
-    const archsiteLayer = ms.getLayerById('archsites') as
+    const archsiteLayer = ms.getLayerById(LayerIdentifier.SITES) as
       | VectorTileLayer
       | undefined;
     selectorPlugin.setSelectionLayer(archsiteLayer);
@@ -139,6 +158,13 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     return findedElement;
   }
 
+  // TODO: FIXME: Finir cette fonction.
+  function _getModificationLayer(): VectorLayer {
+    return new VectorLayer({
+      source: new VectorSource(),
+    });
+  }
+
   /**
    * Watch for map initialization and then enable the interaction.
    */
@@ -156,6 +182,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     selectorPlugin,
     measurePlugin,
     drawPlugin,
+    modifierPlugin,
     enableInteraction,
     getInteractionByName,
   };

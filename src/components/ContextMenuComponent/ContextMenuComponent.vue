@@ -23,16 +23,20 @@ const mainList = [
 
 const measureItemList = [
   {
-    action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
-    text: 'Distance',
-  },
-  {
     action: (): void => mes.addMeasure(GeometryType.POLYGON),
     text: 'Area',
   },
   {
+    action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
+    text: 'Distance',
+  },
+  {
     action: (): void => mes.removeAllMeasure(),
-    text: 'Remove all measurement',
+    text: 'Delete all',
+  },
+  {
+    action: (): void => mes.removeMeasure(),
+    text: 'Delete selected',
   },
 ];
 </script>

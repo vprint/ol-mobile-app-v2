@@ -6,6 +6,7 @@ import { onMounted, ref } from 'vue';
 // Store imports
 import { defineStore } from 'pinia';
 import { useMapInteractionStore } from './map-interaction-store';
+import { useNotificationStore } from './notify-store';
 
 // Interface, type and enum imports
 
@@ -13,26 +14,26 @@ import { useMapInteractionStore } from './map-interaction-store';
 import { GeometryType } from 'src/enums/geometry.enum';
 import { MeasureEventType } from 'src/services/measure/Measure';
 import { Interactions } from 'src/enums/interactions.enum';
-import NotificationService from 'src/services/notifier/Notifier';
 
 // script
 const mis = useMapInteractionStore();
+const ns = useNotificationStore();
 
 export const useDrawStore = defineStore('draw', () => {
   const isVisible = ref(false);
 
   function createNewPolygon(): void {
-    mis.drawPlugin.addFeature(GeometryType.POLYGON);
+    mis.drawPlugin.createFeature(GeometryType.POLYGON);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function createNewLine(): void {
-    mis.drawPlugin.addFeature(GeometryType.LINE_STRING);
+    mis.drawPlugin.createFeature(GeometryType.LINE_STRING);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
   function createNewPoint(): void {
-    mis.drawPlugin.addFeature(GeometryType.POINT);
+    mis.drawPlugin.createFeature(GeometryType.POINT);
     mis.enableInteraction(Interactions.SELECTOR, false);
   }
 
@@ -41,15 +42,15 @@ export const useDrawStore = defineStore('draw', () => {
   }
 
   function RedoModification(): void {
-    new NotificationService().pushSuccess('Super !', 'Ca marche !');
-    new NotificationService().pushWarning('Super !', 'Ca marche !');
-    new NotificationService().pushError('Super !', 'Ca marche !');
-    new NotificationService().pushInfo('Super !', 'Ca marche !');
-    console.log('redo');
+    ns.pushSuccess('Super !', 'Ca marche !');
+    ns.pushWarning('Super !', 'Ca marche !');
+    ns.pushError('Super !', 'Ca marche !');
+    ns.pushInfo('Super !', 'Ca marche !');
   }
 
   function deleteDraw(): void {
-    mis.drawPlugin.getDrawModifier()?.removeFeature();
+    console.log('need to implement this');
+    //mis.drawPlugin.removeFeature();
   }
 
   function setVisible(active: boolean): void {

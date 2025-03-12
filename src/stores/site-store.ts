@@ -1,6 +1,6 @@
 // Map imports
+import { Collection, Feature } from 'ol';
 import GeoJSON from 'ol/format/GeoJSON.js';
-import { Feature } from 'ol';
 
 // Vue/Quasar imports
 import { onMounted, Ref, ref, watch } from 'vue';
@@ -11,6 +11,7 @@ import { useMapInteractionStore } from './map-interaction-store';
 import { useApiClientStore } from './api-client-store';
 import { useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
+import { useDrawStore } from './draw-store';
 
 // Others imports
 import {
@@ -19,28 +20,40 @@ import {
 } from 'src/services/VectorTileSelect';
 import { Feature as GeoJSONFeature } from 'geojson';
 
-// Enum / Interface imports
-import { Site } from 'src/model/site';
+// Enum / Interface / Model imports
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { ISite } from 'src/interface/ISite';
+import { TransactionMode } from 'src/enums/transaction.enum';
+import Site from 'src/model/site';
+import WFSTransactionService from 'src/services/WFSTransactionService';
+import { LayerIdentifier } from 'src/enums/layers.enum';
 
 /**
  * Store sites and and related functionnalities
  */
 export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
+  const mapInteractionStore = useMapInteractionStore();
+  const drawStore = useDrawStore();
+  const sitePanelStore = useSidePanelStore();
+  const mapStore = useMapStore();
+
+  const { isMapInteractionsInitialized } = storeToRefs(mapInteractionStore);
+
+  const WFS_TRANSACTION_OPTIONS = {
+    featureNS: 'ArchaeoSpringMap',
+    srsName: 'EPSG:3857',
+    featurePrefix: 'ArchaeoSpringMap',
+    featureType: 'archsites',
+    nativeElements: [],
+  };
+  const transactor = new WFSTransactionService();
   const site: Ref<Site | undefined> = ref();
-  const mis = useMapInteractionStore();
-  const { isMapInteractionsInitialized } = storeToRefs(mis);
-  const sps = useSidePanelStore();
-  const mas = useMapStore();
-  const SITE_LAYER = 'archsites';
 
   /**
    * Main site-store function that allow to set the working site by it's id.
    * @param newSiteId
    */
   async function openSitePanel(newSiteId: number): Promise<void> {
-    sps.setActive(true, {
+    sitePanelStore.setActive(true, {
       location: SidePanelParameters.SITE,
       parameterName: 'siteId',
       parameterValue: newSiteId.toString(),
@@ -52,7 +65,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function closeSitePanel(): void {
     clearSite();
-    sps.setActive(false);
+    sitePanelStore.setActive(false);
   }
 
   /**
@@ -60,8 +73,8 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    mis.selectorPlugin.clearFeatures();
-    updateMap();
+    mapInteractionStore.selectorPlugin.clear();
+    fitMap();
   }
 
   /**
@@ -78,19 +91,27 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @returns
    */
   async function setSiteById(siteId: number): Promise<void> {
-    const rawSite = await useApiClientStore().getSiteById(siteId);
-    const feature = rawSite?.features[0];
+    const feature = await useApiClientStore().getSiteById(siteId);
 
     if (feature) {
-      const newSite = new Site(feature.properties as ISite);
+      const newSite = new Site({
+        ...feature.properties,
+        geometry: new GeoJSON().readGeometry(feature.geometry, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857',
+        }),
+      });
 
-      if (sps.panelParameters.parameterValue !== newSite.siteId.toString()) {
+      if (
+        sitePanelStore.panelParameters.parameterValue !==
+        newSite.siteId.toString()
+      ) {
         openSitePanel(newSite.siteId);
       }
 
-      updateMap(feature);
+      fitMap(feature);
       site.value = newSite;
-      mis.selectorPlugin.setFeaturesById([siteId.toString()]);
+      mapInteractionStore.selectorPlugin.setAsSelected([siteId.toString()]);
     }
   }
 
@@ -98,24 +119,67 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Fit the map to the selected site and set the style.
    * @param geoJsonFeature Selected feature
    */
-  function updateMap(geoJsonFeature?: GeoJSONFeature): void {
+  function fitMap(geoJsonFeature?: GeoJSONFeature): void {
     if (geoJsonFeature) {
       const feature = new GeoJSON().readFeature(geoJsonFeature, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
-      sps.setPanelPadding(true, feature);
+      sitePanelStore.setPanelPadding(true, feature);
     }
 
-    const archLayer = mas.getLayerById(SITE_LAYER);
+    const archLayer = mapStore.getLayerById(LayerIdentifier.SITES);
     archLayer?.changed();
+  }
+
+  /**
+   * Enable form modification and drawing.
+   * @param active - Should the edition mode be enabled ?
+   */
+  function enableEdition(active: boolean): void {
+    const modifier = mapInteractionStore.modifierPlugin;
+    drawStore.setVisible(active);
+    modifier.setActive(active);
+
+    // TODO: FIXME: A débroussailler
+    if (active) {
+      const features = new Collection([site.value] as Feature[]);
+      modifier.addFeaturesToModifier(features);
+      const modificationLayer = modifier.getModificationLayer();
+      mapStore.map.addLayer(modificationLayer);
+      modificationLayer.getSource()?.clear();
+      modificationLayer.getSource()?.addFeatures(features.getArray());
+    }
+  }
+
+  /**
+   * Execute a WFS-Transaction. A feature and a transaction mode shoud be give by the user.
+   * @param wfsFeature - The feature.
+   * @param mode - The transaction mode.
+   */
+  async function wfsTransaction(
+    wfsFeature: Site,
+    mode: TransactionMode
+  ): Promise<void> {
+    const olTransaction = transactor.writeTransactionByMode(
+      mode,
+      wfsFeature,
+      WFS_TRANSACTION_OPTIONS
+    );
+    const xmlTransaction = new XMLSerializer().serializeToString(olTransaction);
+    const transactionResult = await useApiClientStore().postWFSTransaction(
+      xmlTransaction
+    );
+
+    if (transactionResult)
+      transactor.checkResult(transactionResult, TransactionMode.UPDATE);
   }
 
   /**
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    mis.selectorPlugin.on(
+    mapInteractionStore.selectorPlugin.on(
       // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
@@ -123,27 +187,19 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
         if (features && features.length > 0) {
           openSitePanel(features[0].getId() as number);
-          mis.selectorPlugin.setFeaturesById([features[0].getId()?.toString()]);
+          mapInteractionStore.selectorPlugin.setAsSelected([
+            features[0].getId()?.toString(),
+          ]);
         }
       }
     );
   }
 
   /**
-   *
-   * @param event the keyboard press envent
-   */
-  function handleEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape' && sps.isOpen && site.value) {
-      closeSitePanel();
-    }
-  }
-
-  /**
    * watch for site change in URL
    */
   watch(
-    () => sps.panelParameters,
+    () => sitePanelStore.panelParameters,
     (newPanelParameters) => {
       // Open site if URL contains site data
       if (
@@ -180,12 +236,19 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Initialize site
    */
   onMounted(async () => {
-    window.addEventListener('keydown', handleEscape);
-
-    if (sps.panelParameters.location === SidePanelParameters.SITE) {
-      openSitePanel(parseInt(sps.panelParameters.parameterValue as string));
+    if (sitePanelStore.panelParameters.location === SidePanelParameters.SITE) {
+      openSitePanel(
+        parseInt(sitePanelStore.panelParameters.parameterValue as string)
+      );
     }
   });
 
-  return { site, openSitePanel, updateSite, closeSitePanel };
+  return {
+    site,
+    enableEdition,
+    openSitePanel,
+    updateSite,
+    wfsTransaction,
+    closeSitePanel,
+  };
 });

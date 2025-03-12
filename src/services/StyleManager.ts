@@ -90,6 +90,27 @@ class StyleManager {
   }
 
   /**
+   * Return the selection style for the given user parameters.
+   * @param options
+   * @returns
+   */
+  public getHoverStyle(): Style[] {
+    const selectedStyle = [
+      this.getStyle(),
+
+      // A translucid white stroke to highlight the feature.
+      new Style({
+        stroke: this.getStroke(
+          `rgba(${WHITE}, ${HIGHLIGHT_OPACITY})`,
+          this.options.strokeWidth ? this.options.strokeWidth + 4 : undefined
+        ),
+      }),
+    ];
+
+    return selectedStyle;
+  }
+
+  /**
    * Return the vertex of a feature as MultiPoint geometry.
    * @param feature - An OpenLayers feature
    * @returns

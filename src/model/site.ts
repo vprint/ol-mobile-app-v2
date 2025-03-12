@@ -1,154 +1,112 @@
-import { format } from 'date-fns';
+import TypedFeature from 'src/services/Feature';
 import { ISite } from 'src/interface/ISite';
+import { format, parse } from 'date-fns';
+import { ObjectWithGeometry } from 'ol/Feature';
+import { SiteAttributes } from 'src/enums/site-type.enums';
 
-/**
- * Site
- */
-export class Site {
-  public siteId: number;
-  public englishName?: string;
-  public frenchName?: string;
-  public khmerName?: string;
-  public alternativeName?: string;
-  public alternativeKhmerName?: string;
-  public description?: string;
-  public verified?: boolean;
-  public ceramicsDetails?: string;
-  public ceramics?: boolean;
-  public buildMaterialComments?: string;
-  public artefactsComments?: string;
-  public looted?: boolean;
-  public cultivated?: boolean;
-  public cleared?: boolean;
-  public threatened?: boolean;
-  public databasingComments?: string;
-  public userCreation?: string;
-  public userModification?: string;
-  public featureType?: string;
-  public locatedBy?: number;
-  public groundVerifiedBy?: number;
-  public materialSandstone?: boolean;
-  public materialPinkSandstone?: boolean;
-  public materialLaterite?: boolean;
-  public materialBrick?: boolean;
-  public materialThmaphnom?: boolean;
-  public materialOther?: boolean;
-  public artefactsPedestal?: boolean;
-  public artefactsColonette?: boolean;
-  public artefactsDoorframe?: boolean;
-  public artefactsStatuary?: boolean;
-  public artefactsDecoratedBlocks?: boolean;
-  public artefactsOther?: boolean;
-  public idAmbiguity?: boolean;
-  public idAmbiguityDetail?: string;
-  public ckId?: number;
-  public ikId?: string;
-  public mhId?: string;
-  public ikStarred?: boolean;
-  public bdId?: string;
-  public gtId?: number;
-  public cpId?: number;
-  public dcId?: string;
-  public gaId?: number;
-  public jbId?: number;
-  public emId?: number;
-  public pkId?: number;
-  public isId?: number;
-  public coordinateSource?: string;
-  public inGapStudyArea?: boolean;
-  public inLidarStudyArea?: boolean;
-  public toBeInvestigated?: boolean;
-  public toBeRemapped?: boolean;
-  public toBeRemoved?: boolean;
-  public dbResolved?: number;
-  public creationDate?: string;
-  public verificationDate?: string;
-  public modificationDate?: string;
+class Site extends TypedFeature<ISite> {
+  private static readonly FIELDS_TYPE = {
+    dateFields: [
+      SiteAttributes.CREATION_DATE,
+      SiteAttributes.MODIFICATION_DATE,
+      SiteAttributes.GROUND_VERIFIED_DATE,
+    ] as const,
+    booleanFields: [
+      SiteAttributes.GROUND_VERIFIED,
+      SiteAttributes.CERAMICS,
+      SiteAttributes.LOOTED,
+      SiteAttributes.CULTIVATED,
+      SiteAttributes.CLEARED,
+      SiteAttributes.THREATENED,
+    ] as const,
+  };
 
-  constructor(partialEntity: ISite | Site) {
-    this.siteId =
-      partialEntity instanceof Site
-        ? partialEntity.siteId
-        : Number(partialEntity.siteId);
-    this.englishName = partialEntity.englishName ?? undefined;
-    this.frenchName = partialEntity.frenchName ?? undefined;
-    this.khmerName = partialEntity.khmerName ?? undefined;
-    this.alternativeName = partialEntity.alternativeName ?? undefined;
-    this.alternativeKhmerName = partialEntity.alternativeKhmerName ?? undefined;
-    this.description = partialEntity.description ?? undefined;
-    this.ikId = partialEntity.ikId ?? undefined;
-    this.mhId = partialEntity.mhId ?? undefined;
-    this.verified = Boolean(partialEntity.verified);
-    this.locatedBy = partialEntity.locatedBy ?? undefined;
-    this.ceramicsDetails = partialEntity.ceramicsDetails ?? undefined;
-    this.ceramics = Boolean(partialEntity.ceramics);
-    this.buildMaterialComments =
-      partialEntity.buildMaterialComments ?? undefined;
-    this.artefactsComments = partialEntity.artefactsComments ?? undefined;
-    this.looted = Boolean(partialEntity.looted);
-    this.cultivated = Boolean(partialEntity.cultivated);
-    this.cleared = Boolean(partialEntity.cleared);
-    this.threatened = Boolean(partialEntity.threatened);
-    this.databasingComments = partialEntity.databasingComments ?? undefined;
-    this.userCreation = partialEntity.userCreation ?? undefined;
-    this.userModification = partialEntity.userModification ?? undefined;
-    this.featureType = partialEntity.featureType ?? undefined;
-    this.groundVerifiedBy = partialEntity.groundVerifiedBy ?? undefined;
-    this.materialSandstone = partialEntity.materialSandstone ?? undefined;
-    this.materialPinkSandstone =
-      partialEntity.materialPinkSandstone ?? undefined;
-    this.materialLaterite = partialEntity.materialLaterite ?? undefined;
-    this.materialBrick = partialEntity.materialBrick ?? undefined;
-    this.materialThmaphnom = partialEntity.materialThmaphnom ?? undefined;
-    this.materialOther = partialEntity.materialOther ?? undefined;
-    this.artefactsPedestal = partialEntity.artefactsPedestal ?? undefined;
-    this.artefactsColonette = partialEntity.artefactsColonette ?? undefined;
-    this.artefactsDoorframe = partialEntity.artefactsDoorframe ?? undefined;
-    this.artefactsStatuary = partialEntity.artefactsStatuary ?? undefined;
-    this.artefactsDecoratedBlocks =
-      partialEntity.artefactsDecoratedBlocks ?? undefined;
-    this.artefactsOther = partialEntity.artefactsOther ?? undefined;
-    this.idAmbiguity = partialEntity.idAmbiguity ?? undefined;
-    this.idAmbiguityDetail = partialEntity.idAmbiguityDetail ?? undefined;
-    this.ckId = partialEntity.ckId ?? undefined;
-    this.ikId = partialEntity.ikId ?? undefined;
-    this.mhId = partialEntity.mhId ?? undefined;
-    this.ikStarred = partialEntity.ikStarred ?? undefined;
-    this.bdId = partialEntity.bdId ?? undefined;
-    this.gtId = partialEntity.gtId ?? undefined;
-    this.cpId = partialEntity.cpId ?? undefined;
-    this.dcId = partialEntity.dcId ?? undefined;
-    this.gaId = partialEntity.gaId ?? undefined;
-    this.jbId = partialEntity.jbId ?? undefined;
-    this.emId = partialEntity.emId ?? undefined;
-    this.pkId = partialEntity.pkId ?? undefined;
-    this.isId = partialEntity.isId ?? undefined;
-    this.coordinateSource = partialEntity.coordinateSource ?? undefined;
-    this.inGapStudyArea = partialEntity.inGapStudyArea ?? undefined;
-    this.inLidarStudyArea = partialEntity.inLidarStudyArea ?? undefined;
-    this.toBeInvestigated = partialEntity.toBeInvestigated ?? undefined;
-    this.toBeRemapped = partialEntity.toBeRemapped ?? undefined;
-    this.toBeRemoved = partialEntity.toBeRemoved ?? undefined;
-    this.dbResolved = partialEntity.dbResolved ?? undefined;
+  constructor(data: ObjectWithGeometry, formatData = true) {
+    const site = formatData ? Site.prepareData(data as ISite) : data;
+    super(site);
+  }
 
-    this.creationDate = partialEntity.creationDate
-      ? format(partialEntity.creationDate, 'yyyy/MM/dd')
-      : undefined;
+  public get siteId(): number {
+    return this.attributes[SiteAttributes.SITE_ID];
+  }
 
-    this.modificationDate = partialEntity.modificationDate
-      ? format(partialEntity.modificationDate, 'yyyy/MM/dd')
-      : undefined;
-
-    this.verificationDate = partialEntity.verificationDate
-      ? format(partialEntity.verificationDate, 'yyyy/MM/dd')
-      : undefined;
+  override clone(): Site {
+    return new Site(
+      {
+        ...this.getProperties(),
+        geometry: this.getGeometry()?.clone(),
+      },
+      false
+    );
   }
 
   /**
-   * Clone the site
-   * @returns new site instance
+   * Format the site to be OGC WFS conveniant.
+   * @returns A 'WFS ready' feature.
    */
-  public clone(): Site {
-    return new Site(this);
+  public getWFSFeature(): Site {
+    const wfsFeature = this.clone();
+
+    wfsFeature.setId(this.siteId);
+    wfsFeature.setGeometryName('geom');
+    wfsFeature.unset('id');
+
+    wfsFeature.setProperties(
+      Site.formatDate(
+        wfsFeature.getProperties(),
+        'yyyy/MM/dd',
+        "yyyy-MM-dd'T'HH:mm:ssXXX"
+      )
+    );
+
+    return wfsFeature;
+  }
+
+  /**
+   * Format the raw data.
+   * @param data - Site data.
+   * @returns A copy of the formatted data.
+   */
+  private static prepareData(data: ISite): ISite {
+    const formatedDate = Site.formatDate(
+      { ...data },
+      'yyyy-MM-dd HH:mm:ss',
+      'yyyy/MM/dd'
+    );
+    const formatedBoolean = Site.formatBoolean(formatedDate);
+    return formatedBoolean;
+  }
+
+  /**
+   * Format the date to the application standard.
+   * @param site - Site data.
+   * @returns Data with updated date.
+   */
+  private static formatDate(
+    site: ISite,
+    inputDateFormat: string,
+    outputDateFormat: string
+  ): ISite {
+    this.FIELDS_TYPE.dateFields.forEach((dateField) => {
+      if (site[dateField]) {
+        const parsedDate = parse(site[dateField], inputDateFormat, new Date());
+        site[dateField] = format(parsedDate, outputDateFormat);
+      }
+    });
+    return site;
+  }
+
+  /**
+   * Format the json boolean data (e.g string 'false' and 'true') to real boolean values.
+   * @param site - Site data.
+   * @returns Data with boolean values.
+   */
+  private static formatBoolean(site: ISite): ISite {
+    this.FIELDS_TYPE.booleanFields.forEach((booleanFields) => {
+      site[booleanFields] = !!site[booleanFields];
+    });
+    return site;
   }
 }
+
+export default Site;

@@ -24,13 +24,16 @@ onMounted(() => {
     <ContextMenuComponent></ContextMenuComponent>
     <GeometryManager></GeometryManager>
   </div>
-  <transition
-    appear
-    enter-active-class="animated fadeInLeftBig"
-    leave-active-class="animated fadeOutLeftBig"
-  >
-    <router-view />
-  </transition>
+
+  <router-view v-slot="{ Component }">
+    <transition
+      appear
+      enter-active-class="animated fadeInLeftBig"
+      leave-active-class="animated fadeOutLeftBig"
+    >
+      <component :is="Component" />
+    </transition>
+  </router-view>
 </template>
 
 <style lang="scss">
