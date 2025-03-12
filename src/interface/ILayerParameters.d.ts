@@ -1,8 +1,10 @@
+import { LayerIdentifier } from 'src/enums/layers.enum';
+
 export interface ILayerProperties {
   /**
    * Layer id. This id is used for servers request.
    */
-  id: string;
+  id: LayerIdentifier;
   /**
    * Layer title. This title is used in the layer panel.
    */

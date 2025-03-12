@@ -11,14 +11,18 @@ import { useMapStore } from './map-store';
 // Interface, type and enum imports
 import type { ILayerProperties } from 'src/interface/ILayerParameters';
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { LAYER_PROPERTIES_FIELD, LayerProperties } from 'src/enums/layers.enum';
+import {
+  LAYER_PROPERTIES_FIELD,
+  LayerIdentifier,
+  LayerProperties,
+} from 'src/enums/layers.enum';
 
 // Others imports
 
 // script
 
 interface ILayerEntryIndex {
-  layerId: string;
+  layerId: LayerIdentifier;
   zIndex: number;
 }
 
