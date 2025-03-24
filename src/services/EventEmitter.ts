@@ -1,86 +1,120 @@
-interface IEventEmitter<IEventList extends Record<string, unknown[]>> {
-  on<IEvent extends keyof IEventList>(
-    eventName: IEvent,
-    handler: (...args: IEventList[IEvent]) => void
+export type EventType = string | symbol;
+
+// An event handler can take an optional event argument
+// and should not return a value
+export type Handler<T = unknown> = (event: T) => void;
+export type WildcardHandler<T = Record<string, unknown>> = (
+  type: keyof T,
+  event: T[keyof T]
+) => void;
+
+// An array of all currently registered event handlers for a type
+export type EventHandlerList<T = unknown> = Handler<T>[];
+export type WildCardEventHandlerList<T = Record<string, unknown>> =
+  WildcardHandler<T>[];
+
+// A map of event types and their corresponding event handlers.
+export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
+  keyof Events | '*',
+  EventHandlerList<Events[keyof Events]> | WildCardEventHandlerList<Events>
+>;
+
+export interface Emitter<Events extends Record<EventType, unknown>> {
+  all: EventHandlerMap<Events>;
+  on<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>): void;
+  on(type: '*', handler: WildcardHandler<Events>): void;
+  off<Key extends keyof Events>(
+    type: Key,
+    handler?: Handler<Events[Key]>
   ): void;
-
-  off<IEvent extends keyof IEventList>(eventName: IEvent): void;
-
-  emit<IEvent extends keyof IEventList>(
-    eventName: IEvent,
-    ...args: IEventList[IEvent]
+  off(type: '*', handler: WildcardHandler<Events>): void;
+  emit<Key extends keyof Events>(type: Key, event: Events[Key]): void;
+  emit<Key extends keyof Events>(
+    type: undefined extends Events[Key] ? Key : never
   ): void;
 }
 
 /**
- * provides event registration, removal, and emission.
- *
- * @example
- * ```
- * type UserEvents = {
- *   'userLoggedIn': [username: string, timestamp: Date];
- *   'dataUpdated': [newData: object];
- * }
- *
- * const emitter = new EventEmitter<UserEvents>();
- * emitter.on('userLoggedIn', (username, timestamp) => {
- *   console.log(`${username} logged in at ${timestamp}`);
- * });
- * ```
- *
- * Mainly writted by chatGPT and claude.ai. Prompt :
- *
- * `En typescript comment faire un classe exposant une fonction on ? si cette classe est instancié il sera ainsi possible 'd'écouter' les events de la classe (par exemple : exemple.on('error', etc...)`
+ * A simple event emitter copy/paster from Mitt (https://github.com/developit/mitt/blob/main/src/index.ts).
  */
-class EventEmitter<IEventList extends Record<string, unknown[]>>
-  implements IEventEmitter<IEventList>
-{
-  private events: {
-    [IEvent in keyof IEventList]?: ((...args: IEventList[IEvent]) => void)[];
-  } = {};
+export default function EventEmitter<Events extends Record<EventType, unknown>>(
+  all?: EventHandlerMap<Events>
+): Emitter<Events> {
+  type GenericEventHandler =
+    | Handler<Events[keyof Events]>
+    | WildcardHandler<Events>;
+  all = all ?? new Map();
 
-  /**
-   * Registers an event handler for the specified event.
-   * If the event doesn't exist, it creates a new array of handlers.
-   *
-   * @param eventName - The name of the event to listen for.
-   * @param handler - The callback function to execute when the event is emitted.
-   */
-  on<IEvent extends keyof IEventList>(
-    eventName: IEvent,
-    handler: (...args: IEventList[IEvent]) => void
-  ): void {
-    if (!this.events[eventName]) {
-      this.events[eventName] = [];
-    }
-    this.events[eventName].push(handler);
-  }
+  return {
+    /**
+     * A Map of event names to registered handler functions.
+     */
+    all,
 
-  /**
-   * Removes the listener for the specified event.
-   * @param eventName - The name of the event to remove all handlers from
-   */
-  off<IEvent extends keyof IEventList>(eventName: IEvent): void {
-    if (this.events[eventName]) {
-      this.events[eventName] = [];
-    }
-  }
+    /**
+     * Register an event handler for the given type.
+     * @param type Type of event to listen for, or `'*'` for all events
+     * @param handler Function to call in response to given event
+     */
+    on<Key extends keyof Events>(
+      type: Key,
+      handler: GenericEventHandler
+    ): void {
+      const handlers: GenericEventHandler[] | undefined = all.get(type);
+      if (handlers) {
+        handlers.push(handler);
+      } else {
+        all.set(type, [handler] as EventHandlerList<Events[keyof Events]>);
+      }
+    },
 
-  /**
-   * Triggers all registered handlers for the specified event with the provided arguments.
-   *
-   * @param eventName - The name of the event to emit.
-   * @param args - The arguments to pass to the event handlers.
-   */
-  emit<IEvent extends keyof IEventList>(
-    eventName: IEvent,
-    ...args: IEventList[IEvent]
-  ): void {
-    const handlers = this.events[eventName];
-    if (handlers) {
-      handlers.forEach((handler) => handler(...args));
-    }
-  }
+    /**
+     * Remove an event handler for the given type.
+     * If `handler` is omitted, all handlers of the given type are removed.
+     * @param type Type of event to unregister `handler` from (`'*'` to remove a wildcard handler)
+     * @param handler Handler function to remove
+     */
+    off<Key extends keyof Events>(
+      type: Key,
+      handler?: GenericEventHandler
+    ): void {
+      const handlers: GenericEventHandler[] | undefined = all.get(type);
+      if (handlers) {
+        if (handler) {
+          handlers.splice(handlers.indexOf(handler) >>> 0, 1);
+        } else {
+          all.set(type, []);
+        }
+      }
+    },
+
+    /**
+     * Invoke all handlers for the given type.
+     * If present, `'*'` handlers are invoked after type-matched handlers.
+     *
+     * Note: Manually firing '*' handlers is not supported.
+     *
+     * @param type The event type to invoke
+     * @param evt Any value (object is recommended and powerful), passed to each handler
+     */
+    emit<Key extends keyof Events>(type: Key, evt?: Events[Key]): void {
+      let handlers = all.get(type);
+      if (handlers) {
+        (handlers as EventHandlerList<Events[keyof Events]>)
+          .slice()
+          .map((handler) => {
+            if (evt) handler(evt);
+          });
+      }
+
+      handlers = all.get('*');
+      if (handlers) {
+        (handlers as WildCardEventHandlerList<Events>)
+          .slice()
+          .map((handler) => {
+            if (evt) handler(type, evt);
+          });
+      }
+    },
+  };
 }
-
-export default EventEmitter;

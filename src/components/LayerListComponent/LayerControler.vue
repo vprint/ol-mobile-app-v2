@@ -73,7 +73,7 @@ function updateVisibility(newVisibility: boolean): void {
 <template>
   <div
     v-if="isInitialized"
-    class="layer-element merriweather"
+    class="layer-element app-font"
     :class="{ hover: !isDragging }"
   >
     <div class="layer-title">
@@ -96,7 +96,7 @@ function updateVisibility(newVisibility: boolean): void {
               transition-show="scale"
               transition-hide="scale"
               :delay="1000"
-              class="merriweather"
+              class="app-font"
             >
               Drag to change layer order
             </q-tooltip>
@@ -128,7 +128,7 @@ function updateVisibility(newVisibility: boolean): void {
               transition-show="scale"
               transition-hide="scale"
               :delay="1000"
-              class="merriweather"
+              class="app-font"
             >
               {{ !visible ? 'Show layer' : 'Hide layer' }}
             </q-tooltip>

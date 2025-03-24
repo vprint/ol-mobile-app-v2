@@ -77,7 +77,7 @@ onMounted(() => {
           <img v-else :src="layer.img" />
         </q-avatar>
       </q-btn>
-      <p class="q-ma-xs merriweather text-center">{{ layer.title }}</p>
+      <p class="q-ma-xs app-font text-center">{{ layer.title }}</p>
     </div>
   </div>
 </template>

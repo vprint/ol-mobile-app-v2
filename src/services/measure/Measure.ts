@@ -362,7 +362,7 @@ class Measure extends Interaction {
 
     const measureTooltip = new Overlay({
       element: measureTooltipElement,
-      className: 'measure-tooltip merriweather',
+      className: 'measure-tooltip app-font',
       stopEvent: false,
       id: getUid(feature),
     });

@@ -43,16 +43,24 @@ class NotificationService {
     });
 
     this.setCustomPadding(notification);
+    this.setCustomFont(notification);
   }
 
   /**
-   * Set the notification padding to match with OpenLayers style.
+   * Set the notification padding to match with application style.
    * @param notification The input notification
    */
   private setCustomPadding(notification: Notify): void {
     notification.container.style.setProperty(
       '--sn-notifications-padding',
       '20px 20px 40px 20px'
+    );
+  }
+
+  private setCustomFont(notification: Notify): void {
+    notification.container.style.setProperty(
+      'font-family',
+      'Playfair Display, serif'
     );
   }
 

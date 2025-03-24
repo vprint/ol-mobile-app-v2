@@ -42,7 +42,7 @@ const measureItemList = [
 </script>
 
 <template>
-  <q-menu touch-position context-menu class="bg-secondary merriweather">
+  <q-menu touch-position context-menu class="bg-secondary app-font">
     <q-list dense style="min-width: 100px">
       <!-- Measure section -->
       <q-item
@@ -59,7 +59,7 @@ const measureItemList = [
         <q-menu
           anchor="top end"
           self="top start"
-          class="bg-secondary merriweather"
+          class="bg-secondary app-font"
           :offset="[5, 0]"
         >
           <q-list>

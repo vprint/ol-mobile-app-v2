@@ -14,7 +14,7 @@ function confirm(): void {
     <q-card>
       <q-card-section class="row items-center">
         <q-avatar icon="save" color="primary" text-color="white" />
-        <span class="q-ml-sm merriweather">{{
+        <span class="q-ml-sm app-font">{{
           UserMessage.WFS.INSERT.CONFIRM
         }}</span>
       </q-card-section>
@@ -22,7 +22,7 @@ function confirm(): void {
       <q-card-actions align="right" class="popup-buttons">
         <q-btn
           v-close-popup
-          class="buttons merriweather"
+          class="buttons app-font"
           flat
           :label="UserMessage.GENERIC.CANCEL"
           color="primary"
@@ -31,7 +31,7 @@ function confirm(): void {
         <q-btn
           v-close-popup
           flat
-          class="buttons merriweather"
+          class="buttons app-font"
           :label="UserMessage.GENERIC.INSERT"
           color="primary"
           @click="confirm()"

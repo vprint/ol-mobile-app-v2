@@ -21,7 +21,7 @@ const props = defineProps({
 </script>
 
 <template>
-  <q-form class="site-form merriweather">
+  <q-form class="site-form app-font">
     <fieldset>
       <legend>Names</legend>
 

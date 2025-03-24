@@ -15,7 +15,7 @@ const emit = defineEmits(['submit', 'cancel', 'edit']);
       rounded
       color="primary"
       :label="UserMessage.GENERIC.EDIT"
-      class="buttons merriweather"
+      class="buttons app-font"
       @click="emit('edit')"
     />
     <q-btn
@@ -24,7 +24,7 @@ const emit = defineEmits(['submit', 'cancel', 'edit']);
       rounded
       color="primary"
       :label="UserMessage.GENERIC.CANCEL"
-      class="buttons merriweather"
+      class="buttons app-font"
       @click="emit('cancel')"
     />
     <q-btn
@@ -32,7 +32,7 @@ const emit = defineEmits(['submit', 'cancel', 'edit']);
       rounded
       color="primary"
       :label="UserMessage.GENERIC.SAVE"
-      class="buttons merriweather"
+      class="buttons app-font"
       @click="emit('submit')"
     />
   </div>

@@ -45,4 +45,40 @@ onMounted(() => {
   width: 100%;
   background-color: lightgrey;
 }
+
+.ol-attribution.ol-uncollapsible {
+  border-radius: 50%;
+}
+
+.ol-attribution.ol-collapsed {
+  border-radius: 50%;
+  background: none;
+}
+
+.ol-attribution button {
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+}
+
+.attribution-icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.ol-attribution:not(.ol-collapsed) {
+  border-radius: 50px;
+}
+
+.ol-attribution ul {
+  font-family: 'Playfair Display', serif;
+}
+
+.ol-attribution button:focus {
+  box-shadow: 0 0 2px 2px rgb(0 150 255 / 100%);
+  outline: none;
+}
 </style>

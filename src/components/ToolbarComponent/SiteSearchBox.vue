@@ -99,7 +99,7 @@ onMounted(() => {
     color="primary"
     bg-color="white"
     popup-content-class="text-grey-8 test asm-select-list"
-    class="searchbox-select merriweather"
+    class="searchbox-select app-font"
     input-debounce="0"
     rounded
     outlined

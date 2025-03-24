@@ -53,7 +53,7 @@ const model = defineModel<string>();
     <template #append>
       <q-icon v-if="editionMode" name="event" class="cursor-pointer">
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-date v-model="model" minimal class="date-picker merriweather">
+          <q-date v-model="model" minimal class="date-picker app-font">
             <div class="row items-center justify-end">
               <q-btn
                 v-close-popup

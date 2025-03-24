@@ -38,7 +38,7 @@ onUnmounted(() => {
     <!-- Main section -->
     <div class="content shadow-4">
       <!-- Header -->
-      <div class="row text-white items-center header merriweather shadow-4">
+      <div class="row text-white items-center header app-font shadow-4">
         <div class="title-center">
           <slot name="title"></slot>
         </div>

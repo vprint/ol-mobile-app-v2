@@ -27,6 +27,9 @@ import { LayerIdentifier } from 'src/enums/layers.enum';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 
+// Icon import
+import attributionIcon from '../../public/icons/ctrl-attrib.svg';
+
 /**
  * Store and manage mapInteraction.
  * Exemple : enable or disable the click interaction that allow to select site.
@@ -82,9 +85,17 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   scaleline.set('name', Interactions.SCALELINE);
 
   const attribution = new Attribution({
-    collapsible: false,
+    label: _getAttributionIcon(),
+    collapseLabel: _getAttributionIcon(),
   });
   attribution.set('name', Interactions.ATTRIBUTION);
+
+  function _getAttributionIcon(): HTMLElement {
+    const span = document.createElement('span');
+    span.className = 'attribution-icon-container';
+    span.innerHTML = `<img src="${attributionIcon}" alt="Attribution" width="24" height="24">`;
+    return span;
+  }
 
   /**
    * Get the map interactions.

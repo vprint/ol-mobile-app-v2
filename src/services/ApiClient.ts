@@ -1,19 +1,19 @@
 import { ApiEvents } from 'src/enums/error-event.enum';
-import EventEmitter from './EventEmitter';
-import wretch from 'wretch';
+import EventEmitter, { Emitter } from './EventEmitter';
+import wretch, { WretchError } from 'wretch';
 
 type IApiEvents = {
-  [K in ApiEvents]: [error: Error];
+  [K in ApiEvents]: WretchError;
 };
 
 /**
  * API Client for handling HTTP requests.
  */
 class ApiClient {
-  private eventEmitter: EventEmitter<IApiEvents>;
+  private eventEmitter: Emitter<IApiEvents>;
 
   constructor() {
-    this.eventEmitter = new EventEmitter<IApiEvents>();
+    this.eventEmitter = EventEmitter<IApiEvents>();
   }
 
   /**
@@ -75,21 +75,20 @@ class ApiClient {
   }
 
   /**
-   * Register an event listener for API errors
-   * @param eventName - The type of error event to listen for
-   * @param handler - The callback function to handle the error
+   * Create an event listeners for API errors.
+   * @param eventName - The type of error event to listen for.
+   * @param handler - The callback function to handle the error.
    */
   public on<K extends ApiEvents>(
     eventName: K,
-    handler: (...args: IApiEvents[K]) => void
+    handler: (error: IApiEvents[K]) => void
   ): void {
     this.eventEmitter.on(eventName, handler);
   }
 
   /**
-   * Register an event listener for API errors
-   * @param eventName - The type of error event to listen for
-   * @param handler - The callback function to handle the error
+   * Remove an API error event listener.
+   * @param eventName The name of the event.
    */
   public off(eventName: ApiEvents): void {
     this.eventEmitter.off(eventName);

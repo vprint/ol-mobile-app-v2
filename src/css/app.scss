@@ -1,9 +1,6 @@
 // app global css in SCSS form
 
-@font-face {
-  font-family: merriweather;
-  src: url(./fonts/Merriweather-Light.ttf);
-}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -23,12 +20,12 @@
   background-color: #adadad;
 }
 
-.merriweather {
-  font-family: 'merriweather';
+.app-font {
+  font-family: 'Playfair Display', serif;
 }
 
 .asm-select-list {
-  font-family: 'merriweather';
+  font-family: 'Playfair Display', serif;
   max-height: 300px;
   border: 1px solid black;
 
@@ -85,7 +82,7 @@
   color: rgba(0, 0, 0, 0.6);
   font-size: 0.7rem;
   text-align: center;
-  font-family: 'merriweather';
+  font-family: 'Playfair Display', 'serif';
   margin: 1px;
   will-change: contents, width;
   transition: all 0.5s;
