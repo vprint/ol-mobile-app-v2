@@ -19,10 +19,10 @@ class NotificationService {
 
   /**
    * Create a new notification
-   * @param mode Notification mode
-   * @param text Text of the notification
-   * @param title Title of the notification
-   * @param timout Notification delay
+   * @param mode - Notification mode
+   * @param text - Text of the notification
+   * @param title - Title of the notification
+   * @param timout - Notification delay
    */
   private createNotify(
     mode: INotifyStatus,
@@ -43,24 +43,16 @@ class NotificationService {
     });
 
     this.setCustomPadding(notification);
-    this.setCustomFont(notification);
   }
 
   /**
    * Set the notification padding to match with application style.
-   * @param notification The input notification
+   * @param notification - notification The input notification
    */
   private setCustomPadding(notification: Notify): void {
     notification.container.style.setProperty(
       '--sn-notifications-padding',
       '20px 20px 40px 20px'
-    );
-  }
-
-  private setCustomFont(notification: Notify): void {
-    notification.container.style.setProperty(
-      'font-family',
-      'Playfair Display, serif'
     );
   }
 

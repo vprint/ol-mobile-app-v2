@@ -50,7 +50,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Main site-store function that allow to set the working site by it's id.
-   * @param newSiteId
+   * @param newSiteId - Id of the new site.
    */
   async function openSitePanel(newSiteId: number): Promise<void> {
     sitePanelStore.setActive(true, {
@@ -79,7 +79,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Update site values. NewSite can be for exemple a modified clone of the original site.
-   * @param site New site
+   * @param site - New site
    */
   function updateSite(newSite: Site): void {
     site.value = newSite;
@@ -87,7 +87,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Request site information by id and open the panel
-   * @param siteId SiteId
+   * @param siteId - SiteId
    * @returns
    */
   async function setSiteById(siteId: number): Promise<void> {
@@ -117,7 +117,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Fit the map to the selected site and set the style.
-   * @param geoJsonFeature Selected feature
+   * @param geoJsonFeature - Selected feature
    */
   function fitMap(geoJsonFeature?: GeoJSONFeature): void {
     if (geoJsonFeature) {

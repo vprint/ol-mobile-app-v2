@@ -27,8 +27,6 @@ class StyleManager {
 
   /**
    * Return the visualization style for the given user parameters.
-   * @param options
-   * @returns
    */
   public getStyle(): Style {
     const style = new Style({
@@ -48,8 +46,6 @@ class StyleManager {
 
   /**
    * Return the edition style for the given user parameters.
-   * @param options
-   * @returns
    */
   public getEditionStyle(): Style[] {
     const style = [
@@ -64,8 +60,6 @@ class StyleManager {
 
   /**
    * Return the selection style for the given user parameters.
-   * @param options
-   * @returns
    */
   public getSelectionStyle(): Style[] {
     const selectedStyle = [
@@ -91,8 +85,6 @@ class StyleManager {
 
   /**
    * Return the selection style for the given user parameters.
-   * @param options
-   * @returns
    */
   public getHoverStyle(): Style[] {
     const selectedStyle = [
@@ -113,7 +105,6 @@ class StyleManager {
   /**
    * Return the vertex of a feature as MultiPoint geometry.
    * @param feature - An OpenLayers feature
-   * @returns
    */
   private getFeatureVertex(feature: FeatureLike): MultiPoint | undefined {
     const geom = feature.getGeometry();
@@ -134,8 +125,7 @@ class StyleManager {
 
   /**
    * Return a style to be applied to the geometry vertex.
-   * @param pointColor
-   * @returns
+   * @param pointColor - The point color.
    */
   private getVertexPointStyle(
     pointColor: Color | ColorLike,
@@ -161,18 +151,17 @@ class StyleManager {
 
   /**
    * Return an OpenLayers stroke.
-   * @param strokeColor
-   * @param width
-   * @param dash
-   * @returns
+   * @param color - The stroke color.
+   * @param width - The stroke width.
+   * @param dash - The stroke dash.
    */
   private getStroke(
-    strokeColor: Color | ColorLike,
+    color: Color | ColorLike,
     width: number | undefined,
     dash?: number[]
   ): Stroke {
     return new Stroke({
-      color: strokeColor,
+      color: color,
       width: width,
       lineCap: 'round',
       lineDash: dash ?? undefined,

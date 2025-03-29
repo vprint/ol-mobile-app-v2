@@ -1,37 +1,33 @@
 import { Style } from 'ol/style';
 import { StyleFunction } from 'ol/style/Style';
-import { LayerIdentifier } from 'src/enums/layers.enum';
+import { LayerIdentifier, LayerProperties } from 'src/enums/layers.enum';
 
 export interface IBaseLayerParameters {
-  title: string;
-  layerId: LayerIdentifier;
+  [LayerProperties.TITLE]: string;
+  [LayerProperties.ID]: LayerIdentifier;
   zIndex: number;
   visible: boolean;
+  attribution: string[];
+  url: string;
+  [LayerProperties.ALLOW_PARAMETERS_CHANGE]?: boolean;
 }
 
 export interface IBackgroundLayerParameters extends IBaseLayerParameters {
   img: string;
   token?: string;
-  attribution: string[];
-  url: string;
   vector: boolean;
 }
 
 export interface IRasterLayerParameters extends IBaseLayerParameters {
   mode: 'wmts' | 'wms';
-  description: string;
-  editable: boolean;
-  dynamic: boolean;
-  attribution: string[];
-  url: string;
+  [LayerProperties.DESCRIPTION]: string;
+  [LayerProperties.IS_DYNAMIC]: boolean;
 }
 
 export interface IVectorTileLayerParameters extends IBaseLayerParameters {
   featureId: string;
-  attribution: string[];
-  editable: boolean;
-  selectable: boolean;
-  url: string;
+  [LayerProperties.ALLOW_EDITION]: boolean;
+  [LayerProperties.ALLOW_SELECTION]: boolean;
   style: Style[] | Style | StyleFunction;
 }
 

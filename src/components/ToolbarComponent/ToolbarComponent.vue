@@ -4,19 +4,17 @@ import { storeToRefs } from 'pinia';
 
 // Store import
 import { useMapStore } from 'src/stores/map-store';
-import { useReferencesStore } from 'src/stores/references-store';
 
 // Component import
 import SiteSearchBox from './SiteSearchBox.vue';
 import MeasureComponent from '../MeasureComponent/MeasureComponent.vue';
-import LayerManagerButton from '../LayerListComponent/LayerManagerButton.vue';
+import LayerManagerButton from '../LayerManagerComponent/LayerManagerButton.vue';
 import LocatorComponent from '../LocatorComponent/LocatorComponent.vue';
 
 // Others
 
 // Script
 const { isMapInitialized } = storeToRefs(useMapStore());
-const { isReferencesInitialized } = storeToRefs(useReferencesStore());
 </script>
 
 <template>
@@ -30,7 +28,7 @@ const { isReferencesInitialized } = storeToRefs(useReferencesStore());
     <!-- Measure button -->
     <MeasureComponent v-if="$q.platform.is.desktop"></MeasureComponent>
 
-    <SiteSearchBox v-if="isReferencesInitialized"></SiteSearchBox>
+    <SiteSearchBox></SiteSearchBox>
   </div>
 </template>
 

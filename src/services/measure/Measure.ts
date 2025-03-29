@@ -135,7 +135,7 @@ class Measure extends Interaction {
 
   /**
    * Initialize the component
-   * @param map OpenLayers map
+   * @param map - OpenLayers map
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
@@ -149,7 +149,7 @@ class Measure extends Interaction {
 
   /**
    * Add measure interaction to the map.
-   * @param type Measure type
+   * @param type - Measure type
    */
   public createMeasureFeature(type: IMeasureType): void {
     this.drawInteraction.createFeature(type);
@@ -157,8 +157,8 @@ class Measure extends Interaction {
 
   /**
    * Update the tooltip position and values according to the draw.
-   * @param feature Drawed feature
-   * @param tooltip Overlay
+   * @param feature - Drawed feature
+   * @param tooltip - Overlay
    */
   private updateTooltip(feature: Feature, tooltip: Overlay): void {
     feature.on('change', () => {
@@ -184,8 +184,8 @@ class Measure extends Interaction {
 
   /**
    * This function set the measure text to the overlay.
-   * @param htmlElement Overlay html element
-   * @param feature Draw feature
+   * @param htmlElement - Overlay html element
+   * @param feature - Draw feature
    */
   private setTooltipText(
     htmlElement: HTMLElement | undefined,
@@ -198,7 +198,7 @@ class Measure extends Interaction {
 
   /**
    * Manage draw-end and draw-abort event.
-   * @param drawInteraction Draw plugin
+   * @param drawInteraction - Draw plugin
    */
   private addEventsListeners(drawInteraction: ExtendedDraw): void {
     this.events.end = this.getEndEvent(drawInteraction);
@@ -290,7 +290,7 @@ class Measure extends Interaction {
 
   /**
    * Calculate measure for a given polygon.
-   * @param geom Input geometry
+   * @param geom - Input geometry
    */
   private calculateMeasure(feature: Feature): string {
     let measure = '';
@@ -321,7 +321,7 @@ class Measure extends Interaction {
 
   /**
    * Format length output.
-   * @param line The line
+   * @param line - The line
    * @returns The formatted length.
    */
   private formatLength(line: LineString): string {
@@ -338,7 +338,7 @@ class Measure extends Interaction {
 
   /**
    * Format area output.
-   * @param polygon The polygone
+   * @param polygon - The polygone
    * @returns Formatted area
    */
   private formatArea(polygon: Polygon): string {
@@ -392,7 +392,7 @@ class Measure extends Interaction {
 
   /**
    * Remove an overlay for a given id
-   * @param id Overlay id
+   * @param id - Overlay id
    */
   private removeOverlayById(id: string | number): void {
     const overlays = this.getMap()?.getOverlays().getArray();

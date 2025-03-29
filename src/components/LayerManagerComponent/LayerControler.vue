@@ -15,7 +15,7 @@ import { ILayerProperties } from 'src/interface/ILayerParameters';
 const props = defineProps<{
   layerId: LayerIdentifier;
   /**
-   * Relative to the layer manager (ie. an element is dragged in the layer manager).
+   * Is the element dragged in the layer manager ?
    */
   isDragging: boolean;
 }>();

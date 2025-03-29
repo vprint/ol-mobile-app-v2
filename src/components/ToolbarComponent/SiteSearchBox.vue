@@ -22,14 +22,14 @@ interface ISearchItem {
 }
 
 const sis = useSiteStore();
-const res = useReferencesStore();
+const referenceStore = useReferencesStore();
 const { site } = storeToRefs(sis);
 const options: Ref<ISearchItem[]> = ref([]);
 const searchbox: Ref<QSelect | null> = ref(null);
 const isFocused = ref(false);
 
 const searchList = computed<ISearchItem[]>(() =>
-  res.siteList.map((site) => ({
+  referenceStore.siteList.map((site) => ({
     label: site.siteName
       ? `${site.siteName} - ${site.siteId}`
       : `${site.siteId}`,
@@ -54,12 +54,12 @@ const model = computed({
 
 /**
  * Filters entries according to the text entered by the user.
- * @param val value entered by user
- * @param update update
+ * @param value - value entered by user
+ * @param update - update
  */
-function filterFn(val: string, update: (fn: () => void) => void): void {
+function filterFn(value: string, update: (fn: () => void) => void): void {
   update(() => {
-    const needle = val.toLowerCase();
+    const needle = value.toLowerCase();
     options.value = searchList.value
       .filter((v) => v.label.toLowerCase().includes(needle))
       .slice(0, 5);
@@ -68,7 +68,7 @@ function filterFn(val: string, update: (fn: () => void) => void): void {
 
 /**
  * Fetch and set site after selecting it in the list.
- * @param site
+ * @param site - The site entry.
  */
 function selectSite(site: ISearchItem | undefined): void {
   if (site) {

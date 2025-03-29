@@ -18,7 +18,7 @@ const routes: RouteRecordRaw[] = [
         path: SidePanelParameters.LAYER_LIST,
         name: SidePanelParameters.LAYER_LIST,
         component: () =>
-          import('src/components/LayerListComponent/LayerManager.vue'),
+          import('src/components/LayerManagerComponent/LayerManager.vue'),
       },
     ],
   },

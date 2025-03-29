@@ -55,12 +55,6 @@ onMounted(() => {
   background: none;
 }
 
-.ol-attribution button {
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-}
-
 .attribution-icon-container {
   display: flex;
   justify-content: center;
@@ -77,8 +71,17 @@ onMounted(() => {
   font-family: 'Playfair Display', serif;
 }
 
-.ol-attribution button:focus {
-  box-shadow: 0 0 2px 2px rgb(0 150 255 / 100%);
-  outline: none;
+.ol-attribution button {
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+
+  &:hover {
+    cursor: pointer;
+  }
+  &:focus {
+    box-shadow: 0 0 2px 2px rgb(0 150 255 / 100%);
+    outline: none;
+  }
 }
 </style>

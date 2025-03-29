@@ -52,6 +52,7 @@ module.exports = {
     // https://github.com/typescript-eslint/typescript-eslint/issues/389#issuecomment-509292674
     // Prettier has not been included as plugin to avoid performance impact
     // add it as an extension for your IDE
+    'eslint-plugin-tsdoc',
   ],
 
   globals: {
@@ -87,5 +88,6 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
     '@typescript-eslint/no-explicit-any': 'error',
+    'tsdoc/syntax': 'warn',
   },
 };

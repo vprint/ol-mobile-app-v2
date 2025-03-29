@@ -69,7 +69,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
 
   /**
    * Open the side panel with the given parameters
-   * @param parameters Panel parameters
+   * @param parameters - Panel parameters
    */
   function openPanel(parameters: ISidePanelParameters): void {
     router.push({
@@ -95,25 +95,23 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
 
   /**
    * Open or close the side panel
-   * @param open Should the side panel be opened or closed ?
+   * @param open - Should the side panel be opened or closed ?
    */
   function setOpen(open: boolean, parameters?: ISidePanelParameters): void {
     if (!open) closePanel();
-    // Open the side panel with the associated parameters
     else if (parameters) openPanel(parameters);
     isOpen.value = open;
   }
 
   /**
    * Set the panel padding and zoom to the feature.
-   * @param isOpen
-   * @param feature
-   * @param setZoom
+   * @param shouldOpen - Should the panel be opened ?
+   * @param feature - The optional feature to center on.
    */
-  function setPanelPadding(isOpen: boolean, feature?: Feature): void {
+  function setPanelPadding(shouldOpen: boolean, feature?: Feature): void {
     const openPadding = [0, -400, 0, 0];
     const closePadding = [0, 0, 0, -400];
-    mas.setPaddingAndExtent(isOpen ? openPadding : closePadding, feature);
+    mas.setPaddingAndExtent(shouldOpen ? openPadding : closePadding, feature);
   }
 
   /**

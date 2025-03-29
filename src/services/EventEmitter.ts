@@ -53,8 +53,8 @@ export default function EventEmitter<Events extends Record<EventType, unknown>>(
 
     /**
      * Register an event handler for the given type.
-     * @param type Type of event to listen for, or `'*'` for all events
-     * @param handler Function to call in response to given event
+     * @param type - Type of event to listen for, or `'*'` for all events
+     * @param handler - Function to call in response to given event
      */
     on<Key extends keyof Events>(
       type: Key,
@@ -71,8 +71,8 @@ export default function EventEmitter<Events extends Record<EventType, unknown>>(
     /**
      * Remove an event handler for the given type.
      * If `handler` is omitted, all handlers of the given type are removed.
-     * @param type Type of event to unregister `handler` from (`'*'` to remove a wildcard handler)
-     * @param handler Handler function to remove
+     * @param type - Type of event to unregister `handler` from (`'*'` to remove a wildcard handler)
+     * @param handler - Handler function to remove
      */
     off<Key extends keyof Events>(
       type: Key,
@@ -94,8 +94,8 @@ export default function EventEmitter<Events extends Record<EventType, unknown>>(
      *
      * Note: Manually firing '*' handlers is not supported.
      *
-     * @param type The event type to invoke
-     * @param evt Any value (object is recommended and powerful), passed to each handler
+     * @param type - The event type to invoke
+     * @param evt - Any value (object is recommended and powerful), passed to each handler
      */
     emit<Key extends keyof Events>(type: Key, evt?: Events[Key]): void {
       let handlers = all.get(type);

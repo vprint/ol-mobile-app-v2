@@ -141,8 +141,8 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   /**
    * Activate or deactivate interaction by it's name.
-   * @param interactionName Interaction name.
-   * @param active Activate or deactivate the interaction.
+   * @param interactionName - Interaction name.
+   * @param active - Activate or deactivate the interaction.
    */
   function enableInteraction(
     interactionName: Interactions,
@@ -154,7 +154,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   /**
    * Get interaction by name.
-   * @param name The interaction name.
+   * @param name - The interaction name.
    * @returns Return the interaction or undefined if not found.
    */
   function getInteractionByName(name: string): Interaction | undefined {

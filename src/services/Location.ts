@@ -69,8 +69,6 @@ export class LocationEvents extends Event {}
 /**
  * This class add a location tracker to the map.
  * The user can set the position and accuracy style.
- *
- * @extends Interaction
  */
 class Location extends Interaction {
   private readonly features: ILocationFeatures;
@@ -180,7 +178,7 @@ class Location extends Interaction {
 
   /**
    * Fit the map view to the location extent and execute a callback if necessary.
-   * @param callback Function to execute after the map fit.
+   * @param callback - Function to execute after the map fit.
    */
   public fitViewToLocation(callback?: () => void): void {
     const extent = this.features.accuracy.getGeometry()?.getExtent();

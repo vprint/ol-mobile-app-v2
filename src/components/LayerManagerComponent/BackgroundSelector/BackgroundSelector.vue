@@ -25,10 +25,10 @@ const activeLayer = ref('');
  * Set the active background layer
  */
 function setActive(layerInformation: IBackgroundLayerParameters): void {
-  activeLayer.value = layerInformation.layerId;
+  activeLayer.value = layerInformation.id;
   BACKGROUND_LAYERS_SETTINGS.forEach((background) => {
     if (!background.vector)
-      mapStore.getLayerById(background.layerId)?.setVisible(false);
+      mapStore.getLayerById(background.id)?.setVisible(false);
   });
 
   const mapLibreInstance = mapStore.getMapLibreInstance();
@@ -42,7 +42,7 @@ function setActive(layerInformation: IBackgroundLayerParameters): void {
     }, 100);
   } else {
     mapLibreInstance?.setVisible(false);
-    const layer = mapStore.getLayerById(layerInformation.layerId);
+    const layer = mapStore.getLayerById(layerInformation.id);
     layer?.setVisible(true);
   }
 }
@@ -52,7 +52,7 @@ onMounted(() => {
     (layer) => layer.visible
   );
 
-  if (LayerOfInterest) activeLayer.value = LayerOfInterest.layerId;
+  if (LayerOfInterest) activeLayer.value = LayerOfInterest.id;
 });
 </script>
 
@@ -60,13 +60,13 @@ onMounted(() => {
   <div class="row layers-container">
     <div
       v-for="layer in BACKGROUND_LAYERS_SETTINGS"
-      :key="layer.layerId"
+      :key="layer.id"
       class="col layer-column"
     >
       <q-btn
         round
         class="round-button"
-        :class="{ active: activeLayer === layer.layerId }"
+        :class="{ active: activeLayer === layer.id }"
         @click="setActive(layer)"
       >
         <q-avatar size="50px" class="round-avatar">

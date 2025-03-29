@@ -81,7 +81,7 @@ export const useMapStore = defineStore('map', () => {
         layerProperties: {
           id: 'maplibre-layer',
           title: 'maplibre-layer',
-          tunable: false,
+          allowParameterChange: false,
         } as ILayerProperties,
       },
     });
@@ -139,7 +139,7 @@ export const useMapStore = defineStore('map', () => {
   }
 
   /**
-   * Create the layers, set the map target and then set `isMapInitialized` to true.
+   * Initialize MapLibre, add layer and then set `isMapInitialized` to true.
    */
   function initializeMap(): void {
     const mapLibreLayer = _createMapLibreInstance();
@@ -165,9 +165,8 @@ export const useMapStore = defineStore('map', () => {
   /**
    * Returns the geographical extent of a feature.
    * Current view extent is returned if the feature is undefined.
-   * @param - Optional feature from which to calculate the extent.
+   * @param feature - Optional feature from which to calculate the extent.
    * @returns - The extent.
-   * @private
    */
   function _getExtentFromFeature(feature?: Feature): Extent | undefined {
     return feature

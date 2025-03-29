@@ -23,7 +23,7 @@ export class DateValidator {
 
   /**
    * Checks if the date is before or equal to the current date
-   * @param inputDate The input date as a string
+   * @param inputDate - The input date as a string
    * @returns True if the date is anterior to the current date, error message otherwise
    */
   private isAnteriorToCurrentDate(
@@ -43,7 +43,7 @@ export class DateValidator {
 
   /**
    * Check for the date format (yyyy/mm/dd)
-   * @param inputDate The input date as a string
+   * @param inputDate - The input date as a string
    * @returns True if valid, error message otherwise
    */
   private isValid(inputDate: string | undefined): boolean {
@@ -61,7 +61,7 @@ export class DateValidator {
 
   /**
    * Format a string to a date format.
-   * @param inputDate The input date in string format
+   * @param inputDate - The input date in string format
    * @returns A date in Date format
    */
   private toDate(inputDate: string): Date {
@@ -75,7 +75,7 @@ export class DateValidator {
 
   /**
    * Complete check for a date
-   * @param inputDate The input date as a string
+   * @param inputDate - The input date as a string
    * @returns True if valid, error message otherwise
    */
   public validateDate(inputDate: string | undefined): ValidationResult {

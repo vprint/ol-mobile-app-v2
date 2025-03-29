@@ -11,14 +11,18 @@ import { useMapStore } from './map-store';
 // Interface, type and enum imports
 import type { ILayerProperties } from 'src/interface/ILayerParameters';
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { LAYER_PROPERTIES_FIELD, LayerProperties } from 'src/enums/layers.enum';
+import {
+  LAYER_PROPERTIES_FIELD,
+  LayerIdentifier,
+  LayerProperties,
+} from 'src/enums/layers.enum';
 
 // Others imports
 
 // script
 
 interface ILayerEntryIndex {
-  layerId: string;
+  layerId: LayerIdentifier;
   zIndex: number;
 }
 
@@ -39,23 +43,23 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   const layersEntry: Ref<ILayerEntryIndex[]> = ref([]);
 
   /**
-   * Get all tunable layers.
+   * Get all modifiable layers.
    */
-  function getTunableLayers(): void {
+  function getModifiableLayers(): void {
     if (layersEntry.value.length === 0) {
-      const tunableLayers = mas.getLayersByProperties(
-        LayerProperties.TUNABLE,
+      const modifiableLayers = mas.getLayersByProperties(
+        LayerProperties.ALLOW_PARAMETERS_CHANGE,
         true
       );
 
-      tunableLayers.forEach((layer) => {
+      modifiableLayers.forEach((layer) => {
         const layerProperties = layer.get(
           LAYER_PROPERTIES_FIELD
         ) as ILayerProperties;
 
         const zIndex = layer.getZIndex();
         const layerInformation = {
-          layerId: layerProperties.id,
+          layerId: layerProperties.id as LayerIdentifier,
           zIndex: zIndex ? zIndex : 0,
         };
 
@@ -67,7 +71,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
 
   /**
    * This function sort layers by index (usefull to initialize the layer manager panel).
-   * @param layerlist list of layers to sort
+   * @param layerlist - layerlist list of layers to sort
    */
   function sortLayersEntryByIndex(
     layerlist: ILayerEntryIndex[]
@@ -91,7 +95,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   /**
    * private store method
    * Activate / deactivate the layer manager
-   * @param mode Should the layer manager be opened or closed ?
+   * @param mode - Should the layer manager be opened or closed ?
    */
   function setPanelActive(mode: boolean): void {
     const params = mode
@@ -120,7 +124,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
     () => {
       isOpen.value =
         sps.panelParameters.location === SidePanelParameters.LAYER_LIST;
-      if (isOpen.value) getTunableLayers();
+      if (isOpen.value) getModifiableLayers();
     }
   );
 
@@ -130,7 +134,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
   watch(
     () => mas.isMapInitialized,
     (newValue) => {
-      if (newValue) getTunableLayers();
+      if (newValue) getModifiableLayers();
     }
   );
 

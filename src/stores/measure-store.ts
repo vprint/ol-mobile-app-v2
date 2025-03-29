@@ -28,7 +28,7 @@ export const useMeasureStore = defineStore('measure', () => {
 
   /**
    * Activate measure
-   * @param mode Measure mode - can be either Polygon or LineString
+   * @param mode - Measure mode - can be either Polygon or LineString
    */
   function addMeasure(
     mode: GeometryType.LINE_STRING | GeometryType.POLYGON

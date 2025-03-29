@@ -88,7 +88,7 @@ class ApiClient {
 
   /**
    * Remove an API error event listener.
-   * @param eventName The name of the event.
+   *  @param eventName - The name of the event.
    */
   public off(eventName: ApiEvents): void {
     this.eventEmitter.off(eventName);

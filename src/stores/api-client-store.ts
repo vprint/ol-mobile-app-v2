@@ -58,7 +58,7 @@ export const useApiClientStore = defineStore('apiClient', () => {
 
   /**
    * Clear a cache entry
-   * @param ref The cache reference to clear
+   * @param ref - The cache reference to clear
    */
   function clearCacheByReference(ref: CacheEntry): void {
     _cache[ref] = undefined;
@@ -77,7 +77,7 @@ export const useApiClientStore = defineStore('apiClient', () => {
 
   /**
    * Returns a site for a given id.
-   * @param siteId id of the site
+   * @param siteId - id of the site
    * @returns A Site object
    */
   async function getSiteById(

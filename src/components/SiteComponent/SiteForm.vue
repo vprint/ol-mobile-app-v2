@@ -15,6 +15,8 @@ import DateSelect from '../ReusableComponents/DateSelect.vue';
 
 const referencesStore = useReferencesStore();
 const site = defineModel<Site>('siteFeature', { required: true });
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
   editionMode: Boolean,
 });

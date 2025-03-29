@@ -19,7 +19,6 @@ interface IDrawerEvents {
 
 /**
  * Provides function to manage draw
- * @extends Interaction
  */
 class ExtendedDraw extends Interaction {
   private drawInteraction: Draw | undefined;
