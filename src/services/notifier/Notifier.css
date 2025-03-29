@@ -1,15 +1,19 @@
 .sn-notify-outline.sn-notify-success {
   --sn-notify-background-color: rgb(240, 253, 244);
+  font-family: 'Playfair Display', serif;
 }
 
 .sn-notify-outline.sn-notify-warning {
   --sn-notify-background-color: rgb(255, 248, 236);
+  font-family: 'Playfair Display', serif;
 }
 
 .sn-notify-outline.sn-notify-error {
   --sn-notify-background-color: rgb(255, 245, 243);
+  font-family: 'Playfair Display', serif;
 }
 
 .sn-notify-outline.sn-notify-info {
   --sn-notify-background-color: rgb(245, 249, 255);
+  font-family: 'Playfair Display', serif;
 }

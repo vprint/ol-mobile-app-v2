@@ -3,25 +3,17 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 interface SidePanelComponentProps {
   width?: number;
-  height?: number;
 }
 
 const props = withDefaults(defineProps<SidePanelComponentProps>(), {
   width: 400,
-  height: window.innerHeight - 50,
 });
 
-const windowHeight = ref(`${props.height}px`);
 const computedWidth = computed(() => `${props.width}px`);
-
-const emit = defineEmits(['close']);
-
-const thumbStyle: Partial<CSSStyleDeclaration> = {
-  borderRadius: '5px',
-};
+const computedHeight = ref(`${window.innerHeight - 50}px`);
 
 const handleResize = (): void => {
-  windowHeight.value = `${window.innerHeight - 50}px`;
+  computedHeight.value = `${window.innerHeight - 50}px`;
 };
 
 onMounted(() => {
@@ -31,6 +23,8 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
 });
+
+const emit = defineEmits(['close']);
 </script>
 
 <template>
@@ -51,11 +45,13 @@ onUnmounted(() => {
           @click="emit('close')"
         />
       </div>
-      <q-scroll-area class="scroll-area" :thumb-style="thumbStyle">
-        <div class="pa-4">
+
+      <!-- Content -->
+      <div class="content-area">
+        <div class="pa-4 scrollable-content">
           <slot name="content"></slot>
         </div>
-      </q-scroll-area>
+      </div>
     </div>
 
     <!-- Footer -->
@@ -74,7 +70,7 @@ onUnmounted(() => {
 .side-panel {
   position: absolute;
   left: 0;
-  height: v-bind('windowHeight');
+  max-height: v-bind('computedHeight');
   width: v-bind('computedWidth');
   margin: 8px;
   display: flex;
@@ -109,11 +105,19 @@ onUnmounted(() => {
     position: relative;
     display: flex;
     flex-direction: column;
+  }
 
-    .scroll-area {
-      flex: 1;
-      min-height: 0;
-    }
+  .content-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
   }
 
   .floating-footer {

@@ -15,12 +15,7 @@ import { VueDraggable } from 'vue-draggable-plus';
 
 // Type & interface
 import { useLayerManagerStore } from 'src/stores/layer-manager-store';
-import { computed, ref } from 'vue';
-
-// script
-const LAYER_ENTRY_HEIGHT = 80;
-const SIDE_PANEL_MAX_HEIGHT = 1000;
-const SIDE_PANEL_MIN_HEIGHT = 460;
+import { ref } from 'vue';
 
 const lms = useLayerManagerStore();
 const isDragging = ref(false);
@@ -33,25 +28,10 @@ function manageDragEnd(): void {
 function manageDragStart(): void {
   isDragging.value = true;
 }
-
-const SidePanelHeight = computed(() => {
-  let size = LAYER_ENTRY_HEIGHT * lms.layersEntry.length;
-
-  if (size > SIDE_PANEL_MAX_HEIGHT) {
-    size = SIDE_PANEL_MAX_HEIGHT;
-  }
-
-  if (size < SIDE_PANEL_MIN_HEIGHT) {
-    size = SIDE_PANEL_MIN_HEIGHT;
-  }
-
-  return size;
-});
 </script>
 
 <template>
   <SidePanelComponent
-    :height="SidePanelHeight"
     @close="lms.isOpen ? lms.closeLayerManager() : lms.openLayerManager()"
   >
     <template #title> Layer Manager </template>
