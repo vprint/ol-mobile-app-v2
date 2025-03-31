@@ -2,8 +2,10 @@ import { Interaction, Modify, Select } from 'ol/interaction';
 import { Collection, Feature, getUid } from 'ol';
 import { click } from 'ol/events/condition';
 import { Map } from 'ol';
+import { EventsKey } from 'ol/events';
 import StyleManager from '../StyleManager';
 import VectorLayer from 'ol/layer/Vector';
+import { unByKey } from 'ol/Observable';
 
 enum ModifyEvent {
   SELECT = 'select',
@@ -15,6 +17,10 @@ interface IExtendedModify {
   layer: VectorLayer;
 }
 
+interface IModifyEvents {
+  selection?: EventsKey | EventsKey[];
+}
+
 /**
  * Provide selection and modification methods for draws.
  */
@@ -23,6 +29,7 @@ class ExtendedModify extends Interaction {
   private modifyInteraction: Modify;
   private modificationLayer: VectorLayer;
   private style: StyleManager;
+  private events: IModifyEvents = {};
 
   constructor(options: IExtendedModify) {
     super();
@@ -90,9 +97,12 @@ class ExtendedModify extends Interaction {
    * Enable modify interaction on selection.
    */
   private addSelectionListener(): void {
-    this.selectInteraction.on(ModifyEvent.SELECT, () => {
-      this.addFeaturesToModifier(this.selectInteraction.getFeatures());
-    });
+    this.events.selection = this.selectInteraction.on(
+      ModifyEvent.SELECT,
+      () => {
+        this.addFeaturesToModifier(this.selectInteraction.getFeatures());
+      }
+    );
   }
 
   /**
@@ -138,6 +148,18 @@ class ExtendedModify extends Interaction {
   private removeModifyInteraction(): void {
     this.modifyInteraction.dispose();
     this.getMap()?.removeInteraction(this.modifyInteraction);
+  }
+
+  public dispose(): void {
+    if (this.events.selection) unByKey(this.events.selection);
+
+    this.selectInteraction.dispose();
+    this.modifyInteraction.dispose();
+
+    this.getMap()?.removeLayer(this.modificationLayer);
+    this.modificationLayer.dispose();
+
+    super.dispose();
   }
 }
 

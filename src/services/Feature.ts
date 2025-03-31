@@ -93,6 +93,14 @@ class TypedFeature<IAttributes extends object> extends Feature {
       geometry: this.getGeometry()?.clone(),
     });
   }
+
+  /**
+   * Return the typed feature as an OpenLayers feature.
+   * @returns An OpenLayers feature.
+   */
+  getAsFeature(): Feature {
+    return this as Feature;
+  }
 }
 
 export default TypedFeature;

@@ -56,11 +56,13 @@ export const useMapStore = defineStore('map', () => {
    * Get a layer by it's id
    * @param id - layer id
    */
-  function getLayerById(id: LayerIdentifier): Layer | undefined {
+  function getLayerById<TypeOfLayer extends Layer>(
+    id: LayerIdentifier
+  ): TypeOfLayer | undefined {
     return map.getAllLayers().find((layer) => {
       const properties = layer.get(LAYER_PROPERTIES_FIELD);
       return properties?.id === id;
-    });
+    }) as TypeOfLayer;
   }
 
   /**

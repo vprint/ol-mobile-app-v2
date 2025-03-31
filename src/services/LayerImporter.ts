@@ -1,10 +1,11 @@
 import { ILayerProperties } from 'src/interface/ILayerParameters';
-import { Map } from 'ol';
 import {
   IBackgroundLayerParameters,
   IRasterLayerParameters,
   IVectorTileLayerParameters,
 } from '../interface/ILayers';
+import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
+import { Map } from 'ol';
 import { ImageWMS } from 'ol/source';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
 import ImageTile from 'ol/source/ImageTile.js';
@@ -12,8 +13,7 @@ import TileLayer from 'ol/layer/WebGLTile.js';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
-import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
-import AppVectorTileLayer from 'src/model/AppVectorTileLayer';
+import VectorTileLayer from 'ol/layer/VectorTile';
 
 /**
  * Add raster background layers to the map
@@ -82,8 +82,8 @@ export function addVectorTileLayers(
 
 function getVectorTileLayer(
   layer: IVectorTileLayerParameters
-): AppVectorTileLayer {
-  return new AppVectorTileLayer({
+): VectorTileLayer {
+  return new VectorTileLayer({
     source: getVectorTileSource(layer),
     style: layer.style,
     zIndex: layer.zIndex,

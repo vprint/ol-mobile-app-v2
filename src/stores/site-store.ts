@@ -9,7 +9,7 @@ import { defineStore, storeToRefs } from 'pinia';
 // Store imports
 import { useMapInteractionStore } from './map-interaction-store';
 import { useApiClientStore } from './api-client-store';
-import { useSidePanelStore } from './side-panel-store';
+import { ISidePanelParameters, useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 import { useDrawStore } from './draw-store';
 
@@ -26,6 +26,7 @@ import { TransactionMode } from 'src/enums/transaction.enum';
 import Site from 'src/model/site';
 import WFSTransactionService from 'src/services/WFSTransactionService';
 import { LayerIdentifier } from 'src/enums/layers.enum';
+import ExtendedVectorTileLayer from 'src/model/AppVectorTileLayer';
 
 /**
  * Store sites and and related functionnalities
@@ -35,9 +36,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   const drawStore = useDrawStore();
   const sitePanelStore = useSidePanelStore();
   const mapStore = useMapStore();
-
   const { isMapInteractionsInitialized } = storeToRefs(mapInteractionStore);
-
   const WFS_TRANSACTION_OPTIONS = {
     featureNS: 'ArchaeoSpringMap',
     srsName: 'EPSG:3857',
@@ -47,6 +46,9 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   };
   const transactor = new WFSTransactionService();
   const site: Ref<Site | undefined> = ref();
+  const archsiteLayer = mapStore.getLayerById<ExtendedVectorTileLayer>(
+    LayerIdentifier.SITES
+  );
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -73,7 +75,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    mapInteractionStore.selectorPlugin.clear();
+    archsiteLayer?.getSelector().clear();
     fitMap();
   }
 
@@ -111,7 +113,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
       fitMap(feature);
       site.value = newSite;
-      mapInteractionStore.selectorPlugin.setAsSelected([siteId.toString()]);
+      archsiteLayer?.getSelector().setAsSelected([siteId.toString()]);
     }
   }
 
@@ -120,16 +122,17 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @param geoJsonFeature - Selected feature
    */
   function fitMap(geoJsonFeature?: GeoJSONFeature): void {
+    let feature: Feature | undefined = undefined;
+
     if (geoJsonFeature) {
-      const feature = new GeoJSON().readFeature(geoJsonFeature, {
+      feature = new GeoJSON().readFeature(geoJsonFeature, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
-      sitePanelStore.setPanelPadding(true, feature);
     }
 
-    const archLayer = mapStore.getLayerById(LayerIdentifier.SITES);
-    archLayer?.changed();
+    sitePanelStore.setPanelPadding(true, feature);
+    archsiteLayer?.changed();
   }
 
   /**
@@ -142,13 +145,13 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     modifier.setActive(active);
 
     // TODO: FIXME: A débroussailler
-    if (active) {
-      const features = new Collection([site.value] as Feature[]);
-      modifier.addFeaturesToModifier(features);
-      const modificationLayer = modifier.getModificationLayer();
-      mapStore.map.addLayer(modificationLayer);
-      modificationLayer.getSource()?.clear();
-      modificationLayer.getSource()?.addFeatures(features.getArray());
+    if (active && site.value) {
+      // const features = new Collection([site.value]);
+      // modifier.addFeaturesToModifier(features);
+      // const modificationLayer = mapInteractionStore._getModificationLayer();
+      // mapStore.map.addLayer(modificationLayer);
+      // modificationLayer.getSource()?.clear();
+      // modificationLayer.getSource()?.addFeatures(features.getArray());
     }
   }
 
@@ -179,7 +182,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    mapInteractionStore.selectorPlugin.on(
+    archsiteLayer?.getSelector().on(
       // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
@@ -187,9 +190,9 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
         if (features && features.length > 0) {
           openSitePanel(features[0].getId() as number);
-          mapInteractionStore.selectorPlugin.setAsSelected([
-            features[0].getId()?.toString(),
-          ]);
+          archsiteLayer
+            .getSelector()
+            .setAsSelected([features[0].getId()?.toString()]);
         }
       }
     );
@@ -201,23 +204,29 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   watch(
     () => sitePanelStore.panelParameters,
     (newPanelParameters) => {
-      // Open site if URL contains site data
-      if (
-        newPanelParameters.location === SidePanelParameters.SITE &&
-        newPanelParameters.parameterValue
-      ) {
-        const siteId = parseInt(
-          newPanelParameters.parameterValue as string,
-          10
-        );
-        if (siteId !== site.value?.siteId) {
-          setSiteById(siteId);
-        }
-      } else {
+      if (!_isSiteParams(newPanelParameters)) {
         clearSite();
       }
+
+      const siteId = parseInt(newPanelParameters.parameterValue as string);
+      if (_siteIsSameAsPrevious(siteId)) {
+        return;
+      }
+
+      setSiteById(siteId);
     }
   );
+
+  function _isSiteParams(newPanelParameters: ISidePanelParameters): boolean {
+    return (
+      newPanelParameters.location === SidePanelParameters.SITE &&
+      !!newPanelParameters.parameterValue
+    );
+  }
+
+  function _siteIsSameAsPrevious(siteId: number | undefined): boolean {
+    return !!siteId && siteId === site.value?.siteId;
+  }
 
   /**
    * Watch for interaction initialization

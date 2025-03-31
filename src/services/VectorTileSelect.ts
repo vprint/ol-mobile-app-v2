@@ -69,7 +69,7 @@ class VectorTileSelect extends Interaction {
 
     this.selectionLayer = new VectorTileLayer({
       renderMode: 'vector',
-      zIndex: 999,
+      zIndex: this.getSelectionZIndex(),
       source: this.selectableLayer?.getSource() ?? undefined,
       style: (feature: FeatureLike): Style | undefined => {
         const featureId = feature.getId()?.toString();
@@ -147,6 +147,21 @@ class VectorTileSelect extends Interaction {
       if (featureId) this.selectedFeatures.add(featureId);
     });
     this.selectionLayer.changed();
+  }
+
+  /**
+   * Calculate the selection layer zIndex based on the selectable layer zIndex.
+   * @returns The zIndex (selectable layer + 1)
+   */
+  private getSelectionZIndex(): number | undefined {
+    let zIndex = undefined;
+    const selectableLayerZIndex = this.selectableLayer?.getZIndex();
+
+    if (selectableLayerZIndex) {
+      zIndex = selectableLayerZIndex + 1;
+    }
+
+    return zIndex;
   }
 }
 
