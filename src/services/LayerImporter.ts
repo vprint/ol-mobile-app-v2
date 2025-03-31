@@ -9,12 +9,11 @@ import { ImageWMS } from 'ol/source';
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
 import ImageTile from 'ol/source/ImageTile.js';
 import TileLayer from 'ol/layer/WebGLTile.js';
-import VectorTileLayer from 'ol/layer/VectorTile';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
-import VectorLayer from 'ol/layer/Vector';
-import VectorSource from 'ol/source/Vector';
+import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
+import AppVectorTileLayer from 'src/model/AppVectorTileLayer';
 
 /**
  * Add raster background layers to the map
@@ -77,22 +76,19 @@ export function addVectorTileLayers(
   layerList: IVectorTileLayerParameters[]
 ): void {
   layerList.map((layerParams) => {
-    if (layerParams.allowEdition) {
-      map.addLayer(getEditionLayer(layerParams));
-    }
     map.addLayer(getVectorTileLayer(layerParams));
   });
 }
 
 function getVectorTileLayer(
   layer: IVectorTileLayerParameters
-): VectorTileLayer {
-  return new VectorTileLayer({
+): AppVectorTileLayer {
+  return new AppVectorTileLayer({
     source: getVectorTileSource(layer),
     style: layer.style,
     zIndex: layer.zIndex,
     properties: {
-      layerProperties: {
+      [LAYER_PROPERTIES_FIELD]: {
         id: layer.id,
         title: layer.title,
         allowEdition: layer.allowParameterChange,
@@ -114,29 +110,6 @@ function getVectorTileSource(
     }),
     url: layer.url,
     attributions: layer.attribution,
-  });
-}
-
-/**
- * Get the edition layer associated to a vector tile layer.
- * @param layer - The base layer
- * @returns
- */
-function getEditionLayer(layer: IVectorTileLayerParameters): VectorLayer {
-  return new VectorLayer({
-    source: new VectorSource(),
-    zIndex: layer.zIndex + 1,
-    properties: {
-      layerProperties: {
-        id: `${layer.id}_edition`,
-        title: `${layer.title}_edition`,
-        allowEdition: false,
-        allowSelection: true,
-        allowParameterChange: false,
-      } as ILayerProperties,
-      featureId: layer.featureId,
-    },
-    visible: layer.visible,
   });
 }
 

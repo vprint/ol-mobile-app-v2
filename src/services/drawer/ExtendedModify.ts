@@ -9,6 +9,12 @@ enum ModifyEvent {
   SELECT = 'select',
 }
 
+interface IExtendedModify {
+  name: string;
+  style: StyleManager;
+  layer: VectorLayer;
+}
+
 /**
  * Provide selection and modification methods for draws.
  */
@@ -18,15 +24,11 @@ class ExtendedModify extends Interaction {
   private modificationLayer: VectorLayer;
   private style: StyleManager;
 
-  constructor(
-    interactionName: string,
-    style: StyleManager,
-    layer: VectorLayer
-  ) {
+  constructor(options: IExtendedModify) {
     super();
-    this.set('name', interactionName);
-    this.style = style;
-    this.modificationLayer = layer;
+    this.set('name', options.name);
+    this.style = options.style;
+    this.modificationLayer = options.layer;
     this.selectInteraction = this.getSelect(this.modificationLayer);
     this.modifyInteraction = this.getModify(
       this.selectInteraction.getFeatures()

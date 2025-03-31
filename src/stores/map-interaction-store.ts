@@ -60,16 +60,17 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     })
   );
 
-  // TODO: FIXME: Completer
-  const modifierPlugin = new ExtendedModify(
-    Interactions.MODIFIER,
-    new StyleManager({
+  const modifierPlugin = new ExtendedModify({
+    name: Interactions.MODIFIER,
+    style: new StyleManager({
       strokeColor: 'rgba(232,32,192,1)',
       fillColor: 'rgba(232,32,192,0.2)',
       strokeWidth: 2,
     }),
-    _getModificationLayer()
-  );
+    layer: new VectorLayer({
+      source: new VectorSource(),
+    }),
+  });
 
   const link = new Link({
     params: ['x', 'y', 'z', 'r'],
@@ -167,13 +168,6 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     });
 
     return findedElement;
-  }
-
-  // TODO: FIXME: Finir cette fonction.
-  function _getModificationLayer(): VectorLayer {
-    return new VectorLayer({
-      source: new VectorSource(),
-    });
   }
 
   /**

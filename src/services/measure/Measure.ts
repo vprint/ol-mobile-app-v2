@@ -126,11 +126,11 @@ class Measure extends Interaction {
     interactionName: string,
     drawLayer: VectorLayer
   ): ExtendedModify {
-    return new ExtendedModify(
-      `${interactionName}-${MeasureParameters.MODIFY}`,
-      new StyleManager(this.measureStyle),
-      drawLayer
-    );
+    return new ExtendedModify({
+      name: `${interactionName}-${MeasureParameters.MODIFY}`,
+      style: new StyleManager(this.measureStyle),
+      layer: drawLayer,
+    });
   }
 
   /**
