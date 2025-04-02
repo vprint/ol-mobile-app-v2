@@ -12,25 +12,20 @@ import Style from 'ol/style/Style';
 import CircleStyle from 'ol/style/Circle';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
-import { hasInteraction } from 'src/utils/MapUtils';
 
-const vectorTileSelect = new VectorTileSelect({
-  name: Interactions.SELECTOR,
-  selectionStyle: new Style({
-    image: new CircleStyle({
-      radius: 15,
-      fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
-      stroke: new Stroke({ color: '#e820c0', width: 2 }),
-    }),
-  }),
-});
-
-const ExtendedVectorTileLayerParameters = {
-  MODIFIER_NAME: 'modifier',
-};
+let vectorTileSelect: VectorTileSelect | undefined;
 
 class ExtendedVectorTileLayer extends VectorTileLayer {
+  public static instance: VectorTileSelect | null = null;
   private modifier: ExtendedModify | undefined;
+  private map: Map | undefined;
+  private internalParams = {
+    MODIFIER_NAME: 'modifier',
+    SELECTOR_IS_FALSE:
+      "Selection is set to false and can't be activated or getted",
+    MODIFIER_IS_FALSE:
+      "modification is set to false and can't be activated or getted",
+  };
 
   /**
    * Get the layer informations.
@@ -50,48 +45,100 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
 
   public setMap(map: Map | null): void {
     super.setMap(map);
+    this.map = map ?? undefined;
 
-    if (this.shouldEnableSelection(map)) {
-      map.addInteraction(vectorTileSelect);
+    if (!!map && this.shouldEnableSelection()) {
+      ExtendedVectorTileLayer.initVectorTileSelect(map);
     }
   }
+
+  // #region selection
 
   /**
    * Enable / disable selection over the vector tile layer.
    * @param active - Should the selection be enabled / disabled ?
    */
   public enableSelection(active: boolean): void {
-    vectorTileSelect.setSelectionLayer(active ? this : undefined);
-    vectorTileSelect.setActive(active);
+    if (this.isSelectionEnabled()) {
+      vectorTileSelect?.setSelectionLayer(active ? this : undefined);
+      vectorTileSelect?.setActive(active);
+    }
   }
 
-  public getSelector(): VectorTileSelect {
+  public getSelector(): VectorTileSelect | undefined {
+    this.isSelectionEnabled();
     return vectorTileSelect;
   }
+
+  /**
+   * Checks if the selection is enabled in the layer parameters.
+   * @returns - The selection mode.
+   */
+  private isSelectionEnabled(): boolean {
+    if (!this.getLayerInformations().allowSelection) {
+      console.warn(this.internalParams.SELECTOR_IS_FALSE);
+    }
+    return this.getLayerInformations().allowSelection ?? false;
+  }
+
+  /**
+   * Determines if selection should be enabled on this layer given the user parameters.
+   * @returns a boolean.
+   */
+  private shouldEnableSelection(): boolean {
+    return !vectorTileSelect && !!this.getLayerInformations().allowSelection;
+  }
+
+  /**
+   * Initializes a VectorTileSelect only if necessary. VectorTileSelect is implemented as a singleton,
+   * which means only one instance of vectorTileSelect exists throughout the application.
+   * * @param map - The OpenLayers map
+   */
+  private static initVectorTileSelect(map: Map): void {
+    vectorTileSelect = new VectorTileSelect({
+      name: Interactions.SELECTOR,
+      selectionStyle: new Style({
+        image: new CircleStyle({
+          radius: 15,
+          fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
+          stroke: new Stroke({ color: '#e820c0', width: 2 }),
+        }),
+      }),
+    });
+
+    map.addInteraction(vectorTileSelect);
+  }
+
+  // #region modify
 
   /**
    * Enable / disable the modification. This method does not use `setActive()` but a custom function to save memory.
    * @param active - Should the modifier be enabled / disabled ?
    */
   public enableModifier(active: boolean): void {
-    if (active) this.createModifier();
-    else this.removeModifier();
+    if (this.isEditionEnabled()) {
+      if (active) this.createModifier();
+      else this.removeModifier();
+    }
   }
 
   private createModifier(): void {
-    this.modifier = new ExtendedModify({
-      name: `${this.getLayerInformations().title}_${
-        ExtendedVectorTileLayerParameters.MODIFIER_NAME
-      }`,
-      style: new StyleManager({
-        strokeColor: 'rgba(232,32,192,1)',
-        fillColor: 'rgba(232,32,192,0.2)',
-        strokeWidth: 2,
-      }),
-      layer: new VectorLayer({
-        source: new VectorSource(),
-      }),
-    });
+    if (!this.modifier) {
+      this.modifier = new ExtendedModify({
+        name: `${this.getLayerInformations().title}_${
+          this.internalParams.MODIFIER_NAME
+        }`,
+        style: new StyleManager({
+          strokeColor: 'rgba(232,32,192,1)',
+          fillColor: 'rgba(232,32,192,0.2)',
+          strokeWidth: 2,
+        }),
+        layer: new VectorLayer({
+          source: new VectorSource(),
+        }),
+      });
+      this.map?.addInteraction(this.modifier);
+    }
   }
 
   private removeModifier(): void {
@@ -101,18 +148,21 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
     }
   }
 
+  public getModifier(): ExtendedModify | undefined {
+    this.isEditionEnabled();
+    return this.modifier;
+  }
+
   /**
-   * Determines if selection should be enabled on this layer given the user parameters.
-   * Acts as a TypeScript type guard to ensure map is not null when conditions are satisfied.
-   * @param map - The OpenLayers map instance or null
-   * @returns a boolean. If true, TypeScript set `map` to type `Map`
+   * Checks if the edition is enabled in the layer parameters.
+   * @returns - The edition mode.
    */
-  private shouldEnableSelection(map: Map | null): map is Map {
-    return (
-      !!map &&
-      hasInteraction(map, vectorTileSelect) &&
-      !!this.getLayerInformations().allowSelection
-    );
+  private isEditionEnabled(): boolean {
+    if (!this.getLayerInformations().allowEdition) {
+      console.warn(this.internalParams.MODIFIER_IS_FALSE);
+    }
+
+    return this.getLayerInformations().allowEdition ?? false;
   }
 }
 

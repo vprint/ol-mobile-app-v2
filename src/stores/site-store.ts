@@ -26,7 +26,7 @@ import { TransactionMode } from 'src/enums/transaction.enum';
 import Site from 'src/model/site';
 import WFSTransactionService from 'src/services/WFSTransactionService';
 import { LayerIdentifier } from 'src/enums/layers.enum';
-import ExtendedVectorTileLayer from 'src/model/AppVectorTileLayer';
+import ExtendedVectorTileLayer from 'src/model/ExtendedVectorTileLayer';
 
 /**
  * Store sites and and related functionnalities
@@ -140,15 +140,14 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @param active - Should the edition mode be enabled ?
    */
   function enableEdition(active: boolean): void {
-    const modifier = mapInteractionStore.modifierPlugin;
+    const modifier = archsiteLayer?.enableModifier(active);
     drawStore.setVisible(active);
-    modifier.setActive(active);
 
-    // TODO: FIXME: A débroussailler
-    if (active && site.value) {
+    // TODO: FIXME: Partie à completer.
+    if (active) {
       // const features = new Collection([site.value]);
       // modifier.addFeaturesToModifier(features);
-      // const modificationLayer = mapInteractionStore._getModificationLayer();
+      // const modificationLayer = modifier.getModificationLayer();
       // mapStore.map.addLayer(modificationLayer);
       // modificationLayer.getSource()?.clear();
       // modificationLayer.getSource()?.addFeatures(features.getArray());
@@ -203,12 +202,13 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   watch(
     () => sitePanelStore.panelParameters,
-    (newPanelParameters) => {
-      if (!_isSiteParams(newPanelParameters)) {
+    (newRoute) => {
+      if (!_isSiteParams(newRoute)) {
         clearSite();
+        return
       }
 
-      const siteId = parseInt(newPanelParameters.parameterValue as string);
+      const siteId = parseInt(newRoute.parameterValue as string);
       if (_siteIsSameAsPrevious(siteId)) {
         return;
       }
