@@ -17,6 +17,17 @@ export const UserMessage = {
     },
   },
 
+  MEASURE: {
+    DISTANCE: 'Distance',
+    AREA: 'Area',
+    DELETE: 'Remove',
+    TOOLTIP: {
+      DISTANCE: 'Distance measurement',
+      AREA: 'Area measurement',
+      DELETE: 'Remove measurement',
+    },
+  },
+
   GENERIC: {
     SUCCESS: 'Succès',
     FAIL: 'Echec',

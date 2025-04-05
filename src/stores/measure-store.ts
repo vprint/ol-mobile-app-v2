@@ -22,7 +22,7 @@ import { GeometryType } from 'src/enums/map.enum';
  * This store provide measure management tools (e.g remove measure, add measure)
  */
 export const useMeasureStore = defineStore('measure', () => {
-  const mis = useMapInteractionStore();
+  const mapInteractionStore = useMapInteractionStore();
   const formatedMeasure: Ref<string> = ref('');
   const measureMenu = ref(false);
 
@@ -33,45 +33,42 @@ export const useMeasureStore = defineStore('measure', () => {
   function addMeasure(
     mode: GeometryType.LINE_STRING | GeometryType.POLYGON
   ): void {
-    mis.measurePlugin.setActive(true);
-    mis.measurePlugin.createMeasureFeature(mode);
-    mis.enableInteraction(Interactions.SELECTOR, false);
+    mapInteractionStore.measurePlugin.setActive(true);
+    mapInteractionStore.measurePlugin.createMeasureFeature(mode);
+    mapInteractionStore.enableInteraction(Interactions.SELECTOR, false);
   }
 
   /**
-   * Remove measure and activate selector
+   * Remove the selected measure, or all measure if any is selected.
    */
   function removeMeasure(): void {
-    mis.measurePlugin.removeMeasure();
-    mis.enableInteraction(Interactions.SELECTOR, true);
-  }
+    const feature =
+      mapInteractionStore.measurePlugin.modifyInteraction.getFeature();
 
-  /**
-   * Remove all measures and associated overlays
-   */
-  function removeAllMeasure(): void {
-    mis.measurePlugin.removeAllMeasures();
-    mis.enableInteraction(Interactions.SELECTOR, true);
+    feature
+      ? mapInteractionStore.measurePlugin.removeSelectedMeasure()
+      : mapInteractionStore.measurePlugin.removeAllMeasures();
+
+    mapInteractionStore.enableInteraction(Interactions.SELECTOR, true);
   }
 
   /**
    * Abort the current measure
    */
   function abortCurrentMeasure(): void {
-    mis.measurePlugin.abortMeasuring();
+    mapInteractionStore.measurePlugin.abortMeasuring();
   }
 
   onMounted(() => {
     // @ts-expect-error - Type problems due to typescript / ol
-    mis.measurePlugin.on(MeasureEventType.MEASURE_END, () => {
-      mis.enableInteraction(Interactions.SELECTOR, true);
+    mapInteractionStore.measurePlugin.on(MeasureEventType.MEASURE_END, () => {
+      mapInteractionStore.enableInteraction(Interactions.SELECTOR, true);
     });
   });
 
   return {
     addMeasure,
     removeMeasure,
-    removeAllMeasure,
     abortCurrentMeasure,
     formatedMeasure,
     measureMenu,

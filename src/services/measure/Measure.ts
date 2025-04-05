@@ -81,8 +81,8 @@ export class MeasureEndEvent extends Event {}
  * A tooltip is generated to show measurements in appropriate units (m, km for linestrings and m², km² for polygons).
  */
 class Measure extends Interaction {
-  private drawInteraction: ExtendedDraw;
-  private modifyInteraction: ExtendedModify;
+  public drawInteraction: ExtendedDraw;
+  public modifyInteraction: ExtendedModify;
   private featureHighlighter: FeatureHighLighter;
   private events: IMeasureEvents = {
     end: undefined,
@@ -101,8 +101,8 @@ class Measure extends Interaction {
   constructor(interactionName: string) {
     super();
     this.set(InteractionSettings.NAME, interactionName);
-    this.drawInteraction = this.getDraw(interactionName);
-    this.modifyInteraction = this.getModify(
+    this.drawInteraction = this.createDraw(interactionName);
+    this.modifyInteraction = this.createModify(
       interactionName,
       this.drawInteraction.getLayer()
     );
@@ -114,7 +114,7 @@ class Measure extends Interaction {
    * @param interactionName - Unique identifier of the interaction.
    * @returns Enhanced draw interaction.
    */
-  private getDraw(interactionName: string): ExtendedDraw {
+  private createDraw(interactionName: string): ExtendedDraw {
     return new ExtendedDraw(
       `${interactionName}-${MeasureParameters.DRAW}`,
       new StyleManager(this.measureStyle)
@@ -127,7 +127,7 @@ class Measure extends Interaction {
    * @param draw - The target layer.
    * @returns Enhanced Modify interaction.
    */
-  private getModify(
+  private createModify(
     interactionName: string,
     drawLayer: VectorLayer
   ): ExtendedModify {
@@ -417,7 +417,7 @@ class Measure extends Interaction {
   /**
    * Remove a measure and the associated overlay from the map
    */
-  public removeMeasure(): void {
+  public removeSelectedMeasure(): void {
     const selectedMeasure = this.modifyInteraction.getFeature();
     if (selectedMeasure) {
       this.removeOverlayById(getUid(selectedMeasure));

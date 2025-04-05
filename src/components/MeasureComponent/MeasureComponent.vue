@@ -8,6 +8,7 @@ import { useMeasureStore } from 'src/stores/measure-store';
 
 // Others imports
 import { GeometryType } from '../../enums/map.enum';
+import { UserMessage } from 'src/enums/user-messages.enum';
 
 // Script
 const mes = useMeasureStore();
@@ -16,17 +17,17 @@ const measureButtonList = [
   {
     icon: 'straighten',
     action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
-    tooltip: 'Distance measurement',
+    tooltip: UserMessage.MEASURE.TOOLTIP.DISTANCE,
   },
   {
     icon: 'square_foot',
     action: (): void => mes.addMeasure(GeometryType.POLYGON),
-    tooltip: 'Area measurement',
+    tooltip: UserMessage.MEASURE.TOOLTIP.AREA,
   },
   {
     icon: 'delete',
-    action: (): void => mes.removeAllMeasure(),
-    tooltip: 'Remove all measurement',
+    action: (): void => mes.removeMeasure(),
+    tooltip: UserMessage.MEASURE.TOOLTIP.DELETE,
   },
 ];
 </script>
