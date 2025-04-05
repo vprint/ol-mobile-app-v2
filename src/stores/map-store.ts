@@ -33,7 +33,7 @@ import { Extent } from 'ol/extent';
 /**
  * This store provide the application map and functionnalities related to the map
  */
-export const useMapStore = defineStore('map', () => {
+export const useMapStore = defineStore('mapStore', () => {
   /**
    * Application map
    */

@@ -26,7 +26,7 @@ import { TransactionMode } from 'src/enums/transaction.enum';
 import Site from 'src/model/site';
 import WFSTransactionService from 'src/services/WFSTransactionService';
 import { LayerIdentifier } from 'src/enums/layers.enum';
-import ExtendedVectorTileLayer from 'src/model/ExtendedVectorTileLayer';
+import ExtendedVectorTileLayer from 'src/services/ExtendedVectorTileLayer';
 
 /**
  * Store sites and and related functionnalities
@@ -75,7 +75,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    archsiteLayer?.getSelector().clear();
+    archsiteLayer?.getSelector()?.clear();
     fitMap();
   }
 
@@ -113,7 +113,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
       fitMap(feature);
       site.value = newSite;
-      archsiteLayer?.getSelector().setAsSelected([siteId.toString()]);
+      archsiteLayer?.getSelector()?.setAsSelected([siteId.toString()]);
     }
   }
 
@@ -181,7 +181,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * This function listen to site selection and set the site.
    */
   function siteSelectionListener(): void {
-    archsiteLayer?.getSelector().on(
+    archsiteLayer?.getSelector()?.on(
       // @ts-expect-error type error
       VectorTileSelectEventType.VECTOR_TILE_SELECT,
       (e: VectorTileSelectEvent) => {
@@ -191,7 +191,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
           openSitePanel(features[0].getId() as number);
           archsiteLayer
             .getSelector()
-            .setAsSelected([features[0].getId()?.toString()]);
+            ?.setAsSelected([features[0].getId()?.toString()]);
         }
       }
     );
@@ -205,7 +205,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     (newRoute) => {
       if (!_isSiteParams(newRoute)) {
         clearSite();
-        return
+        return;
       }
 
       const siteId = parseInt(newRoute.parameterValue as string);

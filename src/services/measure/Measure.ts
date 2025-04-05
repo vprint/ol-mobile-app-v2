@@ -16,7 +16,7 @@ import ExtendedDraw from '../drawer/ExtendedDraw';
 import ExtendedModify from '../drawer/ExtendedModify';
 import VectorLayer from 'ol/layer/Vector';
 import StyleManager, { IStyleOptions } from '../StyleManager';
-
+import FeatureHighLighter from '../FeatureHighlighter';
 /**
  * Measure event definition
  */
@@ -80,6 +80,7 @@ export class MeasureEndEvent extends Event {}
 class Measure extends Interaction {
   private drawInteraction: ExtendedDraw;
   private modifyInteraction: ExtendedModify;
+  private featureHighlighter: FeatureHighLighter;
   private events: IMeasureEvents = {
     end: undefined,
     abort: undefined,
@@ -102,6 +103,7 @@ class Measure extends Interaction {
       interactionName,
       this.drawInteraction.getLayer()
     );
+    this.featureHighlighter = this.getFeatureHighLigher();
   }
 
   /**
@@ -142,6 +144,7 @@ class Measure extends Interaction {
     if (map) {
       this.getMap()?.addInteraction(this.drawInteraction);
       this.getMap()?.addInteraction(this.modifyInteraction);
+      this.getMap()?.addInteraction(this.featureHighlighter);
     }
 
     this.addEventsListeners(this.drawInteraction);
@@ -218,6 +221,7 @@ class Measure extends Interaction {
       DrawEventType.DRAW_START,
       (evt: DrawStartEvent) => {
         this.modifyInteraction.setActive(false);
+        this.featureHighlighter.setActive(false);
         evt.feature.set(MeasureParameters.FORMATED_MEASURE, '');
         evt.feature.set(MeasureParameters.RAW_MEASURE, '');
 
@@ -273,6 +277,7 @@ class Measure extends Interaction {
       (evt: DrawRemoveEvent) => {
         this.removeOverlayById(evt.featureId);
         this.modifyInteraction.setActive(false);
+        this.featureHighlighter.setActive(false);
       }
     );
   }
@@ -285,6 +290,7 @@ class Measure extends Interaction {
     setTimeout(() => {
       this.dispatchEvent(new MeasureEndEvent(MeasureEventType.MEASURE_END));
       this.modifyInteraction.setActive(true);
+      this.featureHighlighter.setActive(true);
     }, 10);
   }
 
@@ -423,6 +429,7 @@ class Measure extends Interaction {
     this.drawInteraction.removeAllFeatures();
     this.removeAllOverlays();
     this.modifyInteraction.setActive(false);
+    this.featureHighlighter.setActive(false);
   }
 
   /**
@@ -430,6 +437,10 @@ class Measure extends Interaction {
    */
   public abortMeasuring(): void {
     this.drawInteraction.abortDrawing();
+  }
+
+  private getFeatureHighLigher(): FeatureHighLighter {
+    return new FeatureHighLighter(this.drawInteraction.getLayer());
   }
 }
 
