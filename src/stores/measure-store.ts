@@ -14,7 +14,7 @@ import { MeasureEventType } from 'src/services/measure/Measure';
 
 // Enum imports
 import { Interactions } from 'src/enums/interactions.enum';
-import { GeometryType } from 'src/enums/geometry.enum';
+import { GeometryType } from 'src/enums/map.enum';
 
 //script
 

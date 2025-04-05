@@ -1,15 +1,48 @@
 import type { Type } from 'ol/geom/Geometry';
 import type { EventsKey } from 'ol/events';
-import { DrawEventType } from 'src/enums/draw-types.enum';
-import { DrawStartEvent } from './drawStartEvent';
-import { DrawEndEvent } from './DrawEndEvent';
-import { DrawAbortEvent } from './DrawAbortEvent';
+import { InteractionSettings } from 'src/enums/map.enum';
+import { DrawEventType } from 'src/enums/map.enum';
 import { Draw, Interaction } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
-import { Map } from 'ol';
+import { Feature, Map } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import StyleManager from '../StyleManager';
+import Event from 'ol/events/Event.js';
+
+/**
+ * Draw abort event. This event is throwed after a completion of a draw.
+ */
+export class DrawAbortEvent extends Event {}
+
+/**
+ * Draw end event. This event is throwed after a completion of a draw.
+ */
+export class DrawEndEvent extends Event {}
+
+/**
+ * Draw remove event. The removed feature id is returned by the event.
+ */
+export class DrawRemoveEvent extends Event {
+  public featureId: number | string;
+
+  constructor(type: DrawEventType.DRAW_REMOVE, featureId: number | string) {
+    super(type);
+    this.featureId = featureId;
+  }
+}
+
+/**
+ * Draw start event. This event is emmited when a draw start. The feature is returned by the event.
+ */
+export class DrawStartEvent extends Event {
+  public feature: Feature;
+
+  constructor(type: DrawEventType.DRAW_START, feature: Feature) {
+    super(type);
+    this.feature = feature;
+  }
+}
 
 interface IDrawerEvents {
   end: EventsKey | EventsKey[] | undefined;
@@ -34,7 +67,7 @@ class ExtendedDraw extends Interaction {
 
   constructor(interactionName: string, style: StyleManager) {
     super();
-    this.set('name', interactionName);
+    this.set(InteractionSettings.NAME, interactionName);
     this.style = style;
     this.drawLayer = this.createDrawLayer();
   }

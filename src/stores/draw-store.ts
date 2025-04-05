@@ -11,7 +11,7 @@ import { useNotificationStore } from './notify-store';
 // Interface, type and enum imports
 
 // Others imports
-import { GeometryType } from 'src/enums/geometry.enum';
+import { GeometryType } from 'src/enums/map.enum';
 import { MeasureEventType } from 'src/services/measure/Measure';
 import { Interactions } from 'src/enums/interactions.enum';
 

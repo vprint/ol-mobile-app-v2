@@ -17,12 +17,12 @@ import { VueDraggable } from 'vue-draggable-plus';
 import { useLayerManagerStore } from 'src/stores/layer-manager-store';
 import { ref } from 'vue';
 
-const lms = useLayerManagerStore();
+const layerManagerStore = useLayerManagerStore();
 const isDragging = ref(false);
 
 function manageDragEnd(): void {
   isDragging.value = false;
-  lms.updateLayersEntryIndex();
+  layerManagerStore.updateLayersEntryIndex();
 }
 
 function manageDragStart(): void {
@@ -32,12 +32,16 @@ function manageDragStart(): void {
 
 <template>
   <SidePanelComponent
-    @close="lms.isOpen ? lms.closeLayerManager() : lms.openLayerManager()"
+    @close="
+      layerManagerStore.isOpen
+        ? layerManagerStore.closeLayerManager()
+        : layerManagerStore.openLayerManager()
+    "
   >
     <template #title> Layer Manager </template>
     <template #content>
       <VueDraggable
-        v-model="lms.layersEntry"
+        v-model="layerManagerStore.layersEntry"
         :animation="250"
         handle=".handle"
         ghost-class="selected"
@@ -45,7 +49,10 @@ function manageDragStart(): void {
         @start="manageDragStart"
         @end="manageDragEnd"
       >
-        <div v-for="layer in lms.layersEntry" :key="layer.layerId">
+        <div
+          v-for="layer in layerManagerStore.layersEntry"
+          :key="layer.layerId"
+        >
           <LayerControler
             :layer-id="layer.layerId"
             :is-dragging="isDragging"

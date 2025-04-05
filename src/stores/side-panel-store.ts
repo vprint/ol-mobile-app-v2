@@ -25,7 +25,7 @@ export interface ISidePanelParameters {
  * This store manage the right side panel and provide related functionnalities.
  */
 export const useSidePanelStore = defineStore('sidePanel', () => {
-  const mas = useMapStore();
+  const mapStore = useMapStore();
   const router = useRouter();
   const route = useRoute();
 
@@ -64,6 +64,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
       location: 'home',
     };
 
+    console.log(isOpen.value);
     if (isOpen.value) setPanelPadding(false);
   }
 
@@ -97,7 +98,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
    * Open or close the side panel
    * @param open - Should the side panel be opened or closed ?
    */
-  function setOpen(open: boolean, parameters?: ISidePanelParameters): void {
+  function setActive(open: boolean, parameters?: ISidePanelParameters): void {
     if (!open) closePanel();
     else if (parameters) openPanel(parameters);
     isOpen.value = open;
@@ -111,7 +112,10 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   function setPanelPadding(shouldOpen: boolean, feature?: Feature): void {
     const openPadding = [0, -400, 0, 0];
     const closePadding = [0, 0, 0, -400];
-    mas.setPaddingAndExtent(shouldOpen ? openPadding : closePadding, feature);
+    mapStore.setPaddingAndExtent(
+      shouldOpen ? openPadding : closePadding,
+      feature
+    );
   }
 
   /**
@@ -130,7 +134,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   return {
     isOpen,
     panelParameters,
-    setActive: setOpen,
+    setActive,
     setPanelPadding,
   };
 });

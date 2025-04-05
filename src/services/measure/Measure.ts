@@ -1,22 +1,25 @@
 import './Measure.css';
-import { GeometryType } from 'src/enums/geometry.enum';
+import { GeometryType } from 'src/enums/map.enum';
 import { EventsKey } from 'ol/events';
 import { getUid } from 'ol/util';
 import { Interaction } from 'ol/interaction';
 import { Feature, Overlay } from 'ol';
 import { getArea, getLength } from 'ol/sphere';
 import { LineString, Polygon } from 'ol/geom';
-import { DrawStartEvent } from '../../services/drawer/drawStartEvent';
-import { DrawRemoveEvent } from '../../services/drawer/DrawRemoveEvent';
-import { DrawEventType } from 'src/enums/draw-types.enum';
+import { DrawEventType } from 'src/enums/map.enum';
 import { Positioning } from 'ol/Overlay';
+import { InteractionSettings } from 'src/enums/map.enum';
+import ExtendedDraw, {
+  DrawRemoveEvent,
+  DrawStartEvent,
+} from '../drawer/ExtendedDraw';
 import Event from 'ol/events/Event.js';
 import Map from 'ol/Map';
-import ExtendedDraw from '../drawer/ExtendedDraw';
 import ExtendedModify from '../drawer/ExtendedModify';
 import VectorLayer from 'ol/layer/Vector';
 import StyleManager, { IStyleOptions } from '../StyleManager';
 import FeatureHighLighter from '../FeatureHighlighter';
+
 /**
  * Measure event definition
  */
@@ -97,7 +100,7 @@ class Measure extends Interaction {
 
   constructor(interactionName: string) {
     super();
-    this.set('name', interactionName);
+    this.set(InteractionSettings.NAME, interactionName);
     this.drawInteraction = this.getDraw(interactionName);
     this.modifyInteraction = this.getModify(
       interactionName,

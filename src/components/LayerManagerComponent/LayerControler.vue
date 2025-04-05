@@ -20,7 +20,7 @@ const props = defineProps<{
   isDragging: boolean;
 }>();
 
-const mas = useMapStore();
+const mapStore = useMapStore();
 const visible = ref(false);
 const isInitialized = ref(false);
 const opacity = ref(1);
@@ -29,7 +29,7 @@ let layer: BaseLayer | undefined = undefined;
 let layerProperties: ILayerProperties;
 
 onMounted(() => {
-  layer = mas.getLayerById(props.layerId);
+  layer = mapStore.getLayerById(props.layerId);
 
   if (layer) {
     layerProperties = layer.get(LAYER_PROPERTIES_FIELD);

@@ -3,9 +3,6 @@ import '../css/app.scss';
 // Map import
 import { Interaction, Link } from 'ol/interaction';
 import { Attribution, Control, ScaleLine } from 'ol/control';
-import { Style, Stroke, Fill } from 'ol/style';
-import CircleStyle from 'ol/style/Circle';
-import VectorTileLayer from 'ol/layer/VectorTile';
 
 // Vue/Quasar imports
 import { defineStore } from 'pinia';
@@ -24,6 +21,7 @@ import { Interactions } from 'src/enums/interactions.enum';
 
 // Icon import
 import attributionIcon from '../../public/icons/ctrl-attrib.svg';
+import { InteractionSettings } from 'src/enums/map.enum';
 
 /**
  * Store and manage mapInteraction.
@@ -47,7 +45,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const link = new Link({
     params: ['x', 'y', 'z', 'r'],
   });
-  link.set('name', Interactions.LINK);
+  link.set(InteractionSettings.NAME, Interactions.LINK);
 
   const scaleline = new ScaleLine({
     units: 'metric',
@@ -55,13 +53,13 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     minWidth: 140,
     className: 'app-scale-line',
   });
-  scaleline.set('name', Interactions.SCALELINE);
+  scaleline.set(InteractionSettings.NAME, Interactions.SCALELINE);
 
   const attribution = new Attribution({
     label: _getAttributionIcon(),
     collapseLabel: _getAttributionIcon(),
   });
-  attribution.set('name', Interactions.ATTRIBUTION);
+  attribution.set(InteractionSettings.NAME, Interactions.ATTRIBUTION);
 
   function _getAttributionIcon(): HTMLElement {
     const span = document.createElement('span');
@@ -128,7 +126,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     let findedElement: Interaction | undefined;
 
     ms.map.getInteractions().forEach((interaction) => {
-      if (interaction.get('name') === name) {
+      if (interaction.get(InteractionSettings.NAME) === name) {
         findedElement = interaction;
       }
     });

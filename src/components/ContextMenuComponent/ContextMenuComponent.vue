@@ -9,7 +9,7 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Others imports
 
 // Interface / enums imports
-import { GeometryType } from '../../enums/geometry.enum';
+import { GeometryType } from '../../enums/map.enum';
 
 // Script
 const mes = useMeasureStore();

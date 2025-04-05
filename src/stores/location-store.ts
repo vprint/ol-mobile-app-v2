@@ -40,7 +40,7 @@ enum LocationStateMode {
 }
 
 export const useLocationStore = defineStore('location', () => {
-  const mas = useMapStore();
+  const mapStore = useMapStore();
   const isLocationEnabled = ref(false);
   const islocationFound = ref(false);
   const isViewCentered = ref(false);
@@ -51,7 +51,7 @@ export const useLocationStore = defineStore('location', () => {
   const icon = ref(LocationIcons.INACTIVE);
 
   const location = new Location({ interactionName: Interactions.LOCATION });
-  mas.map.addInteraction(location);
+  mapStore.map.addInteraction(location);
 
   let locationFoundListener: EventsKey & EventsKey[];
   let viewModificationListener: EventsKey & EventsKey[];

@@ -6,12 +6,13 @@ import { EventsKey } from 'ol/events';
 import StyleManager from '../StyleManager';
 import VectorLayer from 'ol/layer/Vector';
 import { unByKey } from 'ol/Observable';
+import { InteractionSettings } from 'src/enums/map.enum';
 
 enum ModifyEvent {
   SELECT = 'select',
 }
 
-interface IExtendedModify {
+interface IOptions {
   name: string;
   style: StyleManager;
   layer: VectorLayer;
@@ -31,9 +32,9 @@ class ExtendedModify extends Interaction {
   private style: StyleManager;
   private events: IModifyEvents = {};
 
-  constructor(options: IExtendedModify) {
+  constructor(options: IOptions) {
     super();
-    this.set('name', options.name);
+    this.set(InteractionSettings.NAME, options.name);
     this.style = options.style;
     this.modificationLayer = options.layer;
     this.selectInteraction = this.getSelect(this.modificationLayer);

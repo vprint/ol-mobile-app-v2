@@ -2,7 +2,7 @@ import { Feature } from 'ol';
 import { TransactionResponse, WriteTransactionOptions } from 'ol/format/WFS';
 import { Circle } from 'ol/geom';
 import { fromCircle } from 'ol/geom/Polygon';
-import { TransactionMode } from 'src/enums/transaction.enum';
+import { TransactionMode } from 'src/enums/map.enum';
 import WFS from 'ol/format/WFS';
 import NotificationService from './notifier/Notifier';
 import { UserMessage } from 'src/enums/user-messages.enum';

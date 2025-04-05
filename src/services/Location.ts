@@ -10,6 +10,7 @@ import CircleStyle from 'ol/style/Circle';
 import Geolocation from 'ol/Geolocation.js';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
+import { InteractionSettings } from 'src/enums/map.enum';
 
 /**
  * Location events.
@@ -48,7 +49,7 @@ interface ILocationFeatures {
   accuracy: Feature;
 }
 
-interface ILocationOptions {
+interface IOptions {
   interactionName: string;
   positionStyle?: Style;
   accuracyStyle?: Style;
@@ -82,9 +83,9 @@ class Location extends Interaction {
     isLocationFound: false,
   };
 
-  constructor(options: ILocationOptions) {
+  constructor(options: IOptions) {
     super();
-    this.set('name', options.interactionName);
+    this.set(InteractionSettings.NAME, options.interactionName);
 
     this.style = {
       position: options.positionStyle ?? this.getPositionStyle(),
