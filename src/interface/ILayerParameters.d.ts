@@ -17,7 +17,7 @@ export type ILayerProperties = {
   /**
    * Is the layer editable ? (e.g can we modify geo-features, can we modify attributes ?).
    */
-  [LayerProperties.ALLOW_EDITION]?: boolean;
+  [LayerProperties.ALLOW_MODIFICATION]?: boolean;
   /**
    * Does this layer allows to select features ?
    */

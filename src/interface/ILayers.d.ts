@@ -26,7 +26,7 @@ export interface IRasterLayerParameters extends IBaseLayerParameters {
 
 export interface IVectorTileLayerParameters extends IBaseLayerParameters {
   featureId: string;
-  [LayerProperties.ALLOW_EDITION]: boolean;
+  [LayerProperties.ALLOW_MODIFICATION]: boolean;
   [LayerProperties.ALLOW_SELECTION]: boolean;
   style: Style[] | Style | StyleFunction;
 }

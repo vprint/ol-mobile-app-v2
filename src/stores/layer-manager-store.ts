@@ -30,8 +30,8 @@ interface ILayerEntryIndex {
  * This store manage the side panel and provide related functionnalities.
  */
 export const useLayerManagerStore = defineStore('layerManager', () => {
-  const sps = useSidePanelStore();
-  const mas = useMapStore();
+  const sidePanelStore = useSidePanelStore();
+  const mapStore = useMapStore();
 
   /**
    * Is the layer manager opened ?
@@ -47,7 +47,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
    */
   function getModifiableLayers(): void {
     if (layersEntry.value.length === 0) {
-      const modifiableLayers = mas.getLayersByProperties(
+      const modifiableLayers = mapStore.getLayersByProperties(
         LayerProperties.ALLOW_PARAMETERS_CHANGE,
         true
       );
@@ -88,24 +88,24 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
     layersEntry.value.forEach((layerEntry, index) => {
       const newZIndex = layersCount - index;
       layerEntry.zIndex = newZIndex;
-      mas.getLayerById(layerEntry.layerId)?.setZIndex(newZIndex);
+      mapStore.getLayerById(layerEntry.layerId)?.setZIndex(newZIndex);
     });
   }
 
   /**
    * private store method
    * Activate / deactivate the layer manager
-   * @param mode - Should the layer manager be opened or closed ?
+   * @param active - Should the layer manager be opened or closed ?
    */
-  function setPanelActive(mode: boolean): void {
-    const params = mode
+  function setPanelActive(active: boolean): void {
+    const params = active
       ? {
           location: SidePanelParameters.LAYER_LIST,
         }
       : undefined;
 
-    sps.setActive(mode, params);
-    isOpen.value = mode;
+    sidePanelStore.setActive(active, params);
+    isOpen.value = active;
   }
 
   function openLayerManager(): void {
@@ -120,10 +120,11 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
    * Watch for panel parameters change and set/unset active status.
    */
   watch(
-    () => sps.panelParameters.location,
+    () => sidePanelStore.panelParameters.location,
     () => {
       isOpen.value =
-        sps.panelParameters.location === SidePanelParameters.LAYER_LIST;
+        sidePanelStore.panelParameters.location ===
+        SidePanelParameters.LAYER_LIST;
       if (isOpen.value) getModifiableLayers();
     }
   );
@@ -132,7 +133,7 @@ export const useLayerManagerStore = defineStore('layerManager', () => {
    * Watch for map initialization and then initialize the layer manager parameters
    */
   watch(
-    () => mas.isMapInitialized,
+    () => mapStore.isMapInitialized,
     (newValue) => {
       if (newValue) getModifiableLayers();
     }

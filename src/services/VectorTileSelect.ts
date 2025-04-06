@@ -6,12 +6,20 @@ import Event from 'ol/events/Event.js';
 import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { getUid } from 'ol/util.js';
+import { MouseEvent } from 'src/enums/ui-event.enum';
+import { InteractionSettings, VectorTileRenderType } from 'src/enums/map.enum';
 
 /**
  * Vector tile select event type definition
  */
 export enum VectorTileSelectEventType {
   VECTOR_TILE_SELECT = 'select:vectortile',
+}
+
+export interface IOptions {
+  name: string;
+  selectionStyle?: Style;
+  selectableLayer?: VectorTileLayer;
 }
 
 /**
@@ -41,24 +49,16 @@ class VectorTileSelect extends Interaction {
   private selectionStyle: Style;
   private selectionLayer: VectorTileLayer;
 
-  constructor({
-    name,
-    selectionStyle,
-    selectableLayer,
-  }: {
-    name: string;
-    selectionStyle?: Style;
-    selectableLayer?: VectorTileLayer;
-  }) {
+  constructor(options: IOptions) {
     super({
       handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean =>
         this.selectFeaturesAtPixel(evt),
     });
-    this.set('name', name);
-    this.selectableLayer = selectableLayer;
+    this.set(InteractionSettings.NAME, options.name);
+    this.selectableLayer = options.selectableLayer;
 
     this.selectionStyle =
-      selectionStyle ??
+      options.selectionStyle ??
       new Style({
         image: new CircleStyle({
           radius: 10,
@@ -68,7 +68,7 @@ class VectorTileSelect extends Interaction {
       });
 
     this.selectionLayer = new VectorTileLayer({
-      renderMode: 'vector',
+      renderMode: VectorTileRenderType.VECTOR,
       zIndex: this.getSelectionZIndex(),
       source: this.selectableLayer?.getSource() ?? undefined,
       style: (feature: FeatureLike): Style | undefined => {
@@ -97,6 +97,7 @@ class VectorTileSelect extends Interaction {
   public setSelectionLayer(layer: VectorTileLayer | undefined): void {
     this.selectableLayer = layer;
     this.selectionLayer.setSource(layer?.getSource() ?? null);
+    this.selectionLayer.setZIndex(this.getSelectionZIndex());
   }
 
   /**
@@ -106,7 +107,9 @@ class VectorTileSelect extends Interaction {
    * @returns - false to stop event propagation if selection is made, true otherwise
    */
   private selectFeaturesAtPixel(e: MapBrowserEvent<UIEvent>): boolean {
-    if (e.type === 'click') {
+    let propagation = true;
+
+    if (e.type === MouseEvent.CLICK.toString()) {
       const features = this.getMap()?.getFeaturesAtPixel(e.pixel, {
         layerFilter: (layer) => getUid(layer) === getUid(this.selectableLayer),
         hitTolerance: 10,
@@ -124,9 +127,10 @@ class VectorTileSelect extends Interaction {
           e
         )
       );
-      return false;
+      propagation = false;
     }
-    return true;
+
+    return propagation;
   }
 
   /**
@@ -153,8 +157,8 @@ class VectorTileSelect extends Interaction {
    * Calculate the selection layer zIndex based on the selectable layer zIndex.
    * @returns The zIndex (selectable layer + 1)
    */
-  private getSelectionZIndex(): number | undefined {
-    let zIndex = undefined;
+  private getSelectionZIndex(): number {
+    let zIndex = Infinity;
     const selectableLayerZIndex = this.selectableLayer?.getZIndex();
 
     if (selectableLayerZIndex) {

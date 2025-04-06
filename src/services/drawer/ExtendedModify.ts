@@ -37,8 +37,8 @@ class ExtendedModify extends Interaction {
     this.set(InteractionSettings.NAME, options.name);
     this.style = options.style;
     this.modificationLayer = options.layer;
-    this.selectInteraction = this.getSelect(this.modificationLayer);
-    this.modifyInteraction = this.getModify(
+    this.selectInteraction = this.createSelect(this.modificationLayer);
+    this.modifyInteraction = this.createModify(
       this.selectInteraction.getFeatures()
     );
   }
@@ -55,11 +55,11 @@ class ExtendedModify extends Interaction {
   }
 
   /**
-   * Get the modify interaction.
+   * Create the modify interaction.
    * @param selector - The select interaction.
    * @returns
    */
-  private getModify(feature?: Collection<Feature>): Modify {
+  private createModify(feature?: Collection<Feature>): Modify {
     return new Modify({
       style: this.style.getEditionStyle(),
       features: feature,
@@ -74,7 +74,7 @@ class ExtendedModify extends Interaction {
    * @param selectionLayer - The layer on which to enable selection.
    * @returns A Select interaction configured for the given layer.
    */
-  private getSelect(selectionLayer: VectorLayer): Select {
+  private createSelect(selectionLayer: VectorLayer): Select {
     return new Select({
       layers: (layer): boolean => {
         return getUid(layer) === getUid(selectionLayer);
@@ -112,7 +112,7 @@ class ExtendedModify extends Interaction {
    */
   public addFeaturesToModifier(feature: Collection<Feature>): void {
     this.removeModifyInteraction();
-    this.modifyInteraction = this.getModify(feature);
+    this.modifyInteraction = this.createModify(feature);
     this.getMap()?.addInteraction(this.modifyInteraction);
   }
 
