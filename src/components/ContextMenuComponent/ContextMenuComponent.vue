@@ -24,12 +24,12 @@ const mainList = [
 
 const measureItemList = [
   {
-    action: (): void => mes.addMeasure(GeometryType.POLYGON),
-    text: UserMessage.MEASURE.AREA,
-  },
-  {
     action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
     text: UserMessage.MEASURE.DISTANCE,
+  },
+  {
+    action: (): void => mes.addMeasure(GeometryType.POLYGON),
+    text: UserMessage.MEASURE.AREA,
   },
   {
     action: (): void => mes.removeMeasure(),

@@ -64,7 +64,6 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
       location: 'home',
     };
 
-    console.log(isOpen.value);
     if (isOpen.value) setPanelPadding(false);
   }
 
