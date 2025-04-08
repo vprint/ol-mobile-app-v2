@@ -22,11 +22,19 @@ import { Feature as GeoJSONFeature } from 'geojson';
 
 // Enum / Interface / Model imports
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
-import { TransactionMode } from 'src/enums/transaction.enum';
+import { TransactionMode } from 'src/enums/map.enum';
 import Site from 'src/model/site';
 import WFSTransactionService from 'src/services/WFSTransactionService';
 import { LayerIdentifier } from 'src/enums/layers.enum';
 import ExtendedVectorTileLayer from 'src/services/ExtendedVectorTileLayer';
+
+const WFS_TRANSACTION_OPTIONS = {
+  featureNS: 'ArchaeoSpringMap',
+  srsName: 'EPSG:3857',
+  featurePrefix: 'ArchaeoSpringMap',
+  featureType: 'archsites',
+  nativeElements: [],
+};
 
 /**
  * Store sites and and related functionnalities
@@ -34,16 +42,9 @@ import ExtendedVectorTileLayer from 'src/services/ExtendedVectorTileLayer';
 export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   const mapInteractionStore = useMapInteractionStore();
   const drawStore = useDrawStore();
-  const sitePanelStore = useSidePanelStore();
+  const sidePanelStore = useSidePanelStore();
   const mapStore = useMapStore();
   const { isMapInteractionsInitialized } = storeToRefs(mapInteractionStore);
-  const WFS_TRANSACTION_OPTIONS = {
-    featureNS: 'ArchaeoSpringMap',
-    srsName: 'EPSG:3857',
-    featurePrefix: 'ArchaeoSpringMap',
-    featureType: 'archsites',
-    nativeElements: [],
-  };
   const transactor = new WFSTransactionService();
   const site: Ref<Site | undefined> = ref();
   const archsiteLayer = mapStore.getLayerById<ExtendedVectorTileLayer>(
@@ -55,7 +56,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @param newSiteId - Id of the new site.
    */
   async function openSitePanel(newSiteId: number): Promise<void> {
-    sitePanelStore.setActive(true, {
+    sidePanelStore.setActive(true, {
       location: SidePanelParameters.SITE,
       parameterName: 'siteId',
       parameterValue: newSiteId.toString(),
@@ -67,7 +68,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function closeSitePanel(): void {
     clearSite();
-    sitePanelStore.setActive(false);
+    sidePanelStore.setActive(false);
   }
 
   /**
@@ -105,7 +106,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
       });
 
       if (
-        sitePanelStore.panelParameters.parameterValue !==
+        sidePanelStore.panelParameters.parameterValue !==
         newSite.siteId.toString()
       ) {
         openSitePanel(newSite.siteId);
@@ -129,9 +130,9 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
       }) as Feature;
+      sidePanelStore.setPanelPadding(true, feature);
     }
 
-    sitePanelStore.setPanelPadding(true, feature);
     archsiteLayer?.changed();
   }
 
@@ -139,18 +140,13 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Enable form modification and drawing.
    * @param active - Should the edition mode be enabled ?
    */
-  function enableEdition(active: boolean): void {
-    const modifier = archsiteLayer?.enableModifier(active);
+  function enableModification(active: boolean): void {
+    archsiteLayer?.enableModifier(active);
     drawStore.setVisible(active);
 
-    // TODO: FIXME: Partie à completer.
-    if (active) {
-      // const features = new Collection([site.value]);
-      // modifier.addFeaturesToModifier(features);
-      // const modificationLayer = modifier.getModificationLayer();
-      // mapStore.map.addLayer(modificationLayer);
-      // modificationLayer.getSource()?.clear();
-      // modificationLayer.getSource()?.addFeatures(features.getArray());
+    if (active && site.value) {
+      const features = new Collection([site.value]);
+      archsiteLayer?.getModifier()?.addFeaturesToModifier(features);
     }
   }
 
@@ -193,6 +189,11 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
             .getSelector()
             ?.setAsSelected([features[0].getId()?.toString()]);
         }
+
+        if (!(features && features.length > 0) && site.value) {
+          const siteId = site.value.attributes.archsite_id;
+          archsiteLayer.getSelector()?.setAsSelected([siteId.toString()]);
+        }
       }
     );
   }
@@ -201,7 +202,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * watch for site change in URL
    */
   watch(
-    () => sitePanelStore.panelParameters,
+    () => sidePanelStore.panelParameters,
     (newRoute) => {
       if (!_isSiteParams(newRoute)) {
         clearSite();
@@ -245,16 +246,16 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Initialize site
    */
   onMounted(async () => {
-    if (sitePanelStore.panelParameters.location === SidePanelParameters.SITE) {
+    if (sidePanelStore.panelParameters.location === SidePanelParameters.SITE) {
       openSitePanel(
-        parseInt(sitePanelStore.panelParameters.parameterValue as string)
+        parseInt(sidePanelStore.panelParameters.parameterValue as string)
       );
     }
   });
 
   return {
     site,
-    enableEdition,
+    enableEdition: enableModification,
     openSitePanel,
     updateSite,
     wfsTransaction,

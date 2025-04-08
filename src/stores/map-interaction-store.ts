@@ -28,7 +28,7 @@ import { InteractionSettings } from 'src/enums/map.enum';
  * Exemple : enable or disable the click interaction that allow to select site.
  */
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
-  const ms = useMapStore();
+  const mapStore = useMapStore();
   const isMapInteractionsInitialized = ref(false);
 
   const measurePlugin = new Measure(Interactions.MEASURE);
@@ -90,7 +90,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   function initializeMapInteractions(): void {
     // Add the interactions
     getInteractions().forEach((interaction) => {
-      ms.map.addInteraction(interaction);
+      mapStore.map.addInteraction(interaction);
     });
 
     measurePlugin.setActive(false);
@@ -98,7 +98,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
     // add the contols
     getControls().forEach((control) => {
-      ms.map.addControl(control);
+      mapStore.map.addControl(control);
     });
 
     isMapInteractionsInitialized.value = true;
@@ -125,7 +125,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   function getInteractionByName(name: string): Interaction | undefined {
     let findedElement: Interaction | undefined;
 
-    ms.map.getInteractions().forEach((interaction) => {
+    mapStore.map.getInteractions().forEach((interaction) => {
       if (interaction.get(InteractionSettings.NAME) === name) {
         findedElement = interaction;
       }
@@ -138,7 +138,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * Watch for map initialization and then enable the interaction.
    */
   watch(
-    () => ms.isMapInitialized,
+    () => mapStore.isMapInitialized,
     (isInitialized) => {
       if (isInitialized) {
         initializeMapInteractions();

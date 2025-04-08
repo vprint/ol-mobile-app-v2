@@ -110,6 +110,27 @@ class Measure extends Interaction {
   }
 
   /**
+   * Initialize the component
+   * @param map - OpenLayers map
+   */
+  public setMap(map: Map | null): void {
+    super.setMap(map);
+    if (map) {
+      this.getMap()?.addInteraction(this.drawInteraction);
+      this.getMap()?.addInteraction(this.modifyInteraction);
+      this.getMap()?.addInteraction(this.featureHighlighter);
+    }
+
+    this.addEventsListeners(this.drawInteraction);
+  }
+
+  private getFeatureHighLigher(): FeatureHighLighter {
+    return FeatureHighLighter.getInstance(this.drawInteraction.getLayer());
+  }
+
+  // #region Draw
+
+  /**
    * Returns a draw interaction.
    * @param interactionName - Unique identifier of the interaction.
    * @returns Enhanced draw interaction.
@@ -120,6 +141,33 @@ class Measure extends Interaction {
       new StyleManager(this.measureStyle)
     );
   }
+
+  /**
+   * Add measure interaction to the map.
+   * @param type - Measure type
+   */
+  public createMeasureFeature(type: IMeasureType): void {
+    this.drawInteraction.createFeature(type);
+  }
+
+  /**
+   * Remove all the measure feature and the associated overlays
+   */
+  public removeAllMeasures(): void {
+    this.drawInteraction.removeAllFeatures();
+    this.removeAllOverlays();
+    this.modifyInteraction.setActive(false);
+    this.featureHighlighter.setActive(false);
+  }
+
+  /**
+   * Abort the current measure
+   */
+  public abortMeasuring(): void {
+    this.drawInteraction.abortDrawing();
+  }
+
+  // #region Modify
 
   /**
    * Returns a modify interaction for feature editing.
@@ -139,26 +187,35 @@ class Measure extends Interaction {
   }
 
   /**
-   * Initialize the component
-   * @param map - OpenLayers map
+   * Remove a measure and the associated overlay from the map
    */
-  public setMap(map: Map | null): void {
-    super.setMap(map);
-    if (map) {
-      this.getMap()?.addInteraction(this.drawInteraction);
-      this.getMap()?.addInteraction(this.modifyInteraction);
-      this.getMap()?.addInteraction(this.featureHighlighter);
+  public removeSelectedMeasure(): void {
+    const selectedMeasure = this.modifyInteraction.getFeature();
+    if (selectedMeasure) {
+      this.removeOverlayById(getUid(selectedMeasure));
+      this.modifyInteraction.removeFeature();
     }
-
-    this.addEventsListeners(this.drawInteraction);
   }
 
+  // #region Tooltip
+
   /**
-   * Add measure interaction to the map.
-   * @param type - Measure type
+   * Create and add a new overlay to the map
+   * @returns New overlay
    */
-  public createMeasureFeature(type: IMeasureType): void {
-    this.drawInteraction.createFeature(type);
+  private createTooltip(feature: Feature): void {
+    const measureTooltipElement = document.createElement('div');
+
+    const measureTooltip = new Overlay({
+      element: measureTooltipElement,
+      className: 'measure-tooltip app-font',
+      stopEvent: false,
+      id: getUid(feature),
+    });
+
+    measureTooltip.set(MeasureParameters.TYPE, MeasureParameters.MEASURE);
+    this.getMap()?.addOverlay(measureTooltip);
+    this.updateTooltip(feature, measureTooltip);
   }
 
   /**
@@ -189,6 +246,39 @@ class Measure extends Interaction {
   }
 
   /**
+   * Remove all measure overlays
+   */
+  private removeAllOverlays(): void {
+    const overlays = this.getMap()?.getOverlays().getArray();
+
+    if (overlays) {
+      const measureOverlays = overlays.filter(
+        (overlay) =>
+          overlay.get(MeasureParameters.TYPE) === MeasureParameters.MEASURE
+      );
+
+      measureOverlays.forEach((overlay) => {
+        this.getMap()?.removeOverlay(overlay);
+      });
+    }
+  }
+
+  /**
+   * Remove an overlay for a given id
+   * @param id - Overlay id
+   */
+  private removeOverlayById(id: string | number): void {
+    const overlays = this.getMap()?.getOverlays().getArray();
+
+    if (overlays) {
+      const measureOverlay = overlays.find((overlay) => overlay.getId() === id);
+      if (measureOverlay) {
+        this.getMap()?.removeOverlay(measureOverlay);
+      }
+    }
+  }
+
+  /**
    * This function set the measure text to the overlay.
    * @param htmlElement - Overlay html element
    * @param feature - Draw feature
@@ -201,6 +291,73 @@ class Measure extends Interaction {
       htmlElement.innerHTML = this.calculateMeasure(feature);
     }
   }
+
+  /**
+   * Calculate measure for a given polygon.
+   * @param geom - Input geometry
+   */
+  private calculateMeasure(feature: Feature): string {
+    let measure = '';
+    const geom = feature.getGeometry();
+
+    switch (geom?.getType()) {
+      case GeometryType.POLYGON:
+        feature.set(
+          MeasureParameters.FORMATED_MEASURE,
+          this.formatArea(geom as Polygon)
+        );
+        feature.set(MeasureParameters.RAW_MEASURE, getArea(geom));
+        measure = feature.get(MeasureParameters.FORMATED_MEASURE);
+        break;
+
+      case GeometryType.LINE_STRING:
+        feature.set(
+          MeasureParameters.FORMATED_MEASURE,
+          this.formatLength(geom as LineString)
+        );
+        feature.set(MeasureParameters.RAW_MEASURE, getLength(geom));
+        measure = feature.get(MeasureParameters.FORMATED_MEASURE);
+        break;
+    }
+
+    return measure;
+  }
+
+  /**
+   * Format length output.
+   * @param line - The line
+   * @returns The formatted length.
+   */
+  private formatLength(line: LineString): string {
+    let output: string;
+    const length = getLength(line);
+
+    if (length > 100) {
+      output = `${Math.round((length / 1000) * 100) / 100} km`;
+    } else {
+      output = `${Math.round(length * 100) / 100} m`;
+    }
+    return output;
+  }
+
+  /**
+   * Format area output.
+   * @param polygon - The polygone
+   * @returns Formatted area
+   */
+  private formatArea(polygon: Polygon): string {
+    let output: string;
+    const area = getArea(polygon);
+
+    if (area > 10000) {
+      output = `${Math.round((area / 1000000) * 100) / 100} km²`;
+    } else {
+      output = `${Math.round(area * 100) / 100} m²`;
+    }
+    return output;
+  }
+
+  // #region Events
 
   /**
    * Manage draw-end and draw-abort event.
@@ -295,155 +452,6 @@ class Measure extends Interaction {
       this.modifyInteraction.setActive(true);
       this.featureHighlighter.setActive(true);
     }, 10);
-  }
-
-  /**
-   * Calculate measure for a given polygon.
-   * @param geom - Input geometry
-   */
-  private calculateMeasure(feature: Feature): string {
-    let measure = '';
-    const geom = feature.getGeometry();
-
-    switch (geom?.getType()) {
-      case GeometryType.POLYGON:
-        feature.set(
-          MeasureParameters.FORMATED_MEASURE,
-          this.formatArea(geom as Polygon)
-        );
-        feature.set(MeasureParameters.RAW_MEASURE, getArea(geom));
-        measure = feature.get(MeasureParameters.FORMATED_MEASURE);
-        break;
-
-      case GeometryType.LINE_STRING:
-        feature.set(
-          MeasureParameters.FORMATED_MEASURE,
-          this.formatLength(geom as LineString)
-        );
-        feature.set(MeasureParameters.RAW_MEASURE, getLength(geom));
-        measure = feature.get(MeasureParameters.FORMATED_MEASURE);
-        break;
-    }
-
-    return measure;
-  }
-
-  /**
-   * Format length output.
-   * @param line - The line
-   * @returns The formatted length.
-   */
-  private formatLength(line: LineString): string {
-    let output: string;
-    const length = getLength(line);
-
-    if (length > 100) {
-      output = `${Math.round((length / 1000) * 100) / 100} km`;
-    } else {
-      output = `${Math.round(length * 100) / 100} m`;
-    }
-    return output;
-  }
-
-  /**
-   * Format area output.
-   * @param polygon - The polygone
-   * @returns Formatted area
-   */
-  private formatArea(polygon: Polygon): string {
-    let output: string;
-    const area = getArea(polygon);
-
-    if (area > 10000) {
-      output = `${Math.round((area / 1000000) * 100) / 100} km²`;
-    } else {
-      output = `${Math.round(area * 100) / 100} m²`;
-    }
-    return output;
-  }
-
-  /**
-   * Create and add a new overlay to the map
-   * @returns New overlay
-   */
-  private createTooltip(feature: Feature): void {
-    const measureTooltipElement = document.createElement('div');
-
-    const measureTooltip = new Overlay({
-      element: measureTooltipElement,
-      className: 'measure-tooltip app-font',
-      stopEvent: false,
-      id: getUid(feature),
-    });
-
-    measureTooltip.set(MeasureParameters.TYPE, MeasureParameters.MEASURE);
-    this.getMap()?.addOverlay(measureTooltip);
-    this.updateTooltip(feature, measureTooltip);
-  }
-
-  /**
-   * Remove all measure overlays
-   */
-  private removeAllOverlays(): void {
-    const overlays = this.getMap()?.getOverlays().getArray();
-
-    if (overlays) {
-      const measureOverlays = overlays.filter(
-        (overlay) =>
-          overlay.get(MeasureParameters.TYPE) === MeasureParameters.MEASURE
-      );
-
-      measureOverlays.forEach((overlay) => {
-        this.getMap()?.removeOverlay(overlay);
-      });
-    }
-  }
-
-  /**
-   * Remove an overlay for a given id
-   * @param id - Overlay id
-   */
-  private removeOverlayById(id: string | number): void {
-    const overlays = this.getMap()?.getOverlays().getArray();
-
-    if (overlays) {
-      const measureOverlay = overlays.find((overlay) => overlay.getId() === id);
-      if (measureOverlay) {
-        this.getMap()?.removeOverlay(measureOverlay);
-      }
-    }
-  }
-
-  /**
-   * Remove a measure and the associated overlay from the map
-   */
-  public removeSelectedMeasure(): void {
-    const selectedMeasure = this.modifyInteraction.getFeature();
-    if (selectedMeasure) {
-      this.removeOverlayById(getUid(selectedMeasure));
-      this.modifyInteraction.removeFeature();
-    }
-  }
-
-  /**
-   * Remove all the measure feature and the associated overlays
-   */
-  public removeAllMeasures(): void {
-    this.drawInteraction.removeAllFeatures();
-    this.removeAllOverlays();
-    this.modifyInteraction.setActive(false);
-    this.featureHighlighter.setActive(false);
-  }
-
-  /**
-   * Abort the current measure
-   */
-  public abortMeasuring(): void {
-    this.drawInteraction.abortDrawing();
-  }
-
-  private getFeatureHighLigher(): FeatureHighLighter {
-    return new FeatureHighLighter(this.drawInteraction.getLayer());
   }
 }
 
