@@ -8,29 +8,25 @@ export const getArchSiteStyleFunction = (): StyleFunction => {
   const styleCache: IStyleCache = {};
 
   return (feature: FeatureLike): Style => {
-    const archsiteId = feature.get(SiteAttributes.SITE_ID);
     const groundVerified = feature.get(SiteAttributes.GROUND_VERIFIED);
-    const key = `${archsiteId}-${groundVerified}`;
+    const key = `verified-${groundVerified}`;
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (styleCache[key]) {
-      return styleCache[key];
+    if (!styleCache[key]) {
+      styleCache[key] = new Style({
+        image: new Circle({
+          fill: new Fill({
+            color: groundVerified ? '#2f7a34' : '#8a1946',
+          }),
+          radius: 8,
+          stroke: new Stroke({
+            color: 'rgba(255,255,255,1)',
+            width: 2,
+          }),
+        }),
+      });
     }
 
-    const style = new Style({
-      image: new Circle({
-        fill: new Fill({
-          color: groundVerified ? '#2f7a34' : '#8a1946',
-        }),
-        radius: 8,
-        stroke: new Stroke({
-          color: 'rgba(255,255,255,1)',
-          width: 2,
-        }),
-      }),
-    });
-
-    styleCache[key] = style;
-    return style;
+    return styleCache[key];
   };
 };

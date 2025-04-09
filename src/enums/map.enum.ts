@@ -6,11 +6,6 @@ export enum MapSettings {
   MIN_ZOOM = 7,
 }
 
-export enum VectorTileRenderType {
-  HYBRID = 'hybrid',
-  VECTOR = 'vector',
-}
-
 export enum InteractionSettings {
   NAME = 'name',
 }

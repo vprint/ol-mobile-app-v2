@@ -107,7 +107,7 @@ export const VECTOR_TILE_LAYERS_SETTINGS: IVectorTileLayerParameters[] = [
     attribution: ['Données cartographiques | <b>EFEO</b>'],
     zIndex: 5,
     visible: true,
-    allowParameterChange: false,
+    allowParameterChange: true,
     allowSelection: true,
     allowModification: true,
     url: `${AppVariables.VECTOR_TILE_SERVER}/maps/archaeological/{z}/{x}/{y}.pbf`,
