@@ -1,5 +1,6 @@
 // Map imports
 import { MapLibreLayer } from '@geoblocks/ol-maplibre-layer';
+import { Extent } from 'ol/extent';
 import { easeOut } from 'ol/easing';
 import { Feature, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
@@ -28,7 +29,6 @@ import {
   addOGCLayer,
 } from 'src/services/LayerImporter';
 import { MapSettings } from 'src/enums/map.enum';
-import { Extent } from 'ol/extent';
 
 /**
  * This store provide the application map and functionnalities related to the map
@@ -62,7 +62,7 @@ export const useMapStore = defineStore('mapStore', () => {
     return map.getAllLayers().find((layer) => {
       const properties = layer.get(LAYER_PROPERTIES_FIELD);
       return properties?.id === id;
-    }) as TypeOfLayer;
+    }) as TypeOfLayer | undefined;
   }
 
   /**
@@ -91,7 +91,7 @@ export const useMapStore = defineStore('mapStore', () => {
   }
 
   /**
-   * Adjusts the map view by applying padding and optionally zooming to a feature.
+   * Adjusts the map view by applying a padding and optionally zooming to a feature.
    * If no feature is provided, only applies padding to the current extent.
    * @param padding - Padding (in pixels) to be cleared inside the view. Values in the array are top, right, bottom and left padding.
    * @param feature - Optional feature to center and zoom the view on. If not provided, maintains the current map extent.
@@ -148,7 +148,6 @@ export const useMapStore = defineStore('mapStore', () => {
     map.addLayer(mapLibreLayer);
     _addApplicationLayers(map, mapLibreLayer);
     map.setTarget('map');
-
     isMapInitialized.value = true;
   }
 

@@ -13,6 +13,7 @@ import TileLayer from 'ol/layer/WebGLTile.js';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
+import ExtendedVectorTileLayer from './ExtendedVectorTileLayer';
 import VectorTileLayer from 'ol/layer/VectorTile';
 
 /**
@@ -75,8 +76,10 @@ export function addVectorTileLayers(
   map: Map,
   layerList: IVectorTileLayerParameters[]
 ): void {
-  layerList.map((layerParams) => {
-    map.addLayer(getVectorTileLayer(layerParams));
+  layerList.forEach((layerParams) => {
+    const vtLayer = getVectorTileLayer(layerParams);
+    map.addLayer(vtLayer);
+    //if (layerParams.allowSelection) vtLayer.enableSelection(true);
   });
 }
 
@@ -91,9 +94,9 @@ function getVectorTileLayer(
       [LAYER_PROPERTIES_FIELD]: {
         id: layer.id,
         title: layer.title,
-        allowEdition: layer.allowParameterChange,
+        allowEdition: layer.allowModification,
         allowSelection: layer.allowSelection,
-        allowParameterChange: true,
+        allowParameterChange: layer.allowParameterChange,
       } as ILayerProperties,
       featureId: layer.featureId,
     },

@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 import { onMounted } from 'vue';
 import { useSiteStore } from './site-store';
 import { useSidePanelStore } from './side-panel-store';
-import { SidePanelParameters } from 'src/enums/side-panel.enum';
 
 const siteStore = useSiteStore();
 const sidePanelStore = useSidePanelStore();
@@ -26,11 +25,5 @@ export const useKeyStore = defineStore('keyStore', () => {
    */
   onMounted(async () => {
     window.addEventListener('keydown', handleEscape);
-
-    if (sidePanelStore.panelParameters.location === SidePanelParameters.SITE) {
-      siteStore.openSitePanel(
-        parseInt(sidePanelStore.panelParameters.parameterValue as string)
-      );
-    }
   });
 });

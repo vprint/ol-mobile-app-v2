@@ -112,43 +112,6 @@ class Location extends Interaction {
   }
 
   /**
-   * Throw an error event and log the error.
-   */
-  private getErrorHandler(): EventsKey | EventsKey[] {
-    return this.geolocation.on(GeolocationEvents.ERROR, (error) => {
-      console.error(error);
-      this.dispatchEvent(new LocationEvents(LocationEventsType.LOCATION_ERROR));
-    });
-  }
-
-  /**
-   * Track accuracy change and update the accuracy geometry.
-   */
-  private getAccuracyTracker(): EventsKey | EventsKey[] {
-    return this.geolocation.on(GeolocationEvents.ACCURACY_CHANGE, () => {
-      const accuracy = this.geolocation.getAccuracyGeometry();
-      this.features.accuracy.setGeometry(accuracy ?? undefined);
-    });
-  }
-
-  /**
-   * Track position change and update position geometry.
-   */
-  private getPositionTracker(): EventsKey | EventsKey[] {
-    return this.geolocation.on(GeolocationEvents.POSITION_CHANGE, () => {
-      const coordinates = this.geolocation.getPosition();
-
-      if (coordinates) {
-        const point = new Point(coordinates);
-        this.features.position.setGeometry(point);
-        if (!this.state.isLocationFound) {
-          this.handleLocationFound();
-        }
-      }
-    });
-  }
-
-  /**
    * Handle the user location found event.
    */
   private handleLocationFound(): void {
@@ -159,23 +122,6 @@ class Location extends Interaction {
       this.state.isViewCentered = true;
     });
   }
-
-  /**
-   * Manage the map view change and throw a view change event.
-   */
-  public addViewChangeListener = (): void => {
-    const map = this.getMap();
-    if (map) {
-      this.eventListeners.view = map
-        .getView()
-        .once(GeolocationEvents.VIEW_CHANGE, (): void => {
-          this.state.isViewCentered = false;
-          this.dispatchEvent(
-            new LocationEvents(LocationEventsType.VIEW_MODIFICATION)
-          );
-        });
-    }
-  };
 
   /**
    * Fit the map view to the location extent and execute a callback if necessary.
@@ -288,25 +234,6 @@ class Location extends Interaction {
   }
 
   /**
-   * Add location events listeners.
-   */
-  private addEventsListeners(): void {
-    this.eventListeners.accuracy = this.getAccuracyTracker();
-    this.eventListeners.position = this.getPositionTracker();
-    this.eventListeners.error = this.getErrorHandler();
-  }
-
-  /**
-   * Remove all location events listeners.
-   */
-  private removeEventsListeners(): void {
-    Object.values(this.eventListeners).forEach((listener) => {
-      unByKey(listener);
-    });
-    this.eventListeners = {};
-  }
-
-  /**
    * Get the location layers used to show location.
    * @returns - The location layer.
    */
@@ -324,6 +251,81 @@ class Location extends Interaction {
     this.locationLayer.getSource()?.clear();
     this.state.isLocationFound = false;
     this.removeEventsListeners();
+  }
+
+  // #region Event
+
+  /**
+   * Add location events listeners.
+   */
+  private addEventsListeners(): void {
+    this.eventListeners.accuracy = this.getAccuracyTracker();
+    this.eventListeners.position = this.getPositionTracker();
+    this.eventListeners.error = this.getErrorHandler();
+  }
+
+  /**
+   * Track accuracy change and update the accuracy geometry.
+   */
+  private getAccuracyTracker(): EventsKey | EventsKey[] {
+    return this.geolocation.on(GeolocationEvents.ACCURACY_CHANGE, () => {
+      const accuracy = this.geolocation.getAccuracyGeometry();
+      this.features.accuracy.setGeometry(accuracy ?? undefined);
+    });
+  }
+
+  /**
+   * Track position change and update position geometry.
+   */
+  private getPositionTracker(): EventsKey | EventsKey[] {
+    return this.geolocation.on(GeolocationEvents.POSITION_CHANGE, () => {
+      const coordinates = this.geolocation.getPosition();
+
+      if (coordinates) {
+        const point = new Point(coordinates);
+        this.features.position.setGeometry(point);
+        if (!this.state.isLocationFound) {
+          this.handleLocationFound();
+        }
+      }
+    });
+  }
+
+  /**
+   * Throw an error event and log the error.
+   */
+  private getErrorHandler(): EventsKey | EventsKey[] {
+    return this.geolocation.on(GeolocationEvents.ERROR, (error) => {
+      console.error(error);
+      this.dispatchEvent(new LocationEvents(LocationEventsType.LOCATION_ERROR));
+    });
+  }
+
+  /**
+   * Manage the map view change and throw a view change event.
+   */
+  public addViewChangeListener = (): void => {
+    const map = this.getMap();
+    if (map) {
+      this.eventListeners.view = map
+        .getView()
+        .once(GeolocationEvents.VIEW_CHANGE, (): void => {
+          this.state.isViewCentered = false;
+          this.dispatchEvent(
+            new LocationEvents(LocationEventsType.VIEW_MODIFICATION)
+          );
+        });
+    }
+  };
+
+  /**
+   * Remove all location events listeners.
+   */
+  private removeEventsListeners(): void {
+    Object.values(this.eventListeners).forEach((listener) => {
+      unByKey(listener);
+    });
+    this.eventListeners = {};
   }
 }
 
