@@ -12,6 +12,9 @@ import Site from 'src/model/site';
 import FormInput from '../ReusableComponents/FormInput.vue';
 import FormSelect from '../ReusableComponents/FormSelect.vue';
 import DateSelect from '../ReusableComponents/DateSelect.vue';
+import { onMounted, ref, Ref, watch } from 'vue';
+import { IIndividual } from 'src/interface/IIndividual';
+import { ISiteType } from 'src/interface/ISiteType';
 
 const referencesStore = useReferencesStore();
 const site = defineModel<Site>('siteFeature', { required: true });
@@ -20,6 +23,68 @@ const site = defineModel<Site>('siteFeature', { required: true });
 const props = defineProps({
   editionMode: Boolean,
 });
+
+const userModification: Ref<IIndividual | undefined> = ref(undefined);
+const userCreation: Ref<IIndividual | undefined> = ref(undefined);
+const locatedBy: Ref<IIndividual | undefined> = ref(undefined);
+const featureType: Ref<ISiteType | undefined> = ref(undefined);
+
+/**
+ * Set the forms values.
+ */
+function setFormValues(): void {
+  userModification.value = getIndividual(
+    site.value.attributes[SiteAttributes.USER_MODIFICATION]
+  );
+
+  userCreation.value = getIndividual(
+    site.value.attributes[SiteAttributes.USER_CREATION]
+  );
+
+  locatedBy.value = getIndividual(
+    site.value.attributes[SiteAttributes.LOCATED_BY]
+  );
+
+  featureType.value = getSiteType(
+    site.value.attributes[SiteAttributes.FEATURE_TYPE]
+  );
+}
+
+/**
+ * Find an individual by it's id.
+ * @param id - The id of the individual.
+ */
+function getIndividual(id: number | undefined): IIndividual | undefined {
+  let individual = referencesStore.individuals.find((i) => {
+    return i.individualId === id;
+  });
+  return individual;
+}
+
+/**
+ * Find a site by it's id.
+ * @param id - The site id.
+ */
+function getSiteType(id: number | undefined): ISiteType | undefined {
+  let siteType = referencesStore.siteTypeList.find((st) => {
+    return st.siteTypeId === id;
+  });
+  return siteType;
+}
+
+onMounted(() => {
+  setFormValues();
+});
+
+watch(
+  [
+    (): Site => site.value,
+    (): boolean => referencesStore.isReferencesInitialized,
+  ],
+  () => {
+    setFormValues();
+  }
+);
 </script>
 
 <template>
@@ -64,12 +129,17 @@ const props = defineProps({
       />
 
       <FormSelect
-        v-model="site.attributes[SiteAttributes.FEATURE_TYPE]"
+        v-model="featureType"
         :label="SiteTypeRefs.FEATURE_TYPE"
         :options="referencesStore.siteTypeList"
+        option-title="siteTypeName"
         option-value="siteTypeId"
-        option-label="siteTypeName"
-        :edition-mode="editionMode"
+        :disable="!editionMode"
+        @update:model-value="
+          (siteType) =>
+            (site.attributes[SiteAttributes.FEATURE_TYPE] =
+              siteType?.siteTypeId)
+        "
       />
 
       <FormInput
@@ -85,13 +155,17 @@ const props = defineProps({
       />
 
       <FormSelect
-        v-model="site.attributes[SiteAttributes.LOCATED_BY]"
+        v-model="locatedBy"
         :label="SiteTypeRefs.LOCATED_BY"
         :options="referencesStore.individuals"
+        option-title="individualName"
         option-value="individualId"
-        option-label="individualName"
-        :edition-mode="editionMode"
-        no-padding
+        :disable="!editionMode"
+        @update:model-value="
+          (individual) =>
+            (site.attributes[SiteAttributes.LOCATED_BY] =
+              individual?.individualId)
+        "
       />
     </fieldset>
 
@@ -214,22 +288,31 @@ const props = defineProps({
       />
 
       <FormSelect
-        v-model="site.attributes[SiteAttributes.USER_CREATION]"
+        v-model="userCreation"
         :label="SiteTypeRefs.USER_CREATION"
         :options="referencesStore.individuals"
+        option-title="individualName"
         option-value="individualId"
-        option-label="individualName"
-        :edition-mode="editionMode"
+        :disable="!editionMode"
+        @update:model-value="
+          (individual) =>
+            (site.attributes[SiteAttributes.USER_CREATION] =
+              individual?.individualId)
+        "
       />
 
       <FormSelect
-        v-model="site.attributes[SiteAttributes.USER_MODIFICATION]"
+        v-model="userModification"
         :label="SiteTypeRefs.USER_MODIFICATION"
         :options="referencesStore.individuals"
+        option-title="individualName"
         option-value="individualId"
-        option-label="individualName"
-        :edition-mode="editionMode"
-        no-padding
+        :disable="!editionMode"
+        @update:model-value="
+          (individual) =>
+            (site.attributes[SiteAttributes.USER_MODIFICATION] =
+              individual?.individualId)
+        "
       />
     </fieldset>
   </q-form>

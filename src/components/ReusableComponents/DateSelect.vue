@@ -44,7 +44,7 @@ const model = defineModel<string>();
     color="accent"
     stack-label
     dense
-    :class="noPadding ? undefined : 'form-input-element'"
+    :class="noPadding ? undefined : 'bottom-margin'"
     mask="date"
     :rules="[validateDate]"
     :label="label"
@@ -70,7 +70,7 @@ const model = defineModel<string>();
 </template>
 
 <style lang="scss" scoped>
-.form-input-element {
+.bottom-margin {
   margin-bottom: 8px;
 }
 

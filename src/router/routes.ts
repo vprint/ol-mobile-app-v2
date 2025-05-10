@@ -8,7 +8,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
-        path: 'site=:siteId',
+        path: 'site/:siteId',
         name: SidePanelParameters.SITE,
         component: () =>
           import('../components/SiteComponent/SiteComponent.vue'),

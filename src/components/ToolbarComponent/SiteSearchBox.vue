@@ -98,7 +98,7 @@ onMounted(() => {
     label-color="grey-8"
     color="primary"
     bg-color="white"
-    popup-content-class="text-grey-8 test asm-select-list"
+    popup-content-class="text-grey-8 asm-select-list"
     class="searchbox-select app-font"
     input-debounce="0"
     rounded

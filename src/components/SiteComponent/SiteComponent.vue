@@ -12,36 +12,50 @@ import { useSiteStore } from 'src/stores/site-store';
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 import SiteForm from './SiteForm.vue';
 import SiteFooter from './SiteFooter.vue';
-import ValidationPopup from './ValidationPopup.vue';
+import ValidationPopup from '../PopupComponent/ValidationPopup.vue';
 
 // Others imports
-import { TransactionMode } from 'src/enums/transaction.enum';
+import { TransactionMode } from 'src/enums/map.enum';
 import { SiteAttributes } from 'src/enums/site-type.enums';
 
 // Type & interface
 
 // script
+interface SiteComponentProps {
+  siteId?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const props = defineProps<SiteComponentProps>();
 const siteStore = useSiteStore();
 const { site } = storeToRefs(siteStore);
 const editionMode = ref(false);
-const confirmDialogVisibility = ref(false);
+const isTransacting = ref(false);
+const validationPopupVisibility = ref(false);
 
 let originalSite = siteStore.site?.clone();
 
 /**
- * Show dialog window
+ * Show/hide the validation popup.
  */
-function openDialog(): void {
-  confirmDialogVisibility.value = true;
+function openValidationPopup(): void {
+  validationPopupVisibility.value = true;
 }
 
+/**
+ * Save modification on the site layer.
+ */
 async function updateSite(): Promise<void> {
   if (site.value) {
     enableEdition(false);
-    siteStore.wfsTransaction(
+    isTransacting.value = true;
+
+    await siteStore.wfsTransaction(
       site.value.getWFSFeature(),
       TransactionMode.UPDATE
     );
+
+    isTransacting.value = false;
   }
 }
 
@@ -61,7 +75,7 @@ function cancel(): void {
  */
 function enableEdition(active: boolean): void {
   editionMode.value = active;
-  siteStore.enableEdition(active);
+  siteStore.enableModification(active);
 }
 
 // watch for site change and update component
@@ -77,27 +91,33 @@ watch(
 </script>
 
 <template>
-  <SidePanelComponent v-if="site" @close="siteStore.closeSitePanel()">
-    <template #title>
-      {{ `${site.attributes[SiteAttributes.ENGLISH_NAME]} - ${site.siteId}` }}
-    </template>
+  <transition
+    appear
+    enter-active-class="animated fadeInLeftBig"
+    leave-active-class="animated fadeOutLeftBig"
+  >
+    <SidePanelComponent v-if="site" @close="siteStore.closeSitePanel()">
+      <template #title>
+        {{ `${site.attributes[SiteAttributes.ENGLISH_NAME]} - ${site.siteId}` }}
+      </template>
 
-    <template #content>
-      <SiteForm :site-feature="site" :edition-mode="editionMode"></SiteForm>
-    </template>
+      <template #content>
+        <SiteForm :site-feature="site" :edition-mode="editionMode"></SiteForm>
+      </template>
 
-    <template #floatingFooter>
-      <SiteFooter
-        v-model:edition-mode="editionMode"
-        v-model:site-feature="site"
-        @submit="openDialog()"
-        @cancel="cancel()"
-        @edit="enableEdition(true)"
-      ></SiteFooter>
-    </template>
-  </SidePanelComponent>
+      <template #floatingFooter>
+        <SiteFooter
+          v-model:edition-mode="editionMode"
+          v-model:is-transacting="isTransacting"
+          @submit="openValidationPopup()"
+          @cancel="cancel()"
+          @edit="enableEdition(true)"
+        ></SiteFooter>
+      </template>
+    </SidePanelComponent>
+  </transition>
   <ValidationPopup
-    v-model:active="confirmDialogVisibility"
+    v-model:active="validationPopupVisibility"
     @confirm="updateSite()"
   ></ValidationPopup>
 </template>

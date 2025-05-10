@@ -22,9 +22,9 @@ export interface ISite {
   [SiteAttributes.DATABASING_COMMENTS]: string | undefined;
   [SiteAttributes.CREATION_DATE]: string | undefined;
   [SiteAttributes.MODIFICATION_DATE]: string | undefined;
-  [SiteAttributes.USER_CREATION]: string | undefined;
-  [SiteAttributes.USER_MODIFICATION]: string | undefined;
-  [SiteAttributes.FEATURE_TYPE]: string | undefined;
+  [SiteAttributes.USER_CREATION]: number | undefined;
+  [SiteAttributes.USER_MODIFICATION]: number | undefined;
+  [SiteAttributes.FEATURE_TYPE]: number | undefined;
   [SiteAttributes.GROUND_VERIFIED_BY]: number | undefined;
   [SiteAttributes.MATERIAL_SANDSTONE]: boolean | undefined;
   [SiteAttributes.MATERIAL_PINK_SANDSTONE]: boolean | undefined;

@@ -1,91 +1,45 @@
-<script setup lang="ts">
-import { computed } from 'vue';
+<script setup lang="ts" generic="T">
+interface IFormSelectInterface<T> {
+  label: string;
+  options: T[];
+  optionTitle: keyof T & string;
+  optionValue: keyof T & string;
+  disable?: boolean;
+  disablePadding?: boolean;
+}
 
-const props = withDefaults(
-  defineProps<{
-    label: string;
-    options: unknown;
-    editionMode: boolean;
-    optionValue?: string;
-    optionLabel?: string;
-    multiple?: boolean;
-    noPadding?: boolean;
-  }>(),
-  {
-    optionValue: undefined,
-    optionLabel: undefined,
-    multiple: false,
-    noPadding: false,
-  }
-);
-
-const model = defineModel<string | number>();
-
-/**
- * Read properties of objets
- */
-const computedModel = computed({
-  get: () => {
-    if (props.optionLabel && props.optionValue && !props.multiple) {
-      // @ts-expect-error unknown type error
-      return props.options.find(
-        // @ts-expect-error unknown type error
-        (element: unknown) => element[props.optionValue] === model.value
-      );
-    } else {
-      return model.value;
-    }
-  },
-
-  set: (newValue) => {
-    if (props.optionValue) {
-      model.value = newValue[props.optionValue];
-    } else {
-      model.value = newValue;
-    }
-  },
+const props = withDefaults(defineProps<IFormSelectInterface<T>>(), {
+  disable: false,
+  disablePadding: false,
 });
+
+const model = defineModel<T>();
 </script>
 
 <template>
   <q-select
-    v-model="computedModel"
-    :options="(options as any)"
-    :label="label"
-    :readonly="!editionMode"
-    :hide-dropdown-icon="!editionMode"
-    :option-value="optionValue"
-    :option-label="optionLabel"
-    :multiple="multiple"
-    :use-chips="multiple"
-    :class="noPadding ? undefined : 'form-select-element'"
-    popup-content-class="asm-select-list"
+    v-model="model"
+    :readonly="props.disable"
     outlined
-    dense
     color="accent"
+    dense
+    :options="props.options"
+    :option-label="props.optionTitle"
+    :option-value="props.optionValue"
+    :label="props.label"
+    :class="props.disablePadding ? undefined : 'select-padding'"
+    popup-content-class="text-grey-8 asm-select-list"
+    :hide-dropdown-icon="disable"
     :menu-offset="[0, 5]"
-  >
-    <template v-if="multiple && optionLabel" #selected-item="scope">
-      <q-chip
-        square
-        dense
-        :removable="editionMode"
-        :tabindex="scope.tabindex"
-        class="q-ma-xs"
-        @remove="scope.removeAtIndex(scope.index)"
-      >
-        {{ scope.opt[optionLabel] }}
-      </q-chip>
-    </template>
-  </q-select>
+  />
 </template>
 
-<style lang="scss" scoped>
-.form-select-element {
+<style lang="scss">
+.select-padding {
   margin-bottom: 8px;
 }
 
-:deep.q-field {
+.q-field {
   &.q-field--readonly {
     &.q-field--outlined {
       .q-field__control {
