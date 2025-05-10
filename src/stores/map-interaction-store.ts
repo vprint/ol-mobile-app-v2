@@ -42,11 +42,6 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
     })
   );
 
-  const link = new Link({
-    params: ['x', 'y', 'z', 'r'],
-  });
-  link.set(InteractionSettings.NAME, Interactions.LINK);
-
   const scaleline = new ScaleLine({
     units: 'metric',
     text: true,
@@ -73,7 +68,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * @returns List of map interactions.
    */
   function getInteractions(): Interaction[] {
-    return [measurePlugin, drawPlugin, link];
+    return [measurePlugin, drawPlugin];
   }
 
   /**
@@ -122,7 +117,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * @param name - The interaction name.
    * @returns Return the interaction or undefined if not found.
    */
-  function getInteractionByName(name: string): Interaction | undefined {
+  function getInteractionByName<T = Interaction>(name: string): T | undefined {
     let findedElement: Interaction | undefined;
 
     mapStore.map.getInteractions().forEach((interaction) => {
@@ -131,7 +126,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
       }
     });
 
-    return findedElement;
+    return findedElement as T;
   }
 
   /**

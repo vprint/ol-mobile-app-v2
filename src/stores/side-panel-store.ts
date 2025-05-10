@@ -80,9 +80,6 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
           : undefined,
     });
 
-    const url = router.resolve(route).href;
-    window.history.replaceState(history.state, '', url);
-
     panelParameters.value = parameters;
     // If the the site panel is opened a custom panel padding is applied (see siteStore().updateMap())
     if (
