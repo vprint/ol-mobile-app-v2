@@ -15,7 +15,6 @@ export enum LayerIdentifier {
   OSM = 'osm',
   ESRI_SATELLITE = 'esri_world_Imagery',
   SITES = 'archsites',
-  TEST = 'TEST',
   ELEVATION = 'dem',
   SVF = 'svf',
   SVF_WMTS = 'svf_wmts',

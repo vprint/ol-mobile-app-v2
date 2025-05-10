@@ -1,5 +1,4 @@
 import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
-import { Interactions } from 'src/enums/interactions.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 import { Map } from 'ol';
 import VectorLayer from 'ol/layer/Vector';
@@ -12,13 +11,12 @@ import Style from 'ol/style/Style';
 import CircleStyle from 'ol/style/Circle';
 import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
-
-let vectorTileSelect: VectorTileSelect | undefined;
+import FeatureHover from './FeatureHover';
 
 class ExtendedVectorTileLayer extends VectorTileLayer {
-  public static instance: VectorTileSelect | null = null;
   private modifier: ExtendedModify | undefined;
-  private map: Map | undefined;
+  private vectorTileSelect: VectorTileSelect | undefined;
+  private featureHover: FeatureHover | undefined;
   private internalParams = {
     MODIFIER_NAME: 'modifier',
     SELECTOR_IS_FALSE:
@@ -43,15 +41,6 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
     return this as VectorTileLayer;
   }
 
-  public setMap(map: Map | null): void {
-    super.setMap(map);
-    this.map = map ?? undefined;
-
-    if (!!map && this.shouldEnableSelection()) {
-      ExtendedVectorTileLayer.initVectorTileSelect(map);
-    }
-  }
-
   // #region selection
 
   /**
@@ -59,64 +48,74 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
    * @param active - Should the selection be enabled / disabled ?
    */
   public enableSelection(active: boolean): void {
-    if (this.isSelectionEnabled()) {
-      vectorTileSelect?.setSelectionLayer(active ? this : undefined);
-      vectorTileSelect?.setActive(active);
+    const map = this.getMapInternal();
+
+    if (this.canCreateSelector() && active) {
+      this.initializeSelector(map, this);
     }
+
+    if (this.canCreateHover() && active) {
+      this.featureHover = FeatureHover.getInstance(this);
+      map?.addInteraction(this.featureHover);
+    }
+
+    this.vectorTileSelect?.setActive(active);
   }
 
   public getSelector(): VectorTileSelect | undefined {
-    this.isSelectionEnabled();
-    return vectorTileSelect;
+    this.isSelectionAllowed();
+    return this.vectorTileSelect;
   }
 
   /**
-   * Checks if the selection is enabled in the layer parameters.
+   * Initializes a VectorTileSelect only if necessary.
+   * * @param map - The OpenLayers map
+   */
+  private initializeSelector(map: Map | null, layer: VectorTileLayer): void {
+    if (!this.vectorTileSelect) {
+      this.vectorTileSelect = new VectorTileSelect({
+        selectableLayer: layer,
+        selectionStyle: new Style({
+          image: new CircleStyle({
+            radius: 15,
+            fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
+            stroke: new Stroke({ color: '#e820c0', width: 2 }),
+          }),
+        }),
+      });
+    }
+    map?.addInteraction(this.vectorTileSelect);
+  }
+
+  /**
+   * Checks if the selection is allowed in the layer parameters.
    * @returns - The selection mode.
    */
-  private isSelectionEnabled(): boolean {
+  private isSelectionAllowed(): boolean {
     if (!this.getLayerInformations().allowSelection) {
       console.warn(this.internalParams.SELECTOR_IS_FALSE);
     }
     return this.getLayerInformations().allowSelection ?? false;
   }
 
-  /**
-   * Determines if selection should be enabled on this layer given the user parameters.
-   * @returns a boolean.
-   */
-  private shouldEnableSelection(): boolean {
-    return !vectorTileSelect && !!this.getLayerInformations().allowSelection;
+  private canCreateSelector(): boolean {
+    const map = this.getMapInternal();
+    return this.isSelectionAllowed() && !!map && !this.vectorTileSelect;
   }
 
-  /**
-   * Initializes a VectorTileSelect only if necessary. VectorTileSelect is implemented as a singleton,
-   * which means only one instance of vectorTileSelect exists throughout the application.
-   * * @param map - The OpenLayers map
-   */
-  private static initVectorTileSelect(map: Map): void {
-    vectorTileSelect = new VectorTileSelect({
-      name: Interactions.SELECTOR,
-      selectionStyle: new Style({
-        image: new CircleStyle({
-          radius: 15,
-          fill: new Fill({ color: 'rgba(232,32,192,0.2)' }),
-          stroke: new Stroke({ color: '#e820c0', width: 2 }),
-        }),
-      }),
-    });
-
-    map.addInteraction(vectorTileSelect);
+  private canCreateHover(): boolean {
+    const map = this.getMapInternal();
+    return this.isSelectionAllowed() && !!map && !this.featureHover;
   }
 
   // #region modify
 
   /**
-   * Enable / disable the modification. This method does not use `setActive()` but a custom function to save memory.
+   * Enable / disable the modification.
    * @param active - Should the modifier be enabled / disabled ?
    */
   public enableModifier(active: boolean): void {
-    if (this.isEditionEnabled()) {
+    if (this.isModificationAllowed()) {
       if (active) this.createModifier();
       else this.removeModifier();
     }
@@ -124,6 +123,10 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
 
   private createModifier(): void {
     if (!this.modifier) {
+      const modificationLayer = new VectorLayer({
+        source: new VectorSource(),
+      });
+
       this.modifier = new ExtendedModify({
         name: `${this.getLayerInformations().title}_${
           this.internalParams.MODIFIER_NAME
@@ -133,11 +136,12 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
           fillColor: 'rgba(232,32,192,0.2)',
           strokeWidth: 2,
         }),
-        layer: new VectorLayer({
-          source: new VectorSource(),
-        }),
+        layer: modificationLayer,
       });
-      this.map?.addInteraction(this.modifier);
+
+      const map = this.getMapInternal();
+      map?.addInteraction(this.modifier);
+      map?.addLayer(modificationLayer);
     }
   }
 
@@ -149,20 +153,21 @@ class ExtendedVectorTileLayer extends VectorTileLayer {
   }
 
   public getModifier(): ExtendedModify | undefined {
-    this.isEditionEnabled();
-    return this.modifier;
+    if (this.isModificationAllowed()) {
+      return this.modifier;
+    }
   }
 
   /**
-   * Checks if the edition is enabled in the layer parameters.
+   * Checks if the edition is allowed in the layer parameters.
    * @returns - The edition mode.
    */
-  private isEditionEnabled(): boolean {
-    if (!this.getLayerInformations().allowEdition) {
+  private isModificationAllowed(): boolean {
+    if (!this.getLayerInformations().allowModification) {
       console.warn(this.internalParams.MODIFIER_IS_FALSE);
     }
 
-    return this.getLayerInformations().allowEdition ?? false;
+    return this.getLayerInformations().allowModification ?? false;
   }
 }
 

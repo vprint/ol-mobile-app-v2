@@ -13,8 +13,8 @@ import TileLayer from 'ol/layer/WebGLTile.js';
 import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
-import ExtendedVectorTileLayer from './ExtendedVectorTileLayer';
 import VectorTileLayer from 'ol/layer/VectorTile';
+import VectorTileInteraction from './VectorTileInteraction';
 
 /**
  * Add raster background layers to the map
@@ -79,7 +79,8 @@ export function addVectorTileLayers(
   layerList.forEach((layerParams) => {
     const vtLayer = getVectorTileLayer(layerParams);
     map.addLayer(vtLayer);
-    //if (layerParams.allowSelection) vtLayer.enableSelection(true);
+    if (layerParams.allowSelection)
+      map.addInteraction(new VectorTileInteraction(vtLayer));
   });
 }
 
@@ -88,7 +89,7 @@ function getVectorTileLayer(
 ): VectorTileLayer {
   return new VectorTileLayer({
     source: getVectorTileSource(layer),
-    style: layer.style,
+    //style: layer.style,
     zIndex: layer.zIndex,
     properties: {
       [LAYER_PROPERTIES_FIELD]: {

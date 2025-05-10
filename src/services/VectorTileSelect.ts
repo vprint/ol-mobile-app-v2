@@ -7,7 +7,11 @@ import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { getUid } from 'ol/util.js';
 import { MouseEvent } from 'src/enums/ui-event.enum';
-import { InteractionSettings, VectorTileRenderType } from 'src/enums/map.enum';
+
+export enum VectorTileRenderType {
+  HYBRID = 'hybrid',
+  VECTOR = 'vector',
+}
 
 /**
  * Vector tile select event type definition
@@ -17,9 +21,15 @@ export enum VectorTileSelectEventType {
 }
 
 export interface IOptions {
-  name: string;
+  /**
+   * The layer on which the selection should be made.
+   */
+  selectableLayer: VectorTileLayer;
+
+  /**
+   * The style to apply on the selected feature.
+   */
   selectionStyle?: Style;
-  selectableLayer?: VectorTileLayer;
 }
 
 /**
@@ -27,12 +37,12 @@ export interface IOptions {
  */
 export class VectorTileSelectEvent extends Event {
   public selected: FeatureLike[] | undefined;
-  private mapBrowserEvent: MapBrowserEvent<UIEvent>;
+  private mapBrowserEvent: MapBrowserEvent;
 
   constructor(
     type: VectorTileSelectEventType,
     selected: FeatureLike[] | undefined,
-    mapBrowserEvent: MapBrowserEvent<UIEvent>
+    mapBrowserEvent: MapBrowserEvent
   ) {
     super(type);
     this.selected = selected;
@@ -45,32 +55,63 @@ export class VectorTileSelectEvent extends Event {
  */
 class VectorTileSelect extends Interaction {
   public selectedFeatures = new Set<string>();
-  private selectableLayer: VectorTileLayer | undefined;
+  private selectableLayer: VectorTileLayer;
   private selectionStyle: Style;
-  private selectionLayer: VectorTileLayer;
+
+  /**
+   * The layer on which the selected feature is rendered.
+   */
+  private renderLayer: VectorTileLayer;
 
   constructor(options: IOptions) {
     super({
-      handleEvent: (evt: MapBrowserEvent<UIEvent>): boolean =>
+      handleEvent: (evt: MapBrowserEvent): boolean =>
         this.selectFeaturesAtPixel(evt),
     });
-    this.set(InteractionSettings.NAME, options.name);
-    this.selectableLayer = options.selectableLayer;
 
-    this.selectionStyle =
-      options.selectionStyle ??
-      new Style({
+    this.selectableLayer = options.selectableLayer;
+    this.renderLayer = this.createRenderingLayer();
+    this.setSelectionLayer(options.selectableLayer);
+    this.selectionStyle = this.createSelectionStyle(options.selectionStyle);
+  }
+
+  /**
+   * Initialize the component
+   * @param map - OpenLayers map
+   */
+  public setMap(map: Map | null): void {
+    super.setMap(map);
+    this.getMap()?.addLayer(this.renderLayer);
+  }
+
+  /**
+   * Create a selection style.
+   * @param userStyle - The user style.
+   * @returns A style to apply on selected feature.
+   */
+  private createSelectionStyle(userStyle: Style | undefined): Style {
+    let style = userStyle;
+    if (!style) {
+      style = new Style({
         image: new CircleStyle({
           radius: 10,
           fill: new Fill({ color: '#3399CC' }),
           stroke: new Stroke({ color: '#fff', width: 2 }),
         }),
       });
+    }
+    return style;
+  }
 
-    this.selectionLayer = new VectorTileLayer({
+  /**
+   * Create a layer that will render the selected features.
+   * @returns The rendering layer.
+   */
+  private createRenderingLayer(): VectorTileLayer {
+    return new VectorTileLayer({
       renderMode: VectorTileRenderType.VECTOR,
       zIndex: this.getSelectionZIndex(),
-      source: this.selectableLayer?.getSource() ?? undefined,
+      source: this.selectableLayer.getSource() ?? undefined,
       style: (feature: FeatureLike): Style | undefined => {
         const featureId = feature.getId()?.toString();
         if (featureId && this.selectedFeatures.has(featureId)) {
@@ -82,22 +123,13 @@ class VectorTileSelect extends Interaction {
   }
 
   /**
-   * Initialize the component
-   * @param map - OpenLayers map
-   */
-  public setMap(map: Map | null): void {
-    super.setMap(map);
-    this.getMap()?.addLayer(this.selectionLayer);
-  }
-
-  /**
    * Set the selection layer
    * @param layer - The layer where the feature should be selected
    */
-  public setSelectionLayer(layer: VectorTileLayer | undefined): void {
+  private setSelectionLayer(layer: VectorTileLayer): void {
     this.selectableLayer = layer;
-    this.selectionLayer.setSource(layer?.getSource() ?? null);
-    this.selectionLayer.setZIndex(this.getSelectionZIndex());
+    this.renderLayer.setSource(layer.getSource() ?? null);
+    this.renderLayer.setZIndex(this.getSelectionZIndex());
   }
 
   /**
@@ -106,7 +138,7 @@ class VectorTileSelect extends Interaction {
    * @param e - Map browser event
    * @returns - false to stop event propagation if selection is made, true otherwise
    */
-  private selectFeaturesAtPixel(e: MapBrowserEvent<UIEvent>): boolean {
+  private selectFeaturesAtPixel(e: MapBrowserEvent): boolean {
     let propagation = true;
 
     if (e.type === MouseEvent.CLICK.toString()) {
@@ -138,7 +170,7 @@ class VectorTileSelect extends Interaction {
    */
   public clear(): void {
     this.selectedFeatures.clear();
-    this.selectionLayer.changed();
+    this.renderLayer.changed();
   }
 
   /**
@@ -150,7 +182,7 @@ class VectorTileSelect extends Interaction {
     featuresId?.forEach((featureId) => {
       if (featureId) this.selectedFeatures.add(featureId);
     });
-    this.selectionLayer.changed();
+    this.renderLayer.changed();
   }
 
   /**
@@ -159,7 +191,7 @@ class VectorTileSelect extends Interaction {
    */
   private getSelectionZIndex(): number {
     let zIndex = Infinity;
-    const selectableLayerZIndex = this.selectableLayer?.getZIndex();
+    const selectableLayerZIndex = this.selectableLayer.getZIndex();
 
     if (selectableLayerZIndex) {
       zIndex = selectableLayerZIndex + 1;

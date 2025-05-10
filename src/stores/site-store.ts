@@ -1,17 +1,18 @@
 // Map imports
 import { Collection, Feature } from 'ol';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import VectorTileLayer from 'ol/layer/VectorTile';
 
 // Vue/Quasar imports
 import { onMounted, Ref, ref, watch } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 
 // Store imports
-import { useMapInteractionStore } from './map-interaction-store';
 import { useApiClientStore } from './api-client-store';
 import { ISidePanelParameters, useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 import { useDrawStore } from './draw-store';
+import { useMapInteractionStore } from './map-interaction-store';
 
 // Others imports
 import {
@@ -19,14 +20,16 @@ import {
   VectorTileSelectEventType,
 } from 'src/services/VectorTileSelect';
 import { Feature as GeoJSONFeature } from 'geojson';
+import WFSTransactionService from 'src/services/WFSTransactionService';
+import NotificationService from 'src/services/notifier/Notifier';
+import Site from 'src/model/site';
 
 // Enum / Interface / Model imports
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
 import { TransactionMode } from 'src/enums/map.enum';
-import Site from 'src/model/site';
-import WFSTransactionService from 'src/services/WFSTransactionService';
-import { LayerIdentifier } from 'src/enums/layers.enum';
-import ExtendedVectorTileLayer from 'src/services/ExtendedVectorTileLayer';
+import { LAYER_PROPERTIES_FIELD, LayerIdentifier } from 'src/enums/layers.enum';
+import { UserMessage } from 'src/enums/user-messages.enum';
+import VectorTileInteraction from 'src/services/VectorTileInteraction';
 
 const WFS_TRANSACTION_OPTIONS = {
   featureNS: 'ArchaeoSpringMap',
@@ -40,16 +43,14 @@ const WFS_TRANSACTION_OPTIONS = {
  * Store sites and and related functionnalities
  */
 export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
-  const mapInteractionStore = useMapInteractionStore();
   const drawStore = useDrawStore();
   const sidePanelStore = useSidePanelStore();
+  const { panelParameters } = storeToRefs(sidePanelStore);
   const mapStore = useMapStore();
-  const { isMapInteractionsInitialized } = storeToRefs(mapInteractionStore);
-  const transactor = new WFSTransactionService();
+  const mapInteractionStore = useMapInteractionStore();
+
   const site: Ref<Site | undefined> = ref();
-  const archsiteLayer = mapStore.getLayerById<ExtendedVectorTileLayer>(
-    LayerIdentifier.SITES
-  );
+  let archsiteLayer: VectorTileLayer | undefined;
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -76,8 +77,9 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    archsiteLayer?.getSelector()?.clear();
-    fitMap();
+    const vectorTileInteraction = _getVectorTileInteraction();
+    vectorTileInteraction?.getSelector()?.clear();
+    _fitMap();
   }
 
   /**
@@ -105,24 +107,30 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
         }),
       });
 
-      if (
-        sidePanelStore.panelParameters.parameterValue !==
-        newSite.siteId.toString()
-      ) {
+      if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
         openSitePanel(newSite.siteId);
       }
 
-      fitMap(feature);
+      _fitMap(feature);
       site.value = newSite;
-      archsiteLayer?.getSelector()?.setAsSelected([siteId.toString()]);
+      const vectorTileInteraction = _getVectorTileInteraction();
+      vectorTileInteraction?.getSelector()?.setAsSelected([siteId.toString()]);
     }
+  }
+
+  function _getVectorTileInteraction(): VectorTileInteraction | undefined {
+    return mapInteractionStore.getInteractionByName<VectorTileInteraction>(
+      `VECTOR_TILE_INTERACTION_NAME_${
+        archsiteLayer?.get(LAYER_PROPERTIES_FIELD).title
+      }`
+    );
   }
 
   /**
    * Fit the map to the selected site and set the style.
    * @param geoJsonFeature - Selected feature
    */
-  function fitMap(geoJsonFeature?: GeoJSONFeature): void {
+  function _fitMap(geoJsonFeature?: GeoJSONFeature): void {
     let feature: Feature | undefined = undefined;
 
     if (geoJsonFeature) {
@@ -141,17 +149,19 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @param active - Should the edition mode be enabled ?
    */
   function enableModification(active: boolean): void {
-    archsiteLayer?.enableModifier(active);
+    const vectorTileInteraction = _getVectorTileInteraction();
+    vectorTileInteraction?.getModifier()?.setActive(active);
     drawStore.setVisible(active);
 
     if (active && site.value) {
       const features = new Collection([site.value]);
-      archsiteLayer?.getModifier()?.addFeaturesToModifier(features);
+      const vectorTileInteraction = _getVectorTileInteraction();
+      vectorTileInteraction?.getModifier()?.addFeaturesToModifier(features);
     }
   }
 
   /**
-   * Execute a WFS-Transaction. A feature and a transaction mode shoud be give by the user.
+   * Execute a WFS-Transaction given a feature and a transaction mode.
    * @param wfsFeature - The feature.
    * @param mode - The transaction mode.
    */
@@ -159,66 +169,60 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     wfsFeature: Site,
     mode: TransactionMode
   ): Promise<void> {
-    const olTransaction = transactor.writeTransactionByMode(
-      mode,
+    const wfsService = new WFSTransactionService(
       wfsFeature,
+      mode,
       WFS_TRANSACTION_OPTIONS
     );
-    const xmlTransaction = new XMLSerializer().serializeToString(olTransaction);
-    const transactionResult = await useApiClientStore().postWFSTransaction(
-      xmlTransaction
+
+    const transaction = wfsService.getTransaction();
+
+    const transactionResult = await useApiClientStore().WFSTransaction(
+      transaction
     );
 
-    if (transactionResult)
-      transactor.checkResult(transactionResult, TransactionMode.UPDATE);
+    const isSuccess = wfsService.isSuccess(transactionResult);
+    _pushTransactionNotification(isSuccess, mode);
+  }
+
+  function _pushTransactionNotification(
+    isSuccess: boolean,
+    mode: TransactionMode
+  ): void {
+    const upperCaseMode = mode.toUpperCase() as keyof typeof UserMessage.WFS;
+    const result = isSuccess ? 'SUCCESS' : 'FAIL';
+
+    const title = UserMessage.GENERIC[result];
+    const text = UserMessage.WFS[upperCaseMode][result];
+
+    isSuccess
+      ? new NotificationService().pushSuccess(title, text)
+      : new NotificationService().pushError(title, text);
   }
 
   /**
-   * This function listen to site selection and set the site.
+   * Listen to site selection and set the site parameters.
+   * @param selection - The selection event
    */
-  function siteSelectionListener(): void {
-    archsiteLayer?.getSelector()?.on(
-      // @ts-expect-error type error
-      VectorTileSelectEventType.VECTOR_TILE_SELECT,
-      (e: VectorTileSelectEvent) => {
-        const features = e.selected;
+  function _manageSelection(selection: VectorTileSelectEvent): void {
+    const features = selection.selected;
+    const vectorTileInteraction = _getVectorTileInteraction();
 
-        if (features && features.length > 0) {
-          openSitePanel(features[0].getId() as number);
-          archsiteLayer
-            .getSelector()
-            ?.setAsSelected([features[0].getId()?.toString()]);
-        }
+    if (features && features.length > 0) {
+      openSitePanel(features[0].getId() as number);
 
-        if (!(features && features.length > 0) && site.value) {
-          const siteId = site.value.attributes.archsite_id;
-          archsiteLayer.getSelector()?.setAsSelected([siteId.toString()]);
-        }
-      }
-    );
-  }
-
-  /**
-   * watch for site change in URL
-   */
-  watch(
-    () => sidePanelStore.panelParameters,
-    (newRoute) => {
-      if (!_isSiteParams(newRoute)) {
-        clearSite();
-        return;
-      }
-
-      const siteId = parseInt(newRoute.parameterValue as string);
-      if (_siteIsSameAsPrevious(siteId)) {
-        return;
-      }
-
-      setSiteById(siteId);
+      vectorTileInteraction
+        ?.getSelector()
+        ?.setAsSelected([features[0].getId()?.toString()]);
     }
-  );
 
-  function _isSiteParams(newPanelParameters: ISidePanelParameters): boolean {
+    if (!(features && features.length > 0) && site.value) {
+      const siteId = site.value.attributes.archsite_id;
+      vectorTileInteraction?.getSelector()?.setAsSelected([siteId.toString()]);
+    }
+  }
+
+  function _isSiteRoute(newPanelParameters: ISidePanelParameters): boolean {
     return (
       newPanelParameters.location === SidePanelParameters.SITE &&
       !!newPanelParameters.parameterValue
@@ -230,32 +234,61 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   }
 
   /**
-   * Watch for interaction initialization
+   * Define the archSite layer if the map is defined and set the listener.
+   * @param isInitialized - Is the map initialized ?
    */
-  watch(
-    () => isMapInteractionsInitialized.value,
-    (newValue) => {
-      if (newValue) {
-        siteSelectionListener();
-      }
-    },
-    { immediate: true }
-  );
+  function initializeStore(): void {
+    archsiteLayer = mapStore.getLayerById<VectorTileLayer>(
+      LayerIdentifier.SITES
+    );
+
+    const vectorTileInteraction = _getVectorTileInteraction();
+
+    vectorTileInteraction
+      ?.getSelector()
+      // @ts-expect-error type error
+      ?.on(VectorTileSelectEventType.VECTOR_TILE_SELECT, _manageSelection);
+  }
 
   /**
-   * Initialize site
+   * Open the site panel if needed
    */
-  onMounted(async () => {
-    if (sidePanelStore.panelParameters.location === SidePanelParameters.SITE) {
-      openSitePanel(
-        parseInt(sidePanelStore.panelParameters.parameterValue as string)
-      );
+  function _openSiteIfNecessary(): void {
+    if (panelParameters.value.location === SidePanelParameters.SITE) {
+      openSitePanel(parseInt(panelParameters.value.parameterValue as string));
     }
-  });
+  }
+
+  /**
+   * Analyzes the value of the new route parameters.
+   * Clears the site if the route is not site-related. Does nothing if the new site is the same as the previous one.
+   * Sets the site if the ID is different from the previous one.
+   * @param route - The route parameters
+   */
+  function _analyzeRoutes(route: ISidePanelParameters): void {
+    if (!_isSiteRoute(route)) {
+      clearSite();
+      return;
+    }
+
+    const siteId = parseInt(route.parameterValue as string);
+    if (_siteIsSameAsPrevious(siteId)) {
+      return;
+    }
+
+    setSiteById(siteId);
+  }
+
+  /**
+   * watch for site change in URL
+   */
+  watch(panelParameters, _analyzeRoutes);
+  onMounted(_openSiteIfNecessary);
 
   return {
     site,
-    enableEdition: enableModification,
+    initializeStore,
+    enableModification,
     openSitePanel,
     updateSite,
     wfsTransaction,

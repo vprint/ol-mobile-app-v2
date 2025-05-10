@@ -5,8 +5,8 @@ import { Map } from 'ol';
 import { EventsKey } from 'ol/events';
 import StyleManager from '../StyleManager';
 import VectorLayer from 'ol/layer/Vector';
-import { unByKey } from 'ol/Observable';
 import { InteractionSettings } from 'src/enums/map.enum';
+import { unByKey } from 'ol/Observable';
 
 enum ModifyEvent {
   SELECT = 'select',
@@ -26,14 +26,15 @@ interface IModifyEvents {
  * Provide selection and modification methods for draws.
  */
 class ExtendedModify extends Interaction {
-  private selectInteraction: Select;
-  private modifyInteraction: Modify;
+  private selectInteraction: Select | undefined;
+  private modifyInteraction: Modify | undefined;
   private modificationLayer: VectorLayer;
   private style: StyleManager;
   private events: IModifyEvents = {};
 
   constructor(options: IOptions) {
     super();
+
     this.set(InteractionSettings.NAME, options.name);
     this.style = options.style;
     this.modificationLayer = options.layer;
@@ -49,8 +50,10 @@ class ExtendedModify extends Interaction {
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
-    map?.addInteraction(this.selectInteraction);
-    map?.addInteraction(this.modifyInteraction);
+    if (this.selectInteraction && this.modifyInteraction) {
+      map?.addInteraction(this.selectInteraction);
+      map?.addInteraction(this.modifyInteraction);
+    }
     this.addSelectionListener();
   }
 
@@ -59,10 +62,10 @@ class ExtendedModify extends Interaction {
    * @param selector - The select interaction.
    * @returns
    */
-  private createModify(feature?: Collection<Feature>): Modify {
+  private createModify(features?: Collection<Feature>): Modify {
     return new Modify({
       style: this.style.getEditionStyle(),
-      features: feature,
+      features,
       deleteCondition: (event): boolean => {
         return click(event);
       },
@@ -90,7 +93,11 @@ class ExtendedModify extends Interaction {
 
     if (!active) {
       this.unselectFeature();
-      this.removeModifyInteraction();
+    }
+
+    if (this.selectInteraction && this.modifyInteraction) {
+      this.selectInteraction.setActive(active);
+      this.modifyInteraction.setActive(active);
     }
   }
 
@@ -98,10 +105,10 @@ class ExtendedModify extends Interaction {
    * Enable modify interaction on selection.
    */
   private addSelectionListener(): void {
-    this.events.selection = this.selectInteraction.on(
+    this.events.selection = this.selectInteraction?.on(
       ModifyEvent.SELECT,
       () => {
-        this.addFeaturesToModifier(this.selectInteraction.getFeatures());
+        this.addFeaturesToModifier(this.selectInteraction?.getFeatures());
       }
     );
   }
@@ -110,9 +117,11 @@ class ExtendedModify extends Interaction {
    * Enable the modifier.
    * @param feature - The feature to modify.
    */
-  public addFeaturesToModifier(feature: Collection<Feature>): void {
+  public addFeaturesToModifier(
+    features: Collection<Feature> | undefined
+  ): void {
     this.removeModifyInteraction();
-    this.modifyInteraction = this.createModify(feature);
+    this.modifyInteraction = this.createModify(features);
     this.getMap()?.addInteraction(this.modifyInteraction);
   }
 
@@ -121,10 +130,11 @@ class ExtendedModify extends Interaction {
    */
   public removeFeature(): void {
     const feature = this.getFeature();
+
     if (feature) {
       this.modificationLayer.getSource()?.removeFeature(feature);
+      this.removeModifyInteraction();
     }
-    this.removeModifyInteraction();
   }
 
   /**
@@ -132,7 +142,7 @@ class ExtendedModify extends Interaction {
    * @returns The selected feature or undefined if no feature is selected
    */
   public getFeature(): Feature | undefined {
-    return this.selectInteraction.getFeatures().getArray()[0];
+    return this.selectInteraction?.getFeatures().getArray()[0];
   }
 
   /**
@@ -140,28 +150,39 @@ class ExtendedModify extends Interaction {
    * Doesn't remove the feature from the layer like `removeFeature`.
    */
   public unselectFeature(): void {
-    this.selectInteraction.getFeatures().clear();
+    this.selectInteraction?.getFeatures().clear();
   }
 
   /**
    * Remove the modify interaction from the map.
    */
   private removeModifyInteraction(): void {
-    this.modifyInteraction.dispose();
-    this.getMap()?.removeInteraction(this.modifyInteraction);
+    if (this.modifyInteraction) {
+      this.modifyInteraction.dispose();
+      this.getMap()?.removeInteraction(this.modifyInteraction);
+    }
+
+    if (this.events.selection) {
+      unByKey(this.events.selection);
+      this.events.selection = undefined;
+    }
   }
 
-  public dispose(): void {
-    if (this.events.selection) unByKey(this.events.selection);
-
-    this.selectInteraction.dispose();
-    this.modifyInteraction.dispose();
-
-    this.getMap()?.removeLayer(this.modificationLayer);
-    this.modificationLayer.dispose();
-
-    super.dispose();
+  public getLayer(): VectorLayer {
+    return this.modificationLayer;
   }
+
+  // public dispose(): void {
+  //   if (this.events.selection) unByKey(this.events.selection);
+
+  //   this.selectInteraction.dispose();
+  //   this.modifyInteraction.dispose();
+
+  //   this.getMap()?.removeLayer(this.modificationLayer);
+  //   this.modificationLayer.dispose();
+
+  //   super.dispose();
+  // }
 }
 
 export default ExtendedModify;
