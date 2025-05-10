@@ -13,7 +13,6 @@ import {
 } from 'src/enums/error-event.enum';
 import { Feature as GeoJSONFeature } from 'geojson';
 import ApiClient from '../services/ApiClient';
-import WFS, { TransactionResponse } from 'ol/format/WFS';
 
 export enum CacheEntry {
   SITE = 'site',
@@ -145,14 +144,8 @@ export const useApiClientStore = defineStore('apiClient', () => {
     }
   }
 
-  async function WFSTransaction(
-    data: string
-  ): Promise<TransactionResponse | undefined> {
-    const result = await apiClient.postData(
-      `${AppVariables.TRANSACTION_SERVER}`,
-      data
-    );
-    return new WFS().readTransactionResponse(result);
+  async function WFSTransaction(data: string): Promise<string | undefined> {
+    return await apiClient.postData(`${AppVariables.TRANSACTION_SERVER}`, data);
   }
 
   return {
@@ -163,6 +156,6 @@ export const useApiClientStore = defineStore('apiClient', () => {
     getProjectList,
     getSiteList,
     getSiteTypeList,
-    postWFSTransaction: WFSTransaction,
+    WFSTransaction,
   };
 });
