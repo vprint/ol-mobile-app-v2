@@ -11,7 +11,7 @@ function confirm(): void {
 
 <template>
   <q-dialog v-model="active" persistent>
-    <q-card>
+    <q-card class="popup-card">
       <q-card-section class="row items-center">
         <q-avatar icon="save" color="primary" text-color="white" />
         <span class="q-ml-sm app-font">{{
@@ -23,14 +23,15 @@ function confirm(): void {
         <q-btn
           v-close-popup
           class="buttons app-font"
-          flat
-          :label="UserMessage.GENERIC.CANCEL"
+          outline
+          rounded
           color="primary"
+          :label="UserMessage.GENERIC.CANCEL"
         />
         <q-space />
         <q-btn
           v-close-popup
-          flat
+          rounded
           class="buttons app-font"
           :label="UserMessage.GENERIC.INSERT"
           color="primary"
@@ -42,14 +43,19 @@ function confirm(): void {
 </template>
 
 <style lang="scss" scoped>
+.popup-card {
+  border-radius: 10px;
+}
+
 .popup-buttons {
+  width: 300px;
   margin: 8px;
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
 
   .buttons {
     min-width: 100px;
+    padding-inline: 20px;
   }
 }
 </style>
