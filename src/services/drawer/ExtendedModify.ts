@@ -26,15 +26,14 @@ interface IModifyEvents {
  * Provide selection and modification methods for draws.
  */
 class ExtendedModify extends Interaction {
-  private selectInteraction: Select | undefined;
+  private readonly selectInteraction: Select | undefined;
+  private readonly modificationLayer: VectorLayer;
   private modifyInteraction: Modify | undefined;
-  private modificationLayer: VectorLayer;
   private style: StyleManager;
   private events: IModifyEvents = {};
 
   constructor(options: IOptions) {
     super();
-
     this.set(InteractionSettings.NAME, options.name);
     this.style = options.style;
     this.modificationLayer = options.layer;
@@ -59,12 +58,10 @@ class ExtendedModify extends Interaction {
 
   /**
    * Create the modify interaction.
-   * @param selector - The select interaction.
-   * @returns
    */
   private createModify(features?: Collection<Feature>): Modify {
     return new Modify({
-      style: this.style.getEditionStyle(),
+      style: this.style.getSelectionStyle(),
       features,
       deleteCondition: (event): boolean => {
         return click(event);
@@ -115,7 +112,7 @@ class ExtendedModify extends Interaction {
 
   /**
    * Enable the modifier.
-   * @param feature - The feature to modify.
+   * @param features - The collection of features to modify.
    */
   public addFeaturesToModifier(
     features: Collection<Feature> | undefined
@@ -133,6 +130,7 @@ class ExtendedModify extends Interaction {
 
     if (feature) {
       this.modificationLayer.getSource()?.removeFeature(feature);
+      this.unselectFeature();
       this.removeModifyInteraction();
     }
   }
