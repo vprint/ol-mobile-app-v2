@@ -8,6 +8,7 @@ import GeometryManager from '../GeometryManagerComponent/GeometryManager.vue';
 
 // Store imports
 import { useMapStore } from 'src/stores/map-store';
+import { useSiteStore } from 'src/stores/site-store';
 
 // Map imports
 
@@ -16,6 +17,7 @@ import { useMapStore } from 'src/stores/map-store';
 // Script
 onMounted(() => {
   useMapStore().initializeMap();
+  useSiteStore().initializeStore();
 });
 </script>
 
@@ -26,13 +28,7 @@ onMounted(() => {
   </div>
 
   <router-view v-slot="{ Component }">
-    <transition
-      appear
-      enter-active-class="animated fadeInLeftBig"
-      leave-active-class="animated fadeOutLeftBig"
-    >
-      <component :is="Component" />
-    </transition>
+    <component :is="Component" />
   </router-view>
 </template>
 
@@ -65,10 +61,15 @@ onMounted(() => {
 
 .ol-attribution:not(.ol-collapsed) {
   border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .ol-attribution ul {
-  font-family: 'Playfair Display', serif;
+  font-family: 'Merriweather', serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-variation-settings: 'wdth' 100;
 }
 
 .ol-attribution button {

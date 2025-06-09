@@ -25,7 +25,6 @@ class TypedFeature<IAttributes extends object> extends Feature {
 
   /**
    * Set the attributes and setup the proxy to track attributes change.
-   * @param feature - The input feature.
    */
   private addProxy(): void {
     this._attributes = new Proxy(
@@ -37,7 +36,7 @@ class TypedFeature<IAttributes extends object> extends Feature {
   /**
    * Get the attributes handler. This manager allows to
    * change properties in both the class and the OL feature.
-   * @returns
+   * @returns - The proxy handler.
    */
   private getHandler(): ProxyHandler<IAttributes> {
     return {

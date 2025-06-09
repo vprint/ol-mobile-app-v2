@@ -51,6 +51,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   const site: Ref<Site | undefined> = ref();
   let archsiteLayer: VectorTileLayer | undefined;
+  let vectorTileInteraction: VectorTileInteraction | undefined;
 
   /**
    * Main site-store function that allow to set the working site by it's id.
@@ -77,8 +78,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    const vectorTileInteraction = _getVectorTileInteraction();
-    vectorTileInteraction?.getSelector()?.clear();
+    _getVectorTileInteraction()?.getSelector()?.clear();
     _fitMap();
   }
 
@@ -113,17 +113,25 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
       _fitMap(feature);
       site.value = newSite;
-      const vectorTileInteraction = _getVectorTileInteraction();
-      vectorTileInteraction?.getSelector()?.setAsSelected([siteId.toString()]);
+      _getVectorTileInteraction()
+        ?.getSelector()
+        ?.setAsSelected([siteId.toString()]);
     }
   }
 
   function _getVectorTileInteraction(): VectorTileInteraction | undefined {
-    return mapInteractionStore.getInteractionByName<VectorTileInteraction>(
-      `VECTOR_TILE_INTERACTION_NAME_${
+    if (!vectorTileInteraction) {
+      const interactionName = `VECTOR_TILE_INTERACTION_NAME_${
         archsiteLayer?.get(LAYER_PROPERTIES_FIELD).title
-      }`
-    );
+      }`;
+
+      vectorTileInteraction =
+        mapInteractionStore.getInteractionByName<VectorTileInteraction>(
+          interactionName
+        );
+    }
+
+    return vectorTileInteraction;
   }
 
   /**
@@ -149,19 +157,19 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * @param active - Should the edition mode be enabled ?
    */
   function enableModification(active: boolean): void {
-    const vectorTileInteraction = _getVectorTileInteraction();
-    vectorTileInteraction?.getModifier()?.setActive(active);
+    _getVectorTileInteraction()?.getModifier()?.setActive(active);
     drawStore.setVisible(active);
 
     if (active && site.value) {
       const features = new Collection([site.value]);
-      const vectorTileInteraction = _getVectorTileInteraction();
-      vectorTileInteraction?.getModifier()?.addFeaturesToModifier(features);
+      _getVectorTileInteraction()
+        ?.getModifier()
+        ?.addFeaturesToModifier(features);
     }
   }
 
   /**
-   * Execute a WFS-Transaction given a feature and a transaction mode.
+   * Execute a WFS-T request given a feature and a transaction mode.
    * @param wfsFeature - The feature.
    * @param mode - The transaction mode.
    */
@@ -206,19 +214,20 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function _manageSelection(selection: VectorTileSelectEvent): void {
     const features = selection.selected;
-    const vectorTileInteraction = _getVectorTileInteraction();
 
     if (features && features.length > 0) {
       openSitePanel(features[0].getId() as number);
 
-      vectorTileInteraction
+      _getVectorTileInteraction()
         ?.getSelector()
         ?.setAsSelected([features[0].getId()?.toString()]);
     }
 
     if (!(features && features.length > 0) && site.value) {
       const siteId = site.value.attributes.archsite_id;
-      vectorTileInteraction?.getSelector()?.setAsSelected([siteId.toString()]);
+      _getVectorTileInteraction()
+        ?.getSelector()
+        ?.setAsSelected([siteId.toString()]);
     }
   }
 
@@ -242,9 +251,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
       LayerIdentifier.SITES
     );
 
-    const vectorTileInteraction = _getVectorTileInteraction();
-
-    vectorTileInteraction
+    _getVectorTileInteraction()
       ?.getSelector()
       // @ts-expect-error type error
       ?.on(VectorTileSelectEventType.VECTOR_TILE_SELECT, _manageSelection);

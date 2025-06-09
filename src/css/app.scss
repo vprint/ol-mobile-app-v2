@@ -24,6 +24,21 @@
   font-family: 'Playfair Display', serif;
 }
 
+.app-alternative-font {
+  font-family: 'Merriweather', serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  font-variation-settings: 'wdth' 100;
+}
+
+.app-alternative-font-sans {
+  font-family: 'Merriweather Sans', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
 .asm-select-list {
   font-family: 'Playfair Display', serif;
   max-height: 300px;

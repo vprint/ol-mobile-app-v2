@@ -1,7 +1,7 @@
 import '../css/app.scss';
 
 // Map import
-import { Interaction, Link } from 'ol/interaction';
+import { Interaction } from 'ol/interaction';
 import { Attribution, Control, ScaleLine } from 'ol/control';
 
 // Vue/Quasar imports
@@ -20,7 +20,7 @@ import StyleManager from 'src/services/StyleManager';
 import { Interactions } from 'src/enums/interactions.enum';
 
 // Icon import
-import attributionIcon from '../../public/icons/ctrl-attrib.svg';
+import attributionIcon from '/icons/ctrl-attrib.svg';
 import { InteractionSettings } from 'src/enums/map.enum';
 
 /**
@@ -51,12 +51,12 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   scaleline.set(InteractionSettings.NAME, Interactions.SCALELINE);
 
   const attribution = new Attribution({
-    label: _getAttributionIcon(),
-    collapseLabel: _getAttributionIcon(),
+    label: _getCustomAttributionIcon(),
+    collapseLabel: _getCustomAttributionIcon(),
   });
   attribution.set(InteractionSettings.NAME, Interactions.ATTRIBUTION);
 
-  function _getAttributionIcon(): HTMLElement {
+  function _getCustomAttributionIcon(): HTMLElement {
     const span = document.createElement('span');
     span.className = 'attribution-icon-container';
     span.innerHTML = `<img src="${attributionIcon}" alt="Attribution" width="24" height="24">`;

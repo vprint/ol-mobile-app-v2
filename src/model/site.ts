@@ -73,14 +73,14 @@ class Site extends TypedFeature<ISite> {
       'yyyy-MM-dd HH:mm:ss',
       'yyyy/MM/dd'
     );
-    const formatedBoolean = Site.formatBoolean(formatedDate);
-    return formatedBoolean;
+    return Site.formatBoolean(formatedDate);
   }
 
   /**
    * Format the date to the application standard.
    * @param site - Site data.
-   * @returns Data with updated date.
+   * @param inputDateFormat - The input data format.
+   * @param outputDateFormat - The output data format.
    */
   private static formatDate(
     site: ISite,
