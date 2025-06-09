@@ -7,26 +7,26 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Map imports
 
 // Others imports
-import { GeometryType } from '../../enums/map.enum';
+import { GeometryType } from 'src/enums/map.enum';
 import { UserMessage } from 'src/enums/user-messages.enum';
 
 // Script
-const mes = useMeasureStore();
+const measureStore = useMeasureStore();
 
 const measureButtonList = [
   {
     icon: 'straighten',
-    action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
+    action: (): void => measureStore.addMeasure(GeometryType.LINE_STRING),
     tooltip: UserMessage.MEASURE.TOOLTIP.DISTANCE,
   },
   {
     icon: 'square_foot',
-    action: (): void => mes.addMeasure(GeometryType.POLYGON),
+    action: (): void => measureStore.addMeasure(GeometryType.POLYGON),
     tooltip: UserMessage.MEASURE.TOOLTIP.AREA,
   },
   {
     icon: 'delete',
-    action: (): void => mes.removeMeasure(),
+    action: (): void => measureStore.removeMeasure(),
     tooltip: UserMessage.MEASURE.TOOLTIP.DELETE,
   },
 ];
@@ -38,9 +38,13 @@ const measureButtonList = [
     icon="sym_s_straighten"
     :text-color="$q.platform.is.mobile ? 'primary' : undefined"
     class="app-button btn--no-hover"
-    @click="mes.abortCurrentMeasure()"
+    @click="measureStore.abortCurrentMeasure()"
   >
-    <q-menu v-model="mes.measureMenu" :offset="[0, 10]" class="menu-measure">
+    <q-menu
+      v-model="measureStore.measureMenu"
+      :offset="[0, 10]"
+      class="menu-measure"
+    >
       <q-list>
         <q-item
           v-for="(item, index) in measureButtonList"

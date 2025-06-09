@@ -9,30 +9,30 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Others imports
 
 // Interface / enums imports
-import { GeometryType } from '../../enums/map.enum';
+import { GeometryType } from 'src/enums/map.enum';
 import { UserMessage } from 'src/enums/user-messages.enum';
 
 // Script
-const mes = useMeasureStore();
+const measureStore = useMeasureStore();
 
 const mainList = [
   {
-    action: (): void => mes.abortCurrentMeasure(),
+    action: (): void => measureStore.abortCurrentMeasure(),
     text: 'Measure',
   },
 ];
 
 const measureItemList = [
   {
-    action: (): void => mes.addMeasure(GeometryType.LINE_STRING),
+    action: (): void => measureStore.addMeasure(GeometryType.LINE_STRING),
     text: UserMessage.MEASURE.DISTANCE,
   },
   {
-    action: (): void => mes.addMeasure(GeometryType.POLYGON),
+    action: (): void => measureStore.addMeasure(GeometryType.POLYGON),
     text: UserMessage.MEASURE.AREA,
   },
   {
-    action: (): void => mes.removeMeasure(),
+    action: (): void => measureStore.removeMeasure(),
     text: UserMessage.MEASURE.DELETE,
   },
 ];
