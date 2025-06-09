@@ -71,6 +71,7 @@ export function addVectorBackgroundLayers(
 /**
  * Add vector tile layers to the map
  * @param map - OpenLayers map
+ * @param layerList - The list of vector tiles layers.
  */
 export function addVectorTileLayers(
   map: Map,

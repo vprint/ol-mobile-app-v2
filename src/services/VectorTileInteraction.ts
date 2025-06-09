@@ -74,8 +74,14 @@ class VectorTileInteraction extends Interaction {
    * @param vectorTileLayer - The vector tile layer.
    */
   private initializeModifier(vectorTileLayer: VectorTileLayer): void {
+    let zIndex = vectorTileLayer.getZIndex();
+    if (zIndex) {
+      zIndex = zIndex + 1;
+    }
+
     const modificationLayer = new VectorLayer({
       source: new VectorSource(),
+      zIndex,
     });
 
     this.modifier = this.createModifier(vectorTileLayer, modificationLayer);
