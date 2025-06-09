@@ -16,7 +16,6 @@ interface IArrondissement {
   n_sq_co: number;
   surface: number;
   perimetre: number;
-  test: { yoo: string };
   geom_x_y: {
     lon: number;
     lat: number;
@@ -28,10 +27,11 @@ describe('Feature', () => {
     readFileSync(join(__dirname, 'data/arrondissements.geojson'), 'utf-8')
   );
 
-  const singleFeature = geojson.features[1];
+  const firstFeature = geojson.features[0];
+
   const feature = new Feature<IArrondissement>({
-    ...singleFeature.properties,
-    geometry: new GeoJSON().readGeometry(singleFeature.geometry),
+    ...firstFeature.properties,
+    geometry: new GeoJSON().readGeometry(firstFeature.geometry),
   });
 
   const properties = feature.getProperties();
