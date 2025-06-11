@@ -102,7 +102,7 @@ export default function EventEmitter<Events extends Record<EventType, unknown>>(
       if (handlers) {
         (handlers as EventHandlerList<Events[keyof Events]>)
           .slice()
-          .map((handler) => {
+          .forEach((handler) => {
             if (evt) handler(evt);
           });
       }
@@ -111,7 +111,7 @@ export default function EventEmitter<Events extends Record<EventType, unknown>>(
       if (handlers) {
         (handlers as WildCardEventHandlerList<Events>)
           .slice()
-          .map((handler) => {
+          .forEach((handler) => {
             if (evt) handler(type, evt);
           });
       }
