@@ -55,8 +55,7 @@ interface IDrawerEvents {
  */
 class ExtendedDraw extends Interaction {
   private drawInteraction: Draw | undefined;
-
-  private drawLayer: VectorLayer;
+  private readonly drawLayer: VectorLayer;
   private style: StyleManager;
 
   private events: IDrawerEvents = {
@@ -73,21 +72,24 @@ class ExtendedDraw extends Interaction {
   }
 
   /**
+   * Returns the layer on which the drawing is made.
+   * @returns - The drawing layer.
+   */
+  public getLayer(): VectorLayer {
+    return this.drawLayer;
+  }
+
+  /**
    * Initialize the component.
    * @param map - OpenLayers map
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
-    if (map) this.addDrawLayer(map);
-  }
 
-  /**
-   * Add the draw layer to the map.
-   * @param map - OpenLayers map
-   */
-  private addDrawLayer(map: Map): void {
-    map.addLayer(this.drawLayer);
-    this.drawLayer.setStyle(this.style.getStyle());
+    if (map) {
+      map.addLayer(this.drawLayer);
+      this.drawLayer.setStyle(this.style.getStyle());
+    }
   }
 
   /**
@@ -107,48 +109,56 @@ class ExtendedDraw extends Interaction {
    * @param type - Draw type
    */
   public createFeature(type: Type): void {
-    const drawSource = this.drawLayer.getSource();
-    this.drawInteraction = this.createDraw(drawSource, type);
-    this.getMap()?.addInteraction(this.drawInteraction);
-    this.manageEvent(this.drawInteraction);
+    this.removeDrawInteraction();
+    this.createDraw(type);
+    this.addEventsListeners();
   }
 
   /**
    * Create a new openlayers draw interaction.
-   * @param drawSource - The layer where the draw should be made.
    * @param type - The type of draw.
    * @returns - The draw interaction.
    */
-  private createDraw(
-    drawSource: VectorSource | null | undefined,
-    type: Type
-  ): Draw {
-    return new Draw({
+  private createDraw(type: Type): void {
+    const drawSource = this.drawLayer.getSource();
+
+    this.drawInteraction = new Draw({
       source: drawSource ? drawSource : new VectorSource(),
       style: this.style.getEditionStyle(),
       type: type,
     });
+
+    this.getMap()?.addInteraction(this.drawInteraction);
   }
 
   /**
-   * Manage the draw events.
-   * @param drawInteraction - Draw plugin
+   * Remove interaction and event listener.
    */
-  private manageEvent(drawInteraction: Draw): void {
-    this.events.start = drawInteraction.on(DrawEventType.DRAW_START, (evt) => {
-      this.dispatchEvent(
-        new DrawStartEvent(DrawEventType.DRAW_START, evt.feature)
-      );
-    });
+  public removeDrawInteraction(): void {
+    if (this.drawInteraction) {
+      this.getMap()?.removeInteraction(this.drawInteraction);
+      this.drawInteraction.dispose();
+    }
 
-    this.events.end = drawInteraction.on(DrawEventType.DRAW_END, () => {
-      this.dispatchEndEvent();
-    });
-
-    this.events.abort = drawInteraction.on(DrawEventType.DRAW_ABORT, () => {
-      this.dispatchAbortEvent();
-    });
+    this.removeEventsListeners();
   }
+
+  /**
+   * Clear the draw layer and deactivate draw interaction.
+   */
+  public removeAllFeatures(): void {
+    this.removeDrawInteraction();
+    this.drawLayer.getSource()?.clear();
+  }
+
+  /**
+   * Abort the current draw.
+   */
+  public abortDrawing(): void {
+    this.drawInteraction?.abortDrawing();
+  }
+
+  // #region Events
 
   /**
    * Throw a new draw end event.
@@ -157,7 +167,7 @@ class ExtendedDraw extends Interaction {
   private dispatchEndEvent(): void {
     setTimeout(() => {
       this.dispatchEvent(new DrawEndEvent(DrawEventType.DRAW_END));
-      this.deactivateDraw();
+      this.removeDrawInteraction();
     }, 50);
   }
 
@@ -166,43 +176,48 @@ class ExtendedDraw extends Interaction {
    */
   private dispatchAbortEvent(): void {
     this.dispatchEvent(new DrawAbortEvent(DrawEventType.DRAW_ABORT));
-    this.deactivateDraw();
+    this.removeDrawInteraction();
   }
 
+  // #region Listeners
+
   /**
-   * Remove interaction and event listener.
+   * Manage the draw events.
    */
-  public deactivateDraw(): void {
-    if (this.drawInteraction) {
-      this.drawInteraction.setActive(false);
+  private addEventsListeners(): void {
+    this.events.start = this.drawInteraction?.on(
+      DrawEventType.DRAW_START,
+      (evt) => {
+        this.dispatchEvent(
+          new DrawStartEvent(DrawEventType.DRAW_START, evt.feature)
+        );
+      }
+    );
+
+    this.events.end = this.drawInteraction?.on(DrawEventType.DRAW_END, () =>
+      this.dispatchEndEvent()
+    );
+
+    this.events.abort = this.drawInteraction?.on(DrawEventType.DRAW_ABORT, () =>
+      this.dispatchAbortEvent()
+    );
+  }
+
+  private removeEventsListeners(): void {
+    if (this.events.end) {
+      unByKey(this.events.end);
+      this.events.end = undefined;
     }
 
-    if (this.events.end) unByKey(this.events.end);
-    if (this.events.abort) unByKey(this.events.abort);
-    if (this.events.start) unByKey(this.events.start);
-  }
+    if (this.events.abort) {
+      unByKey(this.events.abort);
+      this.events.abort = undefined;
+    }
 
-  /**
-   * Clear the draw layer and deactivate draw interaction.
-   */
-  public removeAllFeatures(): void {
-    this.deactivateDraw();
-    this.drawLayer.getSource()?.clear();
-  }
-
-  /**
-   * Returns the layer on which the drawing is made.
-   * @returns - The drawing layer.
-   */
-  public getLayer(): VectorLayer {
-    return this.drawLayer;
-  }
-
-  /**
-   * Abort the current draw.
-   */
-  public abortDrawing(): void {
-    this.drawInteraction?.abortDrawing();
+    if (this.events.start) {
+      unByKey(this.events.start);
+      this.events.start = undefined;
+    }
   }
 }
 
