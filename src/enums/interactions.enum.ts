@@ -7,4 +7,5 @@ export enum Interactions {
   SCALELINE = 'ScaleLineInteraction',
   ATTRIBUTION = 'AttributionControl',
   MODIFIER = 'ModifierInteraction',
+  VECTOR_TILE = 'vectorTileInteraction',
 }

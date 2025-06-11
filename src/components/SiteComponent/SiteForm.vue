@@ -77,13 +77,18 @@ onMounted(() => {
 });
 
 watch(
-  [
-    (): Site => site.value,
-    (): boolean => referencesStore.isReferencesInitialized,
-  ],
+  (): Site => site.value,
   () => {
     setFormValues();
   }
+);
+
+watch(
+  (): boolean => referencesStore.isReferencesInitialized,
+  () => {
+    setFormValues();
+  },
+  { once: true }
 );
 </script>
 

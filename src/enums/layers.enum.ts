@@ -1,5 +1,4 @@
 import { AppVariables } from './app-variables.enum';
-import { Token } from './token.enums';
 import {
   IBackgroundLayerParameters,
   IRasterLayerParameters,
@@ -7,6 +6,7 @@ import {
 } from 'src/interface/ILayers';
 import { SiteAttributes } from './site-type.enums';
 import { getArchSiteStyleFunction } from './layer-style.enum';
+import { JAWGS_TOKEN } from './token.enums';
 
 export enum LayerIdentifier {
   JAWG_BASIC = 'jawg-streets',
@@ -33,7 +33,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayerParameters[] = [
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
     ],
-    token: Token.JAWGS,
+    token: JAWGS_TOKEN,
     zIndex: 0,
     visible: false,
     vector: true,
@@ -47,7 +47,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayerParameters[] = [
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
     ],
-    token: Token.JAWGS,
+    token: JAWGS_TOKEN,
     zIndex: 0,
     visible: false,
     vector: true,
@@ -61,7 +61,7 @@ export const BACKGROUND_LAYERS_SETTINGS: IBackgroundLayerParameters[] = [
     attribution: [
       '<a href="http://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank" class="jawg-attrib">&copy; <b>Jawg</b>Maps</a> | <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap is open data licensed under ODbL" target="_blank" class="osm-attrib">&copy; OSM contributors</a>',
     ],
-    token: Token.JAWGS,
+    token: JAWGS_TOKEN,
     zIndex: 0,
     visible: false,
     vector: true,
