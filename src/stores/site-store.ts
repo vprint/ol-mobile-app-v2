@@ -29,7 +29,8 @@ import { SidePanelParameters } from 'src/enums/side-panel.enum';
 import { TransactionMode } from 'src/enums/map.enum';
 import { LAYER_PROPERTIES_FIELD, LayerIdentifier } from 'src/enums/layers.enum';
 import { UserMessage } from 'src/enums/user-messages.enum';
-import VectorTileInteraction from 'src/services/VectorTileInteraction';
+import VectorTileInteractionDeprecated from 'src/services/VectorTileInteractionDeprecated';
+import { Interactions } from 'src/enums/interactions.enum';
 
 const WFS_TRANSACTION_OPTIONS = {
   featureNS: 'ArchaeoSpringMap',
@@ -40,21 +41,22 @@ const WFS_TRANSACTION_OPTIONS = {
 };
 
 /**
- * Store sites and and related functionnalities
+ * Store sites and related functionalities
  */
 export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
+  const mapStore = useMapStore();
   const drawStore = useDrawStore();
   const sidePanelStore = useSidePanelStore();
-  const { panelParameters } = storeToRefs(sidePanelStore);
-  const mapStore = useMapStore();
   const mapInteractionStore = useMapInteractionStore();
+
+  const { panelParameters } = storeToRefs(sidePanelStore);
 
   const site: Ref<Site | undefined> = ref();
   let archsiteLayer: VectorTileLayer | undefined;
-  let vectorTileInteraction: VectorTileInteraction | undefined;
+  let vectorTileInteraction: VectorTileInteractionDeprecated | undefined;
 
   /**
-   * Main site-store function that allow to set the working site by it's id.
+   * Main site-store function that allows to set the working site by its id.
    * @param newSiteId - Id of the new site.
    */
   async function openSitePanel(newSiteId: number): Promise<void> {
@@ -66,7 +68,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   }
 
   /**
-   * Close site panel and clear informations
+   * Close the site panel and clear information
    */
   function closeSitePanel(): void {
     clearSite();
@@ -83,8 +85,9 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   }
 
   /**
-   * Update site values. NewSite can be for exemple a modified clone of the original site.
-   * @param site - New site
+   * Update site values.
+   * The new site can be a modified clone of the original site.
+   * @param newSite - The new site
    */
   function updateSite(newSite: Site): void {
     site.value = newSite;
@@ -119,14 +122,16 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     }
   }
 
-  function _getVectorTileInteraction(): VectorTileInteraction | undefined {
+  function _getVectorTileInteraction():
+    | VectorTileInteractionDeprecated
+    | undefined {
     if (!vectorTileInteraction) {
-      const interactionName = `VECTOR_TILE_INTERACTION_NAME_${
+      const interactionName = `${Interactions.VECTOR_TILE}_${
         archsiteLayer?.get(LAYER_PROPERTIES_FIELD).title
       }`;
 
       vectorTileInteraction =
-        mapInteractionStore.getInteractionByName<VectorTileInteraction>(
+        mapInteractionStore.getInteractionByName<VectorTileInteractionDeprecated>(
           interactionName
         );
     }
@@ -154,7 +159,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Enable form modification and drawing.
-   * @param active - Should the edition mode be enabled ?
+   * @param active - Should the edition mode be enabled?
    */
   function enableModification(active: boolean): void {
     _getVectorTileInteraction()?.getModifier()?.setActive(active);
@@ -162,6 +167,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
     if (active && site.value) {
       const features = new Collection([site.value]);
+
       _getVectorTileInteraction()
         ?.getModifier()
         ?.addFeaturesToModifier(features);
@@ -244,7 +250,6 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Define the archSite layer if the map is defined and set the listener.
-   * @param isInitialized - Is the map initialized ?
    */
   function initializeStore(): void {
     archsiteLayer = mapStore.getLayerById<VectorTileLayer>(
