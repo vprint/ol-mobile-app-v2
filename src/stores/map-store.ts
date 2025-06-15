@@ -12,21 +12,20 @@ import { ref } from 'vue';
 import { defineStore } from 'pinia';
 
 // Store imports
-
 // Others imports
 import {
   BACKGROUND_LAYERS_SETTINGS,
   LAYER_PROPERTIES_FIELD,
   LayerIdentifier,
   RASTER_LAYERS_SETTINGS,
-  VECTOR_TILE_LAYERS_SETTINGS,
+  VECTOR_TILE_LAYERS_SETTINGS
 } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 import {
-  addVectorBackgroundLayers,
-  addRasterBackgroundLayers,
-  addVectorTileLayers,
   addOGCLayer,
+  addRasterBackgroundLayers,
+  addVectorBackgroundLayers,
+  addVectorTileLayers
 } from 'src/services/LayerImporter';
 import { MapSettings } from 'src/enums/map.enum';
 
@@ -48,12 +47,12 @@ export const useMapStore = defineStore('mapStore', () => {
   });
 
   /**
-   * Is the map initialized
+   * Is the map initialized?
    */
   const isMapInitialized = ref(false);
 
   /**
-   * Get a layer by it's id
+   * Get a layer by its id
    * @param id - layer id
    */
   function getLayerById<TypeOfLayer extends Layer>(
@@ -76,7 +75,7 @@ export const useMapStore = defineStore('mapStore', () => {
   }
 
   function _createMapLibreInstance(): MapLibreLayer {
-    const mapLibreLayer = new MapLibreLayer({
+    return new MapLibreLayer({
       mapLibreOptions: {},
       zIndex: 0,
       properties: {
@@ -87,7 +86,6 @@ export const useMapStore = defineStore('mapStore', () => {
         } as ILayerProperties,
       },
     });
-    return mapLibreLayer;
   }
 
   /**
@@ -115,7 +113,7 @@ export const useMapStore = defineStore('mapStore', () => {
   }
 
   /**
-   * Get layers with a given properties.
+   * Get layers with a given property.
    * @param property - The layer properties to inspect.
    * @param value - The value of the properties.
    * @returns - List of layers that match the filter.
@@ -141,7 +139,7 @@ export const useMapStore = defineStore('mapStore', () => {
   }
 
   /**
-   * Initialize MapLibre, add layer and then set `isMapInitialized` to true.
+   * Initialize MapLibre, add layers and then set `isMapInitialized` to true.
    */
   function initializeMap(): void {
     const mapLibreLayer = _createMapLibreInstance();
@@ -179,7 +177,7 @@ export const useMapStore = defineStore('mapStore', () => {
    * Adjusts the map view to display the given extent with optional zoom level and padding.
    * @param extent - The geographic extent to display.
    * @param newZoom - The zoom level to apply.
-   * @param padding - Padding (in pixels) to be cleared inside the view. Values in the array are top, right, bottom and left padding.
+   * @param padding - Padding (in pixels) to apply (top, right, bottom and left padding).
    */
   function _fitMapView(
     extent: Extent,

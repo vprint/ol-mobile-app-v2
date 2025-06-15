@@ -23,7 +23,7 @@ export type ILayerProperties = {
    */
   [LayerProperties.ALLOW_SELECTION]?: boolean;
   /**
-   * Is the layers dynamically adjusted after every zoom ?
+   * Are the layers dynamically adjusted after every zoom/move?
    */
   [LayerProperties.IS_DYNAMIC]?: boolean;
   /**

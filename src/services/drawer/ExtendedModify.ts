@@ -6,7 +6,6 @@ import { EventsKey } from 'ol/events';
 import StyleManager from '../StyleManager';
 import VectorLayer from 'ol/layer/Vector';
 import { InteractionSettings } from 'src/enums/map.enum';
-import { unByKey } from 'ol/Observable';
 
 enum ModifyEvent {
   SELECT = 'select',
@@ -111,15 +110,29 @@ class ExtendedModify extends Interaction {
   }
 
   /**
-   * Enable the modifier.
+   * Add new features to the modifier.
    * @param features - The collection of features to modify.
    */
   public addFeaturesToModifier(
     features: Collection<Feature> | undefined
   ): void {
     this.removeModifyInteraction();
+    this.pushFeaturesToModifyLayer(features);
     this.modifyInteraction = this.createModify(features);
     this.getMap()?.addInteraction(this.modifyInteraction);
+  }
+
+  private pushFeaturesToModifyLayer(
+    features: Collection<Feature> | undefined
+  ): void {
+    const layerSource = this.modificationLayer.getSource();
+    const currentFeatures = layerSource?.getFeatures() ?? [];
+
+    features?.forEach((feature) => {
+      if (!currentFeatures.includes(feature)) {
+        layerSource?.addFeature(feature);
+      }
+    });
   }
 
   /**
@@ -159,28 +172,11 @@ class ExtendedModify extends Interaction {
       this.modifyInteraction.dispose();
       this.getMap()?.removeInteraction(this.modifyInteraction);
     }
-
-    if (this.events.selection) {
-      unByKey(this.events.selection);
-      this.events.selection = undefined;
-    }
   }
 
   public getLayer(): VectorLayer {
     return this.modificationLayer;
   }
-
-  // public dispose(): void {
-  //   if (this.events.selection) unByKey(this.events.selection);
-
-  //   this.selectInteraction.dispose();
-  //   this.modifyInteraction.dispose();
-
-  //   this.getMap()?.removeLayer(this.modificationLayer);
-  //   this.modificationLayer.dispose();
-
-  //   super.dispose();
-  // }
 }
 
 export default ExtendedModify;

@@ -1,6 +1,5 @@
 import type { Type } from 'ol/geom/Geometry';
 import type { EventsKey } from 'ol/events';
-import { InteractionSettings } from 'src/enums/map.enum';
 import { DrawEventType } from 'src/enums/map.enum';
 import { Draw, Interaction } from 'ol/interaction';
 import { unByKey } from 'ol/Observable';
@@ -11,17 +10,17 @@ import StyleManager from '../StyleManager';
 import Event from 'ol/events/Event.js';
 
 /**
- * Draw abort event. This event is throwed after a completion of a draw.
+ * Draw abort event. This event is thrown after the completion of a draw.
  */
 export class DrawAbortEvent extends Event {}
 
 /**
- * Draw end event. This event is throwed after a completion of a draw.
+ * Draw end event. This event is thrown after the completion of a draw.
  */
 export class DrawEndEvent extends Event {}
 
 /**
- * Draw remove event. The removed feature id is returned by the event.
+ * Draw remove event. The event returns the removed feature id.
  */
 export class DrawRemoveEvent extends Event {
   public featureId: number | string;
@@ -33,7 +32,7 @@ export class DrawRemoveEvent extends Event {
 }
 
 /**
- * Draw start event. This event is emmited when a draw start. The feature is returned by the event.
+ * Draw start event. This event is emitted when a draw starts. The event returns the feature.
  */
 export class DrawStartEvent extends Event {
   public feature: Feature;
@@ -64,9 +63,8 @@ class ExtendedDraw extends Interaction {
     start: undefined,
   };
 
-  constructor(interactionName: string, style: StyleManager) {
+  constructor(style: StyleManager) {
     super();
-    this.set(InteractionSettings.NAME, interactionName);
     this.style = style;
     this.drawLayer = this.createDrawLayer();
   }
@@ -101,7 +99,7 @@ class ExtendedDraw extends Interaction {
       source: new VectorSource(),
       visible: true,
       zIndex: Infinity,
-    });
+    })
   }
 
   /**

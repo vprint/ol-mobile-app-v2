@@ -12,7 +12,6 @@ import { ref, watch } from 'vue';
 import { useMapStore } from './map-store';
 
 // Services imports
-import Measure from 'src/services/measure/Measure';
 import ExtendedDraw from 'src/services/drawer/ExtendedDraw';
 import StyleManager from 'src/services/StyleManager';
 
@@ -25,16 +24,13 @@ import { InteractionSettings } from 'src/enums/map.enum';
 
 /**
  * Store and manage mapInteraction.
- * Exemple : enable or disable the click interaction that allow to select site.
+ * Example: enable or disable the click interaction that allows to select site.
  */
 export const useMapInteractionStore = defineStore('mapInteraction', () => {
   const mapStore = useMapStore();
   const isMapInteractionsInitialized = ref(false);
 
-  const measurePlugin = new Measure(Interactions.MEASURE);
-
   const drawPlugin = new ExtendedDraw(
-    Interactions.DRAWER,
     new StyleManager({
       strokeColor: 'rgba(232,32,192,1)',
       fillColor: 'rgba(232,32,192,0.2)',
@@ -68,7 +64,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
    * @returns List of map interactions.
    */
   function getInteractions(): Interaction[] {
-    return [measurePlugin, drawPlugin];
+    return [drawPlugin];
   }
 
   /**
@@ -88,7 +84,6 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
       mapStore.map.addInteraction(interaction);
     });
 
-    measurePlugin.setActive(false);
     drawPlugin.setActive(false);
 
     // add the contols
@@ -100,7 +95,7 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
   }
 
   /**
-   * Activate or deactivate interaction by it's name.
+   * Activate or deactivate interaction by its name.
    * @param interactionName - Interaction name.
    * @param active - Activate or deactivate the interaction.
    */
@@ -143,7 +138,6 @@ export const useMapInteractionStore = defineStore('mapInteraction', () => {
 
   return {
     isMapInteractionsInitialized,
-    measurePlugin,
     drawPlugin,
     enableInteraction,
     getInteractionByName,

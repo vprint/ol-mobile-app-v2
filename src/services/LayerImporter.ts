@@ -14,7 +14,7 @@ import VectorTileSource from 'ol/source/VectorTile';
 import MVT from 'ol/format/MVT';
 import ImageLayer from 'ol/layer/Image';
 import VectorTileLayer from 'ol/layer/VectorTile';
-import VectorTileInteraction from './VectorTileInteraction';
+import VectorTileInteractionDeprecated from './VectorTileInteractionDeprecated';
 
 /**
  * Add raster background layers to the map
@@ -81,7 +81,7 @@ export function addVectorTileLayers(
     const vtLayer = getVectorTileLayer(layerParams);
     map.addLayer(vtLayer);
     if (layerParams.allowSelection)
-      map.addInteraction(new VectorTileInteraction(vtLayer));
+      map.addInteraction(new VectorTileInteractionDeprecated(vtLayer));
   });
 }
 
@@ -96,7 +96,7 @@ function getVectorTileLayer(
       [LAYER_PROPERTIES_FIELD]: {
         id: layer.id,
         title: layer.title,
-        allowEdition: layer.allowModification,
+        allowModification: layer.allowModification,
         allowSelection: layer.allowSelection,
         allowParameterChange: layer.allowParameterChange,
       } as ILayerProperties,

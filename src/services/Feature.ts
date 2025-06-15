@@ -40,19 +40,26 @@ class TypedFeature<IAttributes extends object> extends Feature {
    */
   private getHandler(): ProxyHandler<IAttributes> {
     return {
-      set: (target: IAttributes, key: PropertyKey, value: unknown): boolean => {
-        target[key as keyof IAttributes] =
-          value as IAttributes[keyof IAttributes];
-        super.set(key as string & keyof IAttributes, value);
-        return true;
-      },
+      set: this.setTypedAttribute(),
+      get: this.getTypedAttribute(),
+    };
+  }
 
-      get: (
-        target: IAttributes,
-        key: string
-      ): IAttributes[string & keyof IAttributes] => {
-        return this.get(key as string & keyof IAttributes);
-      },
+  private getTypedAttribute() {
+    return (
+      target: IAttributes,
+      key: string
+    ): IAttributes[string & keyof IAttributes] => {
+      return this.get(key as string & keyof IAttributes);
+    };
+  }
+
+  private setTypedAttribute() {
+    return (target: IAttributes, key: PropertyKey, value: unknown): boolean => {
+      target[key as keyof IAttributes] =
+        value as IAttributes[keyof IAttributes];
+      super.set(key as string & keyof IAttributes, value);
+      return true;
     };
   }
 
@@ -82,10 +89,6 @@ class TypedFeature<IAttributes extends object> extends Feature {
     if (this.isInitialized) Object.assign(this.attributes, props);
   }
 
-  /**
-   * Clone the feature.
-   * @returns A new instance of the feature.
-   */
   override clone(): TypedFeature<IAttributes> {
     return new TypedFeature<IAttributes>({
       ...this.getProperties(),
