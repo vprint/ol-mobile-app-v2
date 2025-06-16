@@ -6,8 +6,8 @@ import { computed, nextTick, onMounted, Ref, ref } from 'vue';
 
 // Store imports
 import { storeToRefs } from 'pinia';
-import { useSiteStore } from '../../stores/site-store';
-import { useReferencesStore } from '../../stores/references-store';
+import { useSiteStore } from 'stores/site-store';
+import { useReferencesStore } from 'stores/references-store';
 
 // Component imports
 import { QSelect } from 'quasar';
@@ -21,11 +21,11 @@ interface ISearchItem {
   value: number;
 }
 
-const sis = useSiteStore();
+const sitePanelStore = useSiteStore();
 const referenceStore = useReferencesStore();
-const { site } = storeToRefs(sis);
+const { site } = storeToRefs(sitePanelStore);
 const options: Ref<ISearchItem[]> = ref([]);
-const searchbox: Ref<QSelect | null> = ref(null);
+const searchBox: Ref<QSelect | null> = ref(null);
 const isFocused = ref(false);
 
 const searchList = computed<ISearchItem[]>(() =>
@@ -67,15 +67,15 @@ function filterFn(value: string, update: (fn: () => void) => void): void {
 }
 
 /**
- * Fetch and set site after selecting it in the list.
+ * Fetch and set a site after selecting it in the list.
  * @param site - The site entry.
  */
 function selectSite(site: ISearchItem | undefined): void {
   if (site) {
     nextTick(() => {
-      searchbox.value?.blur();
+      searchBox.value?.blur();
     });
-    sis.openSitePanel(site.value);
+    sitePanelStore.setSiteById(site.value);
   }
 }
 
@@ -89,7 +89,7 @@ onMounted(() => {
 
 <template>
   <q-select
-    ref="searchbox"
+    ref="searchBox"
     v-model="model"
     :menu-offset="[0, 10]"
     hide-selected
@@ -108,7 +108,7 @@ onMounted(() => {
     clearable
     @filter="filterFn"
     @update:model-value="selectSite"
-    @clear="sis.closeSitePanel()"
+    @clear="sitePanelStore.closeSitePanel()"
     @keyup.enter="selectSite(options[0])"
     @focus="isFocused = true"
     @blur="isFocused = false"

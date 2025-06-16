@@ -18,19 +18,19 @@ import {
   LAYER_PROPERTIES_FIELD,
   LayerIdentifier,
   RASTER_LAYERS_SETTINGS,
-  VECTOR_TILE_LAYERS_SETTINGS
+  VECTOR_TILE_LAYERS_SETTINGS,
 } from 'src/enums/layers.enum';
 import { ILayerProperties } from 'src/interface/ILayerParameters';
 import {
   addOGCLayer,
   addRasterBackgroundLayers,
   addVectorBackgroundLayers,
-  addVectorTileLayers
+  addVectorTileLayers,
 } from 'src/services/LayerImporter';
 import { MapSettings } from 'src/enums/map.enum';
 
 /**
- * This store provide the application map and functionnalities related to the map
+ * Provide the application map and related functionalities.
  */
 export const useMapStore = defineStore('mapStore', () => {
   /**
@@ -46,9 +46,6 @@ export const useMapStore = defineStore('mapStore', () => {
     }),
   });
 
-  /**
-   * Is the map initialized?
-   */
   const isMapInitialized = ref(false);
 
   /**
@@ -89,7 +86,7 @@ export const useMapStore = defineStore('mapStore', () => {
   }
 
   /**
-   * Adjusts the map view by applying a padding and optionally zooming to a feature.
+   * Adjusts the map view by applying padding and optionally zooming to a feature.
    * If no feature is provided, only applies padding to the current extent.
    * @param padding - Padding (in pixels) to be cleared inside the view. Values in the array are top, right, bottom and left padding.
    * @param feature - Optional feature to center and zoom the view on. If not provided, maintains the current map extent.
@@ -177,7 +174,7 @@ export const useMapStore = defineStore('mapStore', () => {
    * Adjusts the map view to display the given extent with optional zoom level and padding.
    * @param extent - The geographic extent to display.
    * @param newZoom - The zoom level to apply.
-   * @param padding - Padding (in pixels) to apply (top, right, bottom and left padding).
+   * @param padding - Padding (in pixels) to apply (top, right, bottom and left).
    */
   function _fitMapView(
     extent: Extent,
@@ -187,7 +184,7 @@ export const useMapStore = defineStore('mapStore', () => {
     map.getView().fit(extent, {
       maxZoom: newZoom,
       padding: padding,
-      duration: 250,
+      duration: 500,
       easing: easeOut,
     });
   }

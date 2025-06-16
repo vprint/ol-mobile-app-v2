@@ -8,7 +8,7 @@
 // Component import
 import SidePanelComponent from '../SidePanelComponent/SidePanelComponent.vue';
 import BackgroundSelector from './BackgroundSelector/BackgroundSelector.vue';
-import LayerControler from './LayerControler.vue';
+import LayerController from './LayerController.vue';
 
 // Others imports
 import { VueDraggable } from 'vue-draggable-plus';
@@ -53,10 +53,10 @@ function manageDragStart(): void {
           v-for="layer in layerManagerStore.layersEntry"
           :key="layer.layerId"
         >
-          <LayerControler
+          <LayerController
             :layer-id="layer.layerId"
             :is-dragging="isDragging"
-          ></LayerControler>
+          ></LayerController>
         </div>
       </VueDraggable>
     </template>

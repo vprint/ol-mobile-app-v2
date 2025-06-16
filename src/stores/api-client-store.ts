@@ -30,7 +30,7 @@ interface ApiRequestorCache {
   [CacheEntry.SITE_TYPE_LIST]: ISiteType[] | undefined;
 }
 
-const ns = useNotificationStore();
+const notificationStore = useNotificationStore();
 
 export const useApiClientStore = defineStore('apiClient', () => {
   const apiClient = new ApiClient();
@@ -64,12 +64,12 @@ export const useApiClientStore = defineStore('apiClient', () => {
   }
 
   /**
-   * Add error event listener and push a notification on error.
+   * Add an error event listener and push a notification on error.
    */
   function _addEventsListener(): void {
     Object.values(ApiEvents).forEach((event) => {
       apiClient.on(event, () =>
-        ns.pushError(errorMessages[event], errorTitles[event])
+        notificationStore.pushError(errorMessages[event], errorTitles[event])
       );
     });
   }
@@ -82,11 +82,9 @@ export const useApiClientStore = defineStore('apiClient', () => {
   async function getSiteById(
     siteId: number
   ): Promise<GeoJSONFeature | undefined> {
-    clearCacheByReference(CacheEntry.SITE);
-    _cache.site = await apiClient.getJSON<GeoJSONFeature>(
+    return await apiClient.getJSON<GeoJSONFeature>(
       `${AppVariables.FEATURE_SERVER}/data.archsites/items/${siteId}.json`
     );
-    return _cache.site;
   }
 
   /**
