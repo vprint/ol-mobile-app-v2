@@ -9,15 +9,17 @@ import GeometryManager from '../GeometryManagerComponent/GeometryManager.vue';
 // Store imports
 import { useMapStore } from 'src/stores/map-store';
 import { useSiteStore } from 'src/stores/site-store';
+import { useSelectionStore } from 'stores/selection-store';
 
 // Map imports
 
 // Others imports
 
 // Script
-onMounted(() => {
+onMounted(async () => {
   useMapStore().initializeMap();
-  useSiteStore().initializeStore();
+  await useSiteStore().initializeStore();
+  useSelectionStore().initializeSelection();
 });
 </script>
 

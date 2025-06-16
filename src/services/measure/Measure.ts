@@ -8,17 +8,17 @@ import { getArea, getLength } from 'ol/sphere';
 import { LineString, Polygon } from 'ol/geom';
 import { DrawEventType } from 'src/enums/map.enum';
 import { Positioning } from 'ol/Overlay';
-import { InteractionSettings } from 'src/enums/map.enum';
 import ExtendedDraw, {
   DrawRemoveEvent,
   DrawStartEvent,
 } from '../drawer/ExtendedDraw';
 import Event from 'ol/events/Event.js';
 import Map from 'ol/Map';
-import ExtendedModify from '../drawer/ExtendedModify';
 import VectorLayer from 'ol/layer/Vector';
-import StyleManager, { IStyleOptions } from '../StyleManager';
+import StyleManager from '../StyleManager';
 import FeatureHover from '../FeatureHover';
+import MeasureModifier from 'src/services/measure/MeasureModifier';
+import { LAYER_PROPERTIES_FIELD } from 'src/enums/layers.enum';
 
 /**
  * Measure event definition
@@ -42,7 +42,7 @@ interface IMeasureParameters {
 const MeasureParameters: IMeasureParameters = {
   TYPE: 'type',
   DRAW: 'draw',
-  MODIFY: 'modify',
+  MODIFY: 'measure_modify',
   MEASURE: 'measure',
   TOOLTIP_OFFSET: [15, 15],
   RAW_MEASURE: 'measure',
@@ -60,7 +60,7 @@ interface IMeasureEvents {
 }
 
 /**
- * Measure start event. This event is emmited when a draw start. The measure feature is returned by the event.
+ * Measure start event. This event is emitted when a draw starts. The event returns the measure feature.
  */
 export class MeasureStartEvent extends Event {
   public feature: Feature;
@@ -72,18 +72,19 @@ export class MeasureStartEvent extends Event {
 }
 
 /**
- * Measure end event. This event is throwed after a completion of a measure
+ * Measure end event. This event is thrown after the completion of a measure
  */
 export class MeasureEndEvent extends Event {}
 
 /**
  * This class provides measurement methods for distances (LineString) and areas (Polygon).
- * A tooltip is generated to show measurements in appropriate units (m, km for linestrings and m², km² for polygons).
+ * A tooltip is generated to show measurements in appropriate units (m, km for linestring and m², km² for polygons).
  */
 class Measure extends Interaction {
   public drawInteraction: ExtendedDraw;
-  public modifyInteraction: ExtendedModify;
-  private featureHover: FeatureHover;
+  public modifyInteraction: MeasureModifier;
+
+  private readonly featureHover: FeatureHover;
   private events: IMeasureEvents = {
     end: undefined,
     abort: undefined,
@@ -91,21 +92,17 @@ class Measure extends Interaction {
     remove: undefined,
   };
 
-  private measureStyle: IStyleOptions = {
+  private readonly measureStyle = new StyleManager({
     strokeColor: 'rgba(255, 180, 25, 1)',
     fillColor: 'rgba(255, 180, 25, 0.2)',
     strokeWidth: 2,
     lineDash: [2, 6],
-  };
+  });
 
-  constructor(interactionName: string) {
+  constructor() {
     super();
-    this.set(InteractionSettings.NAME, interactionName);
-    this.drawInteraction = this.createDraw(interactionName);
-    this.modifyInteraction = this.createModify(
-      interactionName,
-      this.drawInteraction.getLayer()
-    );
+    this.drawInteraction = this.createDraw();
+    this.modifyInteraction = this.createModify(this.drawInteraction.getLayer());
     this.featureHover = this.getFeatureHover();
   }
 
@@ -115,13 +112,14 @@ class Measure extends Interaction {
    */
   public setMap(map: Map | null): void {
     super.setMap(map);
+
     if (map) {
       this.getMap()?.addInteraction(this.drawInteraction);
       this.getMap()?.addInteraction(this.modifyInteraction);
       this.getMap()?.addInteraction(this.featureHover);
     }
 
-    this.addEventsListeners(this.drawInteraction);
+    this.addEventsListeners();
   }
 
   private getFeatureHover(): FeatureHover {
@@ -132,18 +130,28 @@ class Measure extends Interaction {
 
   /**
    * Returns a draw interaction.
-   * @param interactionName - Unique identifier of the interaction.
-   * @returns Enhanced draw interaction.
+   * @returns The draw interaction.
    */
-  private createDraw(interactionName: string): ExtendedDraw {
-    return new ExtendedDraw(
-      `${interactionName}-${MeasureParameters.DRAW}`,
-      new StyleManager(this.measureStyle)
-    );
+  private createDraw(): ExtendedDraw {
+    const draw = new ExtendedDraw(this.measureStyle);
+
+    draw.getLayer().set(LAYER_PROPERTIES_FIELD, {
+      id: 'internal-measure-layer',
+      allowSelection: true,
+    });
+
+    return draw;
   }
 
   /**
-   * Add measure interaction to the map.
+   * Get the measure layer.
+   */
+  public getLayer(): VectorLayer {
+    return this.drawInteraction.getLayer();
+  }
+
+  /**
+   * Add measure feature to the map.
    * @param type - Measure type
    */
   public createMeasureFeature(type: IMeasureType): void {
@@ -160,6 +168,31 @@ class Measure extends Interaction {
     this.featureHover.setActive(false);
   }
 
+  public selectMeasure(feature: Feature): void {
+    this.modifyInteraction.addFeature(feature);
+  }
+
+  public unselectMeasure(): void {
+    this.modifyInteraction.unselectFeature();
+  }
+
+  /**
+   * Remove a measure and the associated overlay from the map
+   */
+  public removeSelectedMeasure(): void {
+    const selectedMeasure = this.modifyInteraction.getFeature();
+    const featureId = getUid(selectedMeasure);
+
+    if (selectedMeasure) {
+      this.removeOverlayById(featureId);
+      this.unselectMeasure();
+      this.drawInteraction
+        .getLayer()
+        .getSource()
+        ?.removeFeature(selectedMeasure);
+    }
+  }
+
   /**
    * Abort the current measure
    */
@@ -170,31 +203,15 @@ class Measure extends Interaction {
   // #region Modify
 
   /**
-   * Returns a modify interaction for feature editing.
-   * @param interactionName - Unique identifier of the interaction.
-   * @param draw - The target layer.
+   * Returns a modify interaction for feature edition.
+   * @param drawLayer - The target layer.
    * @returns Enhanced Modify interaction.
    */
-  private createModify(
-    interactionName: string,
-    drawLayer: VectorLayer
-  ): ExtendedModify {
-    return new ExtendedModify({
-      name: `${interactionName}-${MeasureParameters.MODIFY}`,
-      style: new StyleManager(this.measureStyle),
+  private createModify(drawLayer: VectorLayer): MeasureModifier {
+    return new MeasureModifier({
+      style: this.measureStyle,
       layer: drawLayer,
     });
-  }
-
-  /**
-   * Remove a measure and the associated overlay from the map
-   */
-  public removeSelectedMeasure(): void {
-    const selectedMeasure = this.modifyInteraction.getFeature();
-    if (selectedMeasure) {
-      this.removeOverlayById(getUid(selectedMeasure));
-      this.modifyInteraction.removeFeature();
-    }
   }
 
   // #region Tooltip
@@ -220,7 +237,7 @@ class Measure extends Interaction {
 
   /**
    * Update the tooltip position and values according to the draw.
-   * @param feature - Drawed feature
+   * @param feature - Drew feature
    * @param tooltip - Overlay
    */
   private updateTooltip(feature: Feature, tooltip: Overlay): void {
@@ -280,7 +297,7 @@ class Measure extends Interaction {
 
   /**
    * This function set the measure text to the overlay.
-   * @param htmlElement - Overlay html element
+   * @param htmlElement - Overlay HTML element
    * @param feature - Draw feature
    */
   private setTooltipText(
@@ -294,7 +311,7 @@ class Measure extends Interaction {
 
   /**
    * Calculate measure for a given polygon.
-   * @param geom - Input geometry
+   * @param feature - The input feature
    */
   private calculateMeasure(feature: Feature): string {
     let measure = '';
@@ -302,25 +319,38 @@ class Measure extends Interaction {
 
     switch (geom?.getType()) {
       case GeometryType.POLYGON:
-        feature.set(
-          MeasureParameters.FORMATED_MEASURE,
-          this.formatArea(geom as Polygon)
-        );
-        feature.set(MeasureParameters.RAW_MEASURE, getArea(geom));
+        this.setPolygonArea(feature);
         measure = feature.get(MeasureParameters.FORMATED_MEASURE);
         break;
 
       case GeometryType.LINE_STRING:
-        feature.set(
-          MeasureParameters.FORMATED_MEASURE,
-          this.formatLength(geom as LineString)
-        );
-        feature.set(MeasureParameters.RAW_MEASURE, getLength(geom));
+        this.setLineStringArea(feature);
         measure = feature.get(MeasureParameters.FORMATED_MEASURE);
         break;
     }
-
     return measure;
+  }
+
+  private setPolygonArea(feature: Feature): void {
+    const geom = feature.getGeometry();
+    if (geom) {
+      feature.set(
+        MeasureParameters.FORMATED_MEASURE,
+        this.formatArea(geom as Polygon)
+      );
+      feature.set(MeasureParameters.RAW_MEASURE, getArea(geom));
+    }
+  }
+
+  private setLineStringArea(feature: Feature): void {
+    const geom = feature.getGeometry();
+    if (geom) {
+      feature.set(
+        MeasureParameters.FORMATED_MEASURE,
+        this.formatLength(geom as LineString)
+      );
+      feature.set(MeasureParameters.RAW_MEASURE, getLength(geom));
+    }
   }
 
   /**
@@ -342,7 +372,7 @@ class Measure extends Interaction {
 
   /**
    * Format area output.
-   * @param polygon - The polygone
+   * @param polygon - The polygon
    * @returns Formatted area
    */
   private formatArea(polygon: Polygon): string {
@@ -360,24 +390,22 @@ class Measure extends Interaction {
   // #region Events
 
   /**
-   * Manage draw-end and draw-abort event.
-   * @param drawInteraction - Draw plugin
+   * Manage the draw-end and draw-abort event.
    */
-  private addEventsListeners(drawInteraction: ExtendedDraw): void {
-    this.events.end = this.getEndEvent(drawInteraction);
-    this.events.start = this.getStartEvent(drawInteraction);
-    this.events.abort = this.getAbortEvent(drawInteraction);
-    this.events.remove = this.getRemoveEventListener(drawInteraction);
+  private addEventsListeners(): void {
+    this.events.end = this.getEndEvent();
+    this.events.start = this.getStartEvent();
+    this.events.abort = this.getAbortEvent();
+    this.events.remove = this.getRemoveEventListener();
   }
 
   /**
    * Get the draw start event.
-   * @param draw - The draw interaction.
    * @returns - The draw start event.
    */
-  private getStartEvent(draw: ExtendedDraw): EventsKey | EventsKey[] {
-    return draw.on(
-      // @ts-expect-error type error due to custom event.
+  private getStartEvent(): EventsKey | EventsKey[] {
+    return this.drawInteraction.on(
+      // @ts-expect-error type error due to a custom event.
       DrawEventType.DRAW_START,
       (evt: DrawStartEvent) => {
         this.modifyInteraction.setActive(false);
@@ -397,12 +425,11 @@ class Measure extends Interaction {
 
   /**
    * Get the draw end event.
-   * @param draw - The draw interaction.
    * @returns - The draw end event.
    */
-  private getEndEvent(draw: ExtendedDraw): EventsKey | EventsKey[] {
-    return draw.on(
-      // @ts-expect-error type error due to custom event
+  private getEndEvent(): EventsKey | EventsKey[] {
+    return this.drawInteraction.on(
+      // @ts-expect-error type error due to a custom event
       DrawEventType.DRAW_END,
       () => {
         this.dispatchMeasureEndEvent();
@@ -412,12 +439,11 @@ class Measure extends Interaction {
 
   /**
    * Get the draw abort event.
-   * @param draw - The draw interaction.
    * @returns - The draw abort event.
    */
-  private getAbortEvent(draw: ExtendedDraw): EventsKey | EventsKey[] {
-    return draw.on(
-      // @ts-expect-error type error due to custom event
+  private getAbortEvent(): EventsKey | EventsKey[] {
+    return this.drawInteraction.on(
+      // @ts-expect-error type error due to a custom event
       DrawEventType.DRAW_ABORT,
       () => {
         this.dispatchMeasureEndEvent();
@@ -428,12 +454,11 @@ class Measure extends Interaction {
 
   /**
    * Get the remove event listener.
-   * @param draw - The draw interaction.
    * @returns The remove event listener.
    */
-  private getRemoveEventListener(draw: ExtendedDraw): EventsKey | EventsKey[] {
-    return draw.on(
-      // @ts-expect-error type error due to custom event
+  private getRemoveEventListener(): EventsKey | EventsKey[] {
+    return this.drawInteraction.on(
+      // @ts-expect-error type error due to a custom event
       DrawEventType.DRAW_REMOVE,
       (evt: DrawRemoveEvent) => {
         this.removeOverlayById(evt.featureId);
