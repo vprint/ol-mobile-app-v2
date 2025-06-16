@@ -12,8 +12,7 @@ import { RouteRecordName, useRoute, useRouter } from 'vue-router';
 // Others imports
 import _ from 'lodash';
 import { useMapStore } from './map-store';
-import { Feature } from 'ol';
-import { SidePanelParameters } from 'src/enums/side-panel.enum';
+import { useSiteStore } from 'stores/site-store';
 
 export interface ISidePanelParameters {
   location: RouteRecordName | undefined;
@@ -22,7 +21,7 @@ export interface ISidePanelParameters {
 }
 
 /**
- * This store manage the right side panel and provide related functionnalities.
+ * This store manages the right side panel and provides related functionalities.
  */
 export const useSidePanelStore = defineStore('sidePanel', () => {
   const mapStore = useMapStore();
@@ -42,7 +41,7 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   });
 
   /**
-   * This function analyze the route settings to set the panelParameters.
+   * This function analyzes the route settings to set the panelParameters.
    */
   function getSidePanelParametersFromRoute(): ISidePanelParameters {
     const key = Object.keys(route.params)[0] as string | undefined;
@@ -57,60 +56,41 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
   /**
    * Close the panel parameters
    */
-  function closePanel(): void {
-    router.push({ name: 'home' });
-
-    panelParameters.value = {
-      location: 'home',
-    };
-
-    if (isOpen.value) setPanelPadding(false);
+  async function closePanel(): Promise<void> {
+    _setPanelPadding(false);
+    await router.push({ name: 'home' });
   }
 
   /**
    * Open the side panel with the given parameters
    * @param parameters - Panel parameters
    */
-  function openPanel(parameters: ISidePanelParameters): void {
-    router.push({
+  async function openPanel(parameters: ISidePanelParameters): Promise<void> {
+    if (!isOpen.value) _setPanelPadding(true);
+    await _changeRoute(parameters);
+  }
+
+  async function _changeRoute(parameters: ISidePanelParameters): Promise<void> {
+    await router.push({
       name: parameters.location,
       params:
         parameters.parameterName && parameters.parameterValue
           ? { [parameters.parameterName]: parameters.parameterValue }
           : undefined,
     });
-
-    panelParameters.value = parameters;
-    // If the the site panel is opened a custom panel padding is applied (see siteStore().updateMap())
-    if (
-      !isOpen.value &&
-      panelParameters.value.location !== SidePanelParameters.SITE
-    ) {
-      setPanelPadding(true);
-    }
-  }
-
-  /**
-   * Open or close the side panel
-   * @param open - Should the side panel be opened or closed ?
-   */
-  function setActive(open: boolean, parameters?: ISidePanelParameters): void {
-    if (!open) closePanel();
-    else if (parameters) openPanel(parameters);
-    isOpen.value = open;
   }
 
   /**
    * Set the panel padding and zoom to the feature.
-   * @param shouldOpen - Should the panel be opened ?
-   * @param feature - The optional feature to center on.
+   * @param shouldOpen - Should the panel be opened?
    */
-  function setPanelPadding(shouldOpen: boolean, feature?: Feature): void {
+  function _setPanelPadding(shouldOpen: boolean): void {
     const openPadding = [0, -400, 0, 0];
     const closePadding = [0, 0, 0, -400];
+
     mapStore.setPaddingAndExtent(
       shouldOpen ? openPadding : closePadding,
-      feature
+      useSiteStore().site
     );
   }
 
@@ -124,13 +104,15 @@ export const useSidePanelStore = defineStore('sidePanel', () => {
       if (!_.isEqual(newPanelParameters, panelParameters.value)) {
         panelParameters.value = newPanelParameters;
       }
+
+      isOpen.value = newPanelParameters.location !== 'home';
     }
   );
 
   return {
     isOpen,
     panelParameters,
-    setActive,
-    setPanelPadding,
+    openPanel,
+    closePanel,
   };
 });

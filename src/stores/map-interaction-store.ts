@@ -23,6 +23,7 @@ import attributionIcon from '/icons/ctrl-attrib.svg';
 import { InteractionSettings } from 'src/enums/map.enum';
 
 /**
+ * TODO: décomissionner le store.
  * Store and manage mapInteraction.
  * Example: enable or disable the click interaction that allows to select site.
  */

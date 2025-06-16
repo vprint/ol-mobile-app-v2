@@ -9,9 +9,11 @@ import { useMeasureStore } from 'src/stores/measure-store';
 // Others imports
 import { GeometryType } from 'src/enums/map.enum';
 import { UserMessage } from 'src/enums/user-messages.enum';
+import { ref } from 'vue';
 
 // Script
 const measureStore = useMeasureStore();
+const measureMenu = ref(false);
 
 const measureButtonList = [
   {
@@ -40,11 +42,7 @@ const measureButtonList = [
     class="app-button btn--no-hover"
     @click="measureStore.abortCurrentMeasure()"
   >
-    <q-menu
-      v-model="measureStore.measureMenu"
-      :offset="[0, 10]"
-      class="menu-measure"
-    >
+    <q-menu v-model="measureMenu" :offset="[0, 10]" class="menu-measure">
       <q-list>
         <q-item
           v-for="(item, index) in measureButtonList"
@@ -83,10 +81,10 @@ const measureButtonList = [
 
 .menu-measure {
   background: $secondary;
-  padding: 0px !important;
+  padding: 0 !important;
 
   .item {
-    padding: 0px !important;
+    padding: 0 !important;
     transition: all 0.25s;
 
     .avatar {

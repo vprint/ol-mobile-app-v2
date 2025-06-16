@@ -1,10 +1,10 @@
 // Map imports
-import { Collection, Feature } from 'ol';
+import { Collection, getUid } from 'ol';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import VectorTileLayer from 'ol/layer/VectorTile';
 
 // Vue/Quasar imports
-import { onMounted, Ref, ref, watch } from 'vue';
+import { Ref, ref, watch } from 'vue';
 import { defineStore, storeToRefs } from 'pinia';
 
 // Store imports
@@ -12,13 +12,8 @@ import { useApiClientStore } from './api-client-store';
 import { ISidePanelParameters, useSidePanelStore } from './side-panel-store';
 import { useMapStore } from './map-store';
 import { useDrawStore } from './draw-store';
-import { useMapInteractionStore } from './map-interaction-store';
 
 // Others imports
-import {
-  VectorTileSelectEvent,
-  VectorTileSelectEventType,
-} from 'src/services/VectorTileSelect';
 import { Feature as GeoJSONFeature } from 'geojson';
 import WFSTransactionService from 'src/services/WFSTransactionService';
 import NotificationService from 'src/services/notifier/Notifier';
@@ -27,10 +22,15 @@ import Site from 'src/model/site';
 // Enum / Interface / Model imports
 import { SidePanelParameters } from 'src/enums/side-panel.enum';
 import { TransactionMode } from 'src/enums/map.enum';
-import { LAYER_PROPERTIES_FIELD, LayerIdentifier } from 'src/enums/layers.enum';
+import { LayerIdentifier } from 'src/enums/layers.enum';
 import { UserMessage } from 'src/enums/user-messages.enum';
-import VectorTileInteractionDeprecated from 'src/services/VectorTileInteractionDeprecated';
-import { Interactions } from 'src/enums/interactions.enum';
+import { useSelectionStore } from 'stores/selection-store';
+import {
+  IFeatureInformation,
+  VECTOR_SELECT_EVENT,
+  VectorSelectionEvent,
+} from 'src/services/VectorFeatureSelect';
+import { FeatureLike } from 'ol/Feature';
 
 const WFS_TRANSACTION_OPTIONS = {
   featureNS: 'ArchaeoSpringMap',
@@ -46,33 +46,20 @@ const WFS_TRANSACTION_OPTIONS = {
 export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   const mapStore = useMapStore();
   const drawStore = useDrawStore();
+  const selectionStore = useSelectionStore();
   const sidePanelStore = useSidePanelStore();
-  const mapInteractionStore = useMapInteractionStore();
 
   const { panelParameters } = storeToRefs(sidePanelStore);
 
   const site: Ref<Site | undefined> = ref();
   let archsiteLayer: VectorTileLayer | undefined;
-  let vectorTileInteraction: VectorTileInteractionDeprecated | undefined;
-
-  /**
-   * Main site-store function that allows to set the working site by its id.
-   * @param newSiteId - Id of the new site.
-   */
-  async function openSitePanel(newSiteId: number): Promise<void> {
-    sidePanelStore.setActive(true, {
-      location: SidePanelParameters.SITE,
-      parameterName: 'siteId',
-      parameterValue: newSiteId.toString(),
-    });
-  }
 
   /**
    * Close the site panel and clear information
    */
-  function closeSitePanel(): void {
+  async function closeSitePanel(): Promise<void> {
     clearSite();
-    sidePanelStore.setActive(false);
+    await sidePanelStore.closePanel();
   }
 
   /**
@@ -80,8 +67,7 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    */
   function clearSite(): void {
     site.value = undefined;
-    _getVectorTileInteraction()?.getSelector()?.clear();
-    _fitMap();
+    archsiteLayer?.changed();
   }
 
   /**
@@ -102,62 +88,31 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
     const feature = await useApiClientStore().getSiteById(siteId);
 
     if (feature) {
-      const newSite = new Site({
-        ...feature.properties,
-        geometry: new GeoJSON().readGeometry(feature.geometry, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857',
-        }),
-      });
+      site.value = _readSiteFromJSON(feature);
+      archsiteLayer?.changed();
 
-      if (panelParameters.value.parameterValue !== newSite.siteId.toString()) {
-        openSitePanel(newSite.siteId);
+      if (_doesSiteIdDifferFromPanelParameter()) {
+        await sidePanelStore.openPanel({
+          location: SidePanelParameters.SITE,
+          parameterName: 'siteId',
+          parameterValue: site.value.siteId.toString(),
+        });
       }
-
-      _fitMap(feature);
-      site.value = newSite;
-      _getVectorTileInteraction()
-        ?.getSelector()
-        ?.setAsSelected([siteId.toString()]);
     }
   }
 
-  function _getVectorTileInteraction():
-    | VectorTileInteractionDeprecated
-    | undefined {
-    if (!vectorTileInteraction) {
-      const interactionName = `${Interactions.VECTOR_TILE}_${
-        archsiteLayer?.get(LAYER_PROPERTIES_FIELD).title
-      }`;
-
-      vectorTileInteraction =
-        mapInteractionStore.getInteractionByName<VectorTileInteractionDeprecated>(
-          interactionName
-        );
-    }
-
-    return vectorTileInteraction;
-  }
-
-  /**
-   * Fit the map to the selected site and set the style.
-   * @param geoJsonFeature - Selected feature
-   */
-  function _fitMap(geoJsonFeature?: GeoJSONFeature): void {
-    let feature: Feature | undefined = undefined;
-
-    if (geoJsonFeature) {
-      feature = new GeoJSON().readFeature(geoJsonFeature, {
+  function _readSiteFromJSON(feature: GeoJSONFeature): Site {
+    return new Site({
+      ...feature.properties,
+      geometry: new GeoJSON().readGeometry(feature.geometry, {
         dataProjection: 'EPSG:4326',
         featureProjection: 'EPSG:3857',
-      }) as Feature;
-      sidePanelStore.setPanelPadding(true, feature);
-    }
-
-    archsiteLayer?.changed();
+      }),
+    });
   }
 
   /**
+   * TODO: fix this method
    * Enable form modification and drawing.
    * @param active - Should the edition mode be enabled?
    */
@@ -216,25 +171,30 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
 
   /**
    * Listen to site selection and set the site parameters.
-   * @param selection - The selection event
+   * @param informations - The selection information
    */
-  function _manageSelection(selection: VectorTileSelectEvent): void {
-    const features = selection.selected;
+  async function _manageSelection(
+    informations: VectorSelectionEvent
+  ): Promise<void> {
+    const siteFeatures = _extractSiteFromSelection(
+      informations.featureInformations
+    );
 
-    if (features && features.length > 0) {
-      openSitePanel(features[0].getId() as number);
-
-      _getVectorTileInteraction()
-        ?.getSelector()
-        ?.setAsSelected([features[0].getId()?.toString()]);
+    if (siteFeatures.length > 0) {
+      await setSiteById(siteFeatures[0].getId() as number);
     }
+  }
 
-    if (!(features && features.length > 0) && site.value) {
-      const siteId = site.value.attributes.archsite_id;
-      _getVectorTileInteraction()
-        ?.getSelector()
-        ?.setAsSelected([siteId.toString()]);
-    }
+  function _extractSiteFromSelection(
+    featureDetails: IFeatureInformation[]
+  ): FeatureLike[] {
+    return featureDetails
+      .filter((information) => _isSiteFeature(information))
+      .map((information) => information.feature);
+  }
+
+  function _isSiteFeature(information: IFeatureInformation): boolean {
+    return getUid(information.layer) === getUid(archsiteLayer);
   }
 
   function _isSiteRoute(newPanelParameters: ISidePanelParameters): boolean {
@@ -251,23 +211,26 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
   /**
    * Define the archSite layer if the map is defined and set the listener.
    */
-  function initializeStore(): void {
+  async function initializeStore(): Promise<void> {
     archsiteLayer = mapStore.getLayerById<VectorTileLayer>(
       LayerIdentifier.SITES
     );
 
-    _getVectorTileInteraction()
-      ?.getSelector()
-      // @ts-expect-error type error
-      ?.on(VectorTileSelectEventType.VECTOR_TILE_SELECT, _manageSelection);
+    await _openSiteIfNeeded();
+
+    // @ts-expect-error - OL Type error.
+    selectionStore.selectPlugin.on(VECTOR_SELECT_EVENT, _manageSelection);
   }
 
   /**
-   * Open the site panel if needed
+   * Open the site panel if needed.
    */
-  function _openSiteIfNecessary(): void {
+  async function _openSiteIfNeeded(): Promise<void> {
     if (panelParameters.value.location === SidePanelParameters.SITE) {
-      openSitePanel(parseInt(panelParameters.value.parameterValue as string));
+      await setSiteById(
+        parseInt(panelParameters.value.parameterValue as string)
+      );
+      mapStore.setPaddingAndExtent([0, -400, 0, 0], useSiteStore().site);
     }
   }
 
@@ -277,31 +240,34 @@ export const useSiteStore = defineStore(SidePanelParameters.SITE, () => {
    * Sets the site if the ID is different from the previous one.
    * @param route - The route parameters
    */
-  function _analyzeRoutes(route: ISidePanelParameters): void {
+  async function _analyzeRoutes(route: ISidePanelParameters): Promise<void> {
     if (!_isSiteRoute(route)) {
       clearSite();
       return;
     }
 
     const siteId = parseInt(route.parameterValue as string);
-    if (_siteIsSameAsPrevious(siteId)) {
-      return;
+    if (!_siteIsSameAsPrevious(siteId)) {
+      await setSiteById(siteId);
     }
+  }
 
-    setSiteById(siteId);
+  function _doesSiteIdDifferFromPanelParameter(): boolean {
+    return (
+      panelParameters.value.parameterValue !== site.value?.siteId.toString()
+    );
   }
 
   /**
    * watch for site change in URL
    */
   watch(panelParameters, _analyzeRoutes);
-  onMounted(_openSiteIfNecessary);
 
   return {
     site,
     initializeStore,
     enableModification,
-    openSitePanel,
+    setSiteById,
     updateSite,
     wfsTransaction,
     closeSitePanel,
