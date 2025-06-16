@@ -4,7 +4,6 @@ import { FeatureLike } from 'ol/Feature';
 import VectorTileLayer from 'ol/layer/VectorTile';
 import Event from 'ol/events/Event.js';
 import VectorLayer from 'ol/layer/Vector';
-import { MouseEvent } from 'src/enums/ui-event.enum';
 import { getUid } from 'ol/util';
 import { click } from 'ol/events/condition';
 
@@ -17,6 +16,8 @@ export interface IFeatureInformation {
   layer: VectorTileLayer | VectorLayer;
 }
 
+export const VECTOR_SELECT_EVENT = 'vector:select';
+
 /**
  * Triggered when a feature or set of features is selected on a vector layer.
  */
@@ -28,8 +29,7 @@ export class VectorSelectionEvent extends Event {
     featureInformations: IFeatureInformation[],
     mapBrowserEvent: MapBrowserEvent
   ) {
-    super('select');
-    console.log(featureInformations)
+    super(VECTOR_SELECT_EVENT);
     this.featureInformations = featureInformations;
     this.mapBrowserEvent = mapBrowserEvent;
   }

@@ -6,7 +6,7 @@ import Event from 'ol/events/Event.js';
 import { Fill, Stroke, Style } from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import { getUid } from 'ol/util.js';
-import { MouseEvent } from 'src/enums/ui-event.enum';
+import { click } from 'ol/events/condition';
 
 export enum VectorTileRenderType {
   HYBRID = 'hybrid',
@@ -56,17 +56,18 @@ export class VectorTileSelectEvent extends Event {
 class VectorTileSelect extends Interaction {
   public selectedFeatures = new Set<string>();
   private selectableLayer: VectorTileLayer;
-  private selectionStyle: Style;
+  private readonly selectionStyle: Style;
 
   /**
    * The layer on which the selected feature is rendered.
    */
-  private renderLayer: VectorTileLayer;
+  private readonly renderLayer: VectorTileLayer;
 
   constructor(options: IOptions) {
     super({
-      handleEvent: (evt: MapBrowserEvent): boolean =>
-        this.selectFeaturesAtPixel(evt),
+      handleEvent: (evt: MapBrowserEvent): boolean => {
+        return this.manageUIEvent(evt);
+      },
     });
 
     this.selectableLayer = options.selectableLayer;
@@ -79,7 +80,7 @@ class VectorTileSelect extends Interaction {
    * Initialize the component
    * @param map - OpenLayers map
    */
-  public setMap(map: Map | null): void {
+  public override setMap(map: Map | null): void {
     super.setMap(map);
     this.getMap()?.addLayer(this.renderLayer);
   }
@@ -112,14 +113,19 @@ class VectorTileSelect extends Interaction {
       renderMode: VectorTileRenderType.VECTOR,
       zIndex: this.getSelectionZIndex(),
       source: this.selectableLayer.getSource() ?? undefined,
-      style: (feature: FeatureLike): Style | undefined => {
-        const featureId = feature.getId()?.toString();
-        if (featureId && this.selectedFeatures.has(featureId)) {
-          return this.selectionStyle;
-        }
-        return undefined;
-      },
+      style: (feature: FeatureLike) => this.getFeaturesStyle(feature),
     });
+  }
+
+  private getFeaturesStyle(feature: FeatureLike): Style | undefined {
+    let featureStyle = undefined;
+    const featureId = feature.getId()?.toString();
+
+    if (featureId && this.selectedFeatures.has(featureId)) {
+      featureStyle = this.selectionStyle;
+    }
+
+    return featureStyle;
   }
 
   /**
@@ -134,35 +140,36 @@ class VectorTileSelect extends Interaction {
 
   /**
    * Select vector features at a given pixel and fires
-   * a vector tile select event on selection (select:vectortile).
-   * @param e - Map browser event
-   * @returns - false to stop event propagation if selection is made, true otherwise
+   * a vector tile select event.
+   * @param e - The UI event
+   * @returns - false to stop event propagation if a selection is made, true otherwise.
    */
-  private selectFeaturesAtPixel(e: MapBrowserEvent): boolean {
+  private selectFeatures(e: MapBrowserEvent): boolean {
     let propagation = true;
 
-    if (e.type === MouseEvent.CLICK.toString()) {
-      const features = this.getMap()?.getFeaturesAtPixel(e.pixel, {
-        layerFilter: (layer) => getUid(layer) === getUid(this.selectableLayer),
-        hitTolerance: 10,
-      });
+    const features = this.getFeaturesAtPixel(e);
+    const featureIds = this.getFeatureIds(features);
+    this.setAsSelected(featureIds);
+    this.dispatchEvent(this.createSelectEvent(features, e));
 
-      const featureIds = features?.map((feature) =>
-        feature.getId()?.toString()
-      );
-      this.setAsSelected(featureIds);
-
-      this.dispatchEvent(
-        new VectorTileSelectEvent(
-          VectorTileSelectEventType.VECTOR_TILE_SELECT,
-          features,
-          e
-        )
-      );
+    if (featureIds?.length) {
       propagation = false;
     }
 
     return propagation;
+  }
+
+  private getFeaturesAtPixel(e: MapBrowserEvent): FeatureLike[] | undefined {
+    return this.getMap()?.getFeaturesAtPixel(e.pixel, {
+      layerFilter: (layer) => getUid(layer) === getUid(this.selectableLayer),
+      hitTolerance: 10,
+    });
+  }
+
+  private getFeatureIds(
+    features: FeatureLike[] | undefined
+  ): (string | undefined)[] | undefined {
+    return features?.map((feature) => feature.getId()?.toString());
   }
 
   /**
@@ -198,6 +205,27 @@ class VectorTileSelect extends Interaction {
     }
 
     return zIndex;
+  }
+
+  private manageUIEvent(evt: MapBrowserEvent): boolean {
+    let shouldPropagate = true;
+
+    if (click(evt)) {
+      shouldPropagate = this.selectFeatures(evt);
+    }
+
+    return shouldPropagate;
+  }
+
+  private createSelectEvent(
+    features: FeatureLike[] | undefined,
+    e: MapBrowserEvent
+  ): VectorTileSelectEvent {
+    return new VectorTileSelectEvent(
+      VectorTileSelectEventType.VECTOR_TILE_SELECT,
+      features,
+      e
+    );
   }
 }
 
